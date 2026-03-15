@@ -1,0 +1,552 @@
+1771969054: mosquitto version 2.0.22 starting
+1771969054: Config loaded from /mosquitto/config/mosquitto.conf.
+1771969054: Opening ipv4 listen socket on port 1883.
+1771969054: Opening ipv6 listen socket on port 1883.
+1771969054: mosquitto version 2.0.22 running
+1771969055: New connection from 172.18.0.5:40019 on port 1883.
+1771969055: New client connected from 172.18.0.5:40019 as smarthome-simulator (p2, c1, k60).
+1771969055: New connection from 172.18.0.4:58583 on port 1883.
+1771969055: New client connected from 172.18.0.4:58583 as smarthome-telegram-bot (p2, c1, k60).
+1771969057: New connection from 172.18.0.7:45927 on port 1883.
+1771969057: New client connected from 172.18.0.7:45927 as smarthome-agent (p2, c1, k60).
+1771970301: New connection from 172.18.0.6:37550 on port 1883.
+1771970301: New client connected from 172.18.0.6:37550 as nodered-dashboard (p2, c1, k60).
+1771970655: Client nodered-dashboard disconnected.
+1771970665: New connection from 172.18.0.6:57590 on port 1883.
+1771970665: New client connected from 172.18.0.6:57590 as nodered-dashboard (p2, c1, k60).
+1771970693: Client nodered-dashboard disconnected.
+1771970693: New connection from 172.18.0.6:38834 on port 1883.
+1771970693: New client connected from 172.18.0.6:38834 as nodered-dashboard (p2, c1, k60).
+1771970784: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771970831: Client nodered-dashboard disconnected.
+1771970840: New connection from 172.18.0.6:41992 on port 1883.
+1771970840: New client connected from 172.18.0.6:41992 as nodered-dashboard (p2, c1, k60).
+1771971024: Client nodered-dashboard disconnected.
+1771971274: New connection from 172.18.0.6:38482 on port 1883.
+1771971274: New client connected from 172.18.0.6:38482 as nodered-ui (p2, c1, k60).
+1771972082: Client smarthome-simulator closed its connection.
+1771972082: Client smarthome-agent closed its connection.
+1771972082: Client smarthome-telegram-bot closed its connection.
+1771972083: New connection from 172.18.0.5:51737 on port 1883.
+1771972083: New client connected from 172.18.0.5:51737 as smarthome-simulator (p2, c1, k60).
+1771972083: New connection from 172.18.0.7:54821 on port 1883.
+1771972083: New client connected from 172.18.0.7:54821 as smarthome-telegram-bot (p2, c1, k60).
+1771972086: New connection from 172.18.0.4:47463 on port 1883.
+1771972086: New client connected from 172.18.0.4:47463 as smarthome-agent (p2, c1, k60).
+1771972457: Client nodered-ui disconnected.
+1771972458: Client smarthome-telegram-bot closed its connection.
+1771972466: Client smarthome-simulator closed its connection.
+1771972466: Client smarthome-agent closed its connection.
+1771972466: mosquitto version 2.0.22 terminating
+1771972466: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771972491: mosquitto version 2.0.22 starting
+1771972491: Config loaded from /mosquitto/config/mosquitto.conf.
+1771972491: Opening ipv4 listen socket on port 1883.
+1771972491: Opening ipv6 listen socket on port 1883.
+1771972491: mosquitto version 2.0.22 running
+1771972492: New connection from 172.18.0.7:46381 on port 1883.
+1771972492: New client connected from 172.18.0.7:46381 as smarthome-simulator (p2, c1, k60).
+1771972492: New connection from 172.18.0.5:47309 on port 1883.
+1771972492: New client connected from 172.18.0.5:47309 as smarthome-telegram-bot (p2, c1, k60).
+1771972493: New connection from 172.18.0.4:41017 on port 1883.
+1771972493: New client connected from 172.18.0.4:41017 as smarthome-agent (p2, c1, k60).
+1771972501: New connection from 172.18.0.6:36832 on port 1883.
+1771972501: New client connected from 172.18.0.6:36832 as nodered-ui (p2, c1, k60).
+1771974135: Client smarthome-agent closed its connection.
+1771974138: New connection from 172.18.0.4:42831 on port 1883.
+1771974138: New client connected from 172.18.0.4:42831 as smarthome-agent (p2, c1, k60).
+1771974204: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771974350: Client smarthome-telegram-bot closed its connection.
+1771974359: Client smarthome-agent closed its connection.
+1771974360: Client smarthome-simulator closed its connection.
+1771974361: New connection from 172.18.0.4:56213 on port 1883.
+1771974361: New client connected from 172.18.0.4:56213 as smarthome-simulator (p2, c1, k60).
+1771974362: New connection from 172.18.0.5:58131 on port 1883.
+1771974362: New client connected from 172.18.0.5:58131 as smarthome-telegram-bot (p2, c1, k60).
+1771974363: New connection from 172.18.0.7:51603 on port 1883.
+1771974363: New client connected from 172.18.0.7:51603 as smarthome-agent (p2, c1, k60).
+1771975917: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771977629: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771979340: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771981052: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771982764: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771984476: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771986189: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771987903: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771989617: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771991331: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771993047: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771994762: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771996478: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1771998194: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772004535: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772006261: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772007985: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772009801: Client nodered-ui disconnected.
+1772009801: New connection from 172.18.0.6:55046 on port 1883.
+1772009801: New client connected from 172.18.0.6:55046 as nodered-ui (p2, c1, k60).
+1772010247: Client smarthome-telegram-bot closed its connection.
+1772010256: Client smarthome-simulator closed its connection.
+1772010256: Client smarthome-agent closed its connection.
+1772010258: New connection from 172.18.0.5:48819 on port 1883.
+1772010258: New client connected from 172.18.0.5:48819 as smarthome-simulator (p2, c1, k60).
+1772010259: New connection from 172.18.0.7:40759 on port 1883.
+1772010259: New client connected from 172.18.0.7:40759 as smarthome-telegram-bot (p2, c1, k60).
+1772010261: New connection from 172.18.0.4:43585 on port 1883.
+1772010261: New client connected from 172.18.0.4:43585 as smarthome-agent (p2, c1, k60).
+1772010489: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772010693: Client smarthome-agent closed its connection.
+1772010695: New connection from 172.18.0.4:41607 on port 1883.
+1772010695: New client connected from 172.18.0.4:41607 as smarthome-agent (p2, c1, k60).
+1772010764: Client nodered-ui disconnected.
+1772010764: New connection from 172.18.0.6:48690 on port 1883.
+1772010764: New client connected from 172.18.0.6:48690 as nodered-ui (p2, c1, k60).
+1772011129: Client smarthome-agent closed its connection.
+1772011132: New connection from 172.18.0.4:39677 on port 1883.
+1772011132: New client connected from 172.18.0.4:39677 as smarthome-agent (p2, c1, k60).
+1772012208: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772018024: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772019742: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772021462: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1772044456: Client nodered-ui disconnected.
+1772044456: Client smarthome-telegram-bot closed its connection.
+1772044466: Client smarthome-simulator closed its connection.
+1772044466: Client smarthome-agent closed its connection.
+1772044467: mosquitto version 2.0.22 terminating
+1772044467: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773292025: mosquitto version 2.0.22 starting
+1773292025: Config loaded from /mosquitto/config/mosquitto.conf.
+1773292025: Opening ipv4 listen socket on port 1883.
+1773292025: Opening ipv6 listen socket on port 1883.
+1773292025: mosquitto version 2.0.22 running
+1773292026: New connection from 172.18.0.5:54215 on port 1883.
+1773292026: New client connected from 172.18.0.5:54215 as smarthome-simulator (p2, c1, k60).
+1773292026: New connection from 172.18.0.4:50659 on port 1883.
+1773292026: New client connected from 172.18.0.4:50659 as smarthome-telegram-bot (p2, c1, k60).
+1773292028: New connection from 172.18.0.6:45759 on port 1883.
+1773292028: New client connected from 172.18.0.6:45759 as smarthome-agent (p2, c1, k60).
+1773292053: New connection from 172.18.0.7:49648 on port 1883.
+1773292053: New client connected from 172.18.0.7:49648 as nodered-ui (p2, c1, k60).
+1773292403: Client smarthome-telegram-bot closed its connection.
+1773292410: Client smarthome-simulator closed its connection.
+1773292410: Client smarthome-agent closed its connection.
+1773292411: New connection from 172.18.0.4:58629 on port 1883.
+1773292411: New client connected from 172.18.0.4:58629 as smarthome-simulator (p2, c1, k60).
+1773292411: New connection from 172.18.0.6:38385 on port 1883.
+1773292411: New client connected from 172.18.0.6:38385 as smarthome-telegram-bot (p2, c1, k60).
+1773292414: New connection from 172.18.0.5:49915 on port 1883.
+1773292414: New client connected from 172.18.0.5:49915 as smarthome-agent (p2, c1, k60).
+1773293789: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773294941: Client smarthome-agent closed its connection.
+1773294946: New connection from 172.18.0.5:58473 on port 1883.
+1773294946: New client connected from 172.18.0.5:58473 as smarthome-agent (p2, c1, k60).
+1773295548: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773521415: mosquitto version 2.0.22 starting
+1773521415: Config loaded from /mosquitto/config/mosquitto.conf.
+1773521415: Opening ipv4 listen socket on port 1883.
+1773521415: Opening ipv6 listen socket on port 1883.
+1773521415: mosquitto version 2.0.22 running
+1773521416: New connection from 172.18.0.5:38757 on port 1883.
+1773521416: New client connected from 172.18.0.5:38757 as smarthome-simulator (p2, c1, k60).
+1773521416: Client smarthome-simulator closed its connection.
+1773521418: New connection from 172.18.0.4:60095 on port 1883.
+1773521418: New client connected from 172.18.0.4:60095 as smarthome-telegram-bot (p2, c1, k60).
+1773521418: New connection from 172.18.0.5:34877 on port 1883.
+1773521418: New client connected from 172.18.0.5:34877 as smarthome-simulator (p2, c1, k60).
+1773521418: Client smarthome-simulator closed its connection.
+1773521420: New connection from 172.18.0.5:38557 on port 1883.
+1773521420: New client connected from 172.18.0.5:38557 as smarthome-simulator (p2, c1, k60).
+1773521420: Client smarthome-simulator closed its connection.
+1773521421: New connection from 172.18.0.5:60059 on port 1883.
+1773521421: New client connected from 172.18.0.5:60059 as smarthome-simulator (p2, c1, k60).
+1773521421: Client smarthome-simulator closed its connection.
+1773521422: New connection from 172.18.0.5:60737 on port 1883.
+1773521422: New client connected from 172.18.0.5:60737 as smarthome-simulator (p2, c1, k60).
+1773521422: Client smarthome-simulator closed its connection.
+1773521424: New connection from 172.18.0.5:54491 on port 1883.
+1773521424: New client connected from 172.18.0.5:54491 as smarthome-simulator (p2, c1, k60).
+1773521424: Client smarthome-simulator closed its connection.
+1773521424: New connection from 172.18.0.6:40999 on port 1883.
+1773521424: New client connected from 172.18.0.6:40999 as smarthome-agent (p2, c1, k60).
+1773521427: New connection from 172.18.0.5:33587 on port 1883.
+1773521427: New client connected from 172.18.0.5:33587 as smarthome-simulator (p2, c1, k60).
+1773521427: Client smarthome-simulator closed its connection.
+1773521434: New connection from 172.18.0.5:35395 on port 1883.
+1773521434: New client connected from 172.18.0.5:35395 as smarthome-simulator (p2, c1, k60).
+1773521434: Client smarthome-simulator closed its connection.
+1773521442: New connection from 172.18.0.2:45834 on port 1883.
+1773521442: New client connected from 172.18.0.2:45834 as nodered-ui (p2, c1, k60).
+1773521447: New connection from 172.18.0.5:36481 on port 1883.
+1773521447: New client connected from 172.18.0.5:36481 as smarthome-simulator (p2, c1, k60).
+1773521447: Client smarthome-simulator closed its connection.
+1773521473: New connection from 172.18.0.5:42283 on port 1883.
+1773521473: New client connected from 172.18.0.5:42283 as smarthome-simulator (p2, c1, k60).
+1773521473: Client smarthome-simulator closed its connection.
+1773521525: New connection from 172.18.0.5:40653 on port 1883.
+1773521525: New client connected from 172.18.0.5:40653 as smarthome-simulator (p2, c1, k60).
+1773521525: Client smarthome-simulator closed its connection.
+1773521585: New connection from 172.18.0.5:57587 on port 1883.
+1773521585: New client connected from 172.18.0.5:57587 as smarthome-simulator (p2, c1, k60).
+1773521585: Client smarthome-simulator closed its connection.
+1773521645: New connection from 172.18.0.5:51835 on port 1883.
+1773521645: New client connected from 172.18.0.5:51835 as smarthome-simulator (p2, c1, k60).
+1773521645: Client smarthome-simulator closed its connection.
+1773521706: New connection from 172.18.0.5:49127 on port 1883.
+1773521706: New client connected from 172.18.0.5:49127 as smarthome-simulator (p2, c1, k60).
+1773521706: Client smarthome-simulator closed its connection.
+1773521766: New connection from 172.18.0.5:47807 on port 1883.
+1773521766: New client connected from 172.18.0.5:47807 as smarthome-simulator (p2, c1, k60).
+1773521766: Client smarthome-simulator closed its connection.
+1773521827: New connection from 172.18.0.5:36761 on port 1883.
+1773521827: New client connected from 172.18.0.5:36761 as smarthome-simulator (p2, c1, k60).
+1773521827: Client smarthome-simulator closed its connection.
+1773521887: New connection from 172.18.0.5:37617 on port 1883.
+1773521887: New client connected from 172.18.0.5:37617 as smarthome-simulator (p2, c1, k60).
+1773521887: Client smarthome-simulator closed its connection.
+1773521947: New connection from 172.18.0.5:48115 on port 1883.
+1773521947: New client connected from 172.18.0.5:48115 as smarthome-simulator (p2, c1, k60).
+1773521947: Client smarthome-simulator closed its connection.
+1773522008: New connection from 172.18.0.5:37985 on port 1883.
+1773522008: New client connected from 172.18.0.5:37985 as smarthome-simulator (p2, c1, k60).
+1773522008: Client smarthome-simulator closed its connection.
+1773522068: New connection from 172.18.0.5:33333 on port 1883.
+1773522068: New client connected from 172.18.0.5:33333 as smarthome-simulator (p2, c1, k60).
+1773522068: Client smarthome-simulator closed its connection.
+1773522129: New connection from 172.18.0.5:33315 on port 1883.
+1773522129: New client connected from 172.18.0.5:33315 as smarthome-simulator (p2, c1, k60).
+1773522129: Client smarthome-simulator closed its connection.
+1773522189: New connection from 172.18.0.5:42611 on port 1883.
+1773522189: New client connected from 172.18.0.5:42611 as smarthome-simulator (p2, c1, k60).
+1773522189: Client smarthome-simulator closed its connection.
+1773522250: New connection from 172.18.0.5:56343 on port 1883.
+1773522250: New client connected from 172.18.0.5:56343 as smarthome-simulator (p2, c1, k60).
+1773522250: Client smarthome-simulator closed its connection.
+1773522297: Client smarthome-agent closed its connection.
+1773522302: New connection from 172.18.0.5:34593 on port 1883.
+1773522302: New client connected from 172.18.0.5:34593 as smarthome-agent (p2, c1, k60).
+1773522310: New connection from 172.18.0.6:50809 on port 1883.
+1773522310: New client connected from 172.18.0.6:50809 as smarthome-simulator (p2, c1, k60).
+1773522310: Client smarthome-simulator closed its connection.
+1773522370: New connection from 172.18.0.6:35201 on port 1883.
+1773522370: New client connected from 172.18.0.6:35201 as smarthome-simulator (p2, c1, k60).
+1773522370: Client smarthome-simulator closed its connection.
+1773522431: New connection from 172.18.0.6:59317 on port 1883.
+1773522431: New client connected from 172.18.0.6:59317 as smarthome-simulator (p2, c1, k60).
+1773522431: Client smarthome-simulator closed its connection.
+1773522491: New connection from 172.18.0.6:43083 on port 1883.
+1773522491: New client connected from 172.18.0.6:43083 as smarthome-simulator (p2, c1, k60).
+1773522491: Client smarthome-simulator closed its connection.
+1773522551: New connection from 172.18.0.6:37455 on port 1883.
+1773522551: New client connected from 172.18.0.6:37455 as smarthome-simulator (p2, c1, k60).
+1773522551: Client smarthome-simulator closed its connection.
+1773522612: New connection from 172.18.0.6:35853 on port 1883.
+1773522612: New client connected from 172.18.0.6:35853 as smarthome-simulator (p2, c1, k60).
+1773522612: Client smarthome-simulator closed its connection.
+1773522672: New connection from 172.18.0.6:44317 on port 1883.
+1773522672: New client connected from 172.18.0.6:44317 as smarthome-simulator (p2, c1, k60).
+1773522672: Client smarthome-simulator closed its connection.
+1773522733: New connection from 172.18.0.6:49985 on port 1883.
+1773522733: New client connected from 172.18.0.6:49985 as smarthome-simulator (p2, c1, k60).
+1773522733: Client smarthome-simulator closed its connection.
+1773522761: Client smarthome-agent closed its connection.
+1773522793: New connection from 172.18.0.5:50299 on port 1883.
+1773522793: New client connected from 172.18.0.5:50299 as smarthome-simulator (p2, c1, k60).
+1773522793: Client smarthome-simulator closed its connection.
+1773522854: New connection from 172.18.0.5:40021 on port 1883.
+1773522854: New client connected from 172.18.0.5:40021 as smarthome-simulator (p2, c1, k60).
+1773522854: Client smarthome-simulator closed its connection.
+1773522914: New connection from 172.18.0.5:37805 on port 1883.
+1773522914: New client connected from 172.18.0.5:37805 as smarthome-simulator (p2, c1, k60).
+1773522914: Client smarthome-simulator closed its connection.
+1773522975: New connection from 172.18.0.5:60303 on port 1883.
+1773522975: New client connected from 172.18.0.5:60303 as smarthome-simulator (p2, c1, k60).
+1773522975: Client smarthome-simulator closed its connection.
+1773523035: New connection from 172.18.0.5:37993 on port 1883.
+1773523035: New client connected from 172.18.0.5:37993 as smarthome-simulator (p2, c1, k60).
+1773523035: Client smarthome-simulator closed its connection.
+1773523096: New connection from 172.18.0.5:56131 on port 1883.
+1773523096: New client connected from 172.18.0.5:56131 as smarthome-simulator (p2, c1, k60).
+1773523096: Client smarthome-simulator closed its connection.
+1773523156: New connection from 172.18.0.5:55211 on port 1883.
+1773523156: New client connected from 172.18.0.5:55211 as smarthome-simulator (p2, c1, k60).
+1773523156: Client smarthome-simulator closed its connection.
+1773523217: New connection from 172.18.0.5:40135 on port 1883.
+1773523217: New client connected from 172.18.0.5:40135 as smarthome-simulator (p2, c1, k60).
+1773523217: Client smarthome-simulator closed its connection.
+1773523218: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773523277: New connection from 172.18.0.5:37285 on port 1883.
+1773523277: New client connected from 172.18.0.5:37285 as smarthome-simulator (p2, c1, k60).
+1773523277: Client smarthome-simulator closed its connection.
+1773523302: New connection from 172.18.0.5:37725 on port 1883.
+1773523302: New client connected from 172.18.0.5:37725 as smarthome-agent (p2, c1, k60).
+1773523338: New connection from 172.18.0.6:58357 on port 1883.
+1773523338: New client connected from 172.18.0.6:58357 as smarthome-simulator (p2, c1, k60).
+1773523338: Client smarthome-simulator closed its connection.
+1773523398: New connection from 172.18.0.6:48045 on port 1883.
+1773523398: New client connected from 172.18.0.6:48045 as smarthome-simulator (p2, c1, k60).
+1773523398: Client smarthome-simulator closed its connection.
+1773523458: New connection from 172.18.0.6:41913 on port 1883.
+1773523458: New client connected from 172.18.0.6:41913 as smarthome-simulator (p2, c1, k60).
+1773523458: Client smarthome-simulator closed its connection.
+1773523519: New connection from 172.18.0.6:57405 on port 1883.
+1773523519: New client connected from 172.18.0.6:57405 as smarthome-simulator (p2, c1, k60).
+1773523519: Client smarthome-simulator closed its connection.
+1773523579: New connection from 172.18.0.6:43367 on port 1883.
+1773523579: New client connected from 172.18.0.6:43367 as smarthome-simulator (p2, c1, k60).
+1773523579: Client smarthome-simulator closed its connection.
+1773523639: New connection from 172.18.0.6:56935 on port 1883.
+1773523639: New client connected from 172.18.0.6:56935 as smarthome-simulator (p2, c1, k60).
+1773523639: Client smarthome-simulator closed its connection.
+1773523700: New connection from 172.18.0.6:41105 on port 1883.
+1773523700: New client connected from 172.18.0.6:41105 as smarthome-simulator (p2, c1, k60).
+1773523700: Client smarthome-simulator closed its connection.
+1773523760: New connection from 172.18.0.6:59943 on port 1883.
+1773523760: New client connected from 172.18.0.6:59943 as smarthome-simulator (p2, c1, k60).
+1773523760: Client smarthome-simulator closed its connection.
+1773523821: New connection from 172.18.0.6:42779 on port 1883.
+1773523821: New client connected from 172.18.0.6:42779 as smarthome-simulator (p2, c1, k60).
+1773523821: Client smarthome-simulator closed its connection.
+1773523881: New connection from 172.18.0.6:53837 on port 1883.
+1773523881: New client connected from 172.18.0.6:53837 as smarthome-simulator (p2, c1, k60).
+1773523881: Client smarthome-simulator closed its connection.
+1773523941: New connection from 172.18.0.6:45925 on port 1883.
+1773523941: New client connected from 172.18.0.6:45925 as smarthome-simulator (p2, c1, k60).
+1773523941: Client smarthome-simulator closed its connection.
+1773523972: Client smarthome-agent closed its connection.
+1773523980: Client nodered-ui disconnected.
+1773523981: Client smarthome-telegram-bot closed its connection.
+1773523981: mosquitto version 2.0.22 terminating
+1773523981: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773527099: mosquitto version 2.0.22 starting
+1773527099: Config loaded from /mosquitto/config/mosquitto.conf.
+1773527099: Opening ipv4 listen socket on port 1883.
+1773527099: Opening ipv6 listen socket on port 1883.
+1773527099: mosquitto version 2.0.22 running
+1773527100: New connection from 172.18.0.4:44195 on port 1883.
+1773527100: New client connected from 172.18.0.4:44195 as smarthome-simulator (p2, c1, k60).
+1773527100: Client smarthome-simulator closed its connection.
+1773527101: New connection from 172.18.0.5:56409 on port 1883.
+1773527101: New client connected from 172.18.0.5:56409 as smarthome-telegram-bot (p2, c1, k60).
+1773527101: New connection from 172.18.0.4:47423 on port 1883.
+1773527101: New client connected from 172.18.0.4:47423 as smarthome-simulator (p2, c1, k60).
+1773527101: Client smarthome-simulator closed its connection.
+1773527102: New connection from 172.18.0.4:38069 on port 1883.
+1773527102: New client connected from 172.18.0.4:38069 as smarthome-simulator (p2, c1, k60).
+1773527102: Client smarthome-simulator closed its connection.
+1773527103: New connection from 172.18.0.4:33573 on port 1883.
+1773527103: New client connected from 172.18.0.4:33573 as smarthome-simulator (p2, c1, k60).
+1773527103: Client smarthome-simulator closed its connection.
+1773527104: New connection from 172.18.0.4:39949 on port 1883.
+1773527104: New client connected from 172.18.0.4:39949 as smarthome-simulator (p2, c1, k60).
+1773527104: Client smarthome-simulator closed its connection.
+1773527106: New connection from 172.18.0.4:60759 on port 1883.
+1773527106: New client connected from 172.18.0.4:60759 as smarthome-simulator (p2, c1, k60).
+1773527106: Client smarthome-simulator closed its connection.
+1773527107: New connection from 172.18.0.7:53939 on port 1883.
+1773527107: New client connected from 172.18.0.7:53939 as smarthome-agent (p2, c1, k60).
+1773527110: New connection from 172.18.0.4:33079 on port 1883.
+1773527110: New client connected from 172.18.0.4:33079 as smarthome-simulator (p2, c1, k60).
+1773527110: Client smarthome-simulator closed its connection.
+1773527117: New connection from 172.18.0.4:37887 on port 1883.
+1773527117: New client connected from 172.18.0.4:37887 as smarthome-simulator (p2, c1, k60).
+1773527117: Client smarthome-simulator closed its connection.
+1773527130: New connection from 172.18.0.4:40915 on port 1883.
+1773527130: New client connected from 172.18.0.4:40915 as smarthome-simulator (p2, c1, k60).
+1773527130: Client smarthome-simulator closed its connection.
+1773527136: New connection from 172.18.0.6:34440 on port 1883.
+1773527136: New client connected from 172.18.0.6:34440 as nodered-ui (p2, c1, k60).
+1773527156: New connection from 172.18.0.4:46137 on port 1883.
+1773527156: New client connected from 172.18.0.4:46137 as smarthome-simulator (p2, c1, k60).
+1773527157: Client smarthome-simulator closed its connection.
+1773527208: New connection from 172.18.0.4:33067 on port 1883.
+1773527208: New client connected from 172.18.0.4:33067 as smarthome-simulator (p2, c1, k60).
+1773527208: Client smarthome-simulator closed its connection.
+1773527268: New connection from 172.18.0.4:54175 on port 1883.
+1773527268: New client connected from 172.18.0.4:54175 as smarthome-simulator (p2, c1, k60).
+1773527268: Client smarthome-simulator closed its connection.
+1773527329: New connection from 172.18.0.4:44253 on port 1883.
+1773527329: New client connected from 172.18.0.4:44253 as smarthome-simulator (p2, c1, k60).
+1773527329: Client smarthome-simulator closed its connection.
+1773527389: New connection from 172.18.0.4:45361 on port 1883.
+1773527389: New client connected from 172.18.0.4:45361 as smarthome-simulator (p2, c1, k60).
+1773527389: Client smarthome-simulator closed its connection.
+1773527449: New connection from 172.18.0.4:42279 on port 1883.
+1773527449: New client connected from 172.18.0.4:42279 as smarthome-simulator (p2, c1, k60).
+1773527449: Client smarthome-simulator closed its connection.
+1773527510: New connection from 172.18.0.4:35947 on port 1883.
+1773527510: New client connected from 172.18.0.4:35947 as smarthome-simulator (p2, c1, k60).
+1773527510: Client smarthome-simulator closed its connection.
+1773527570: New connection from 172.18.0.4:45717 on port 1883.
+1773527570: New client connected from 172.18.0.4:45717 as smarthome-simulator (p2, c1, k60).
+1773527570: Client smarthome-simulator closed its connection.
+1773527630: New connection from 172.18.0.4:50377 on port 1883.
+1773527630: New client connected from 172.18.0.4:50377 as smarthome-simulator (p2, c1, k60).
+1773527630: Client smarthome-simulator closed its connection.
+1773527691: New connection from 172.18.0.4:45697 on port 1883.
+1773527691: New client connected from 172.18.0.4:45697 as smarthome-simulator (p2, c1, k60).
+1773527691: Client smarthome-simulator closed its connection.
+1773527751: New connection from 172.18.0.4:43283 on port 1883.
+1773527751: New client connected from 172.18.0.4:43283 as smarthome-simulator (p2, c1, k60).
+1773527751: Client smarthome-simulator closed its connection.
+1773527811: New connection from 172.18.0.4:48941 on port 1883.
+1773527811: New client connected from 172.18.0.4:48941 as smarthome-simulator (p2, c1, k60).
+1773527811: Client smarthome-simulator closed its connection.
+1773527873: New connection from 172.18.0.4:49187 on port 1883.
+1773527873: New client connected from 172.18.0.4:49187 as smarthome-simulator (p2, c1, k60).
+1773527874: Client smarthome-simulator closed its connection.
+1773527934: New connection from 172.18.0.4:37371 on port 1883.
+1773527934: New client connected from 172.18.0.4:37371 as smarthome-simulator (p2, c1, k60).
+1773527934: Client smarthome-simulator closed its connection.
+1773527994: New connection from 172.18.0.4:51061 on port 1883.
+1773527994: New client connected from 172.18.0.4:51061 as smarthome-simulator (p2, c1, k60).
+1773527994: Client smarthome-simulator closed its connection.
+1773528054: New connection from 172.18.0.4:50773 on port 1883.
+1773528054: New client connected from 172.18.0.4:50773 as smarthome-simulator (p2, c1, k60).
+1773528054: Client smarthome-simulator closed its connection.
+1773528114: New connection from 172.18.0.4:43469 on port 1883.
+1773528114: New client connected from 172.18.0.4:43469 as smarthome-simulator (p2, c1, k60).
+1773528114: Client smarthome-simulator closed its connection.
+1773528170: Client smarthome-agent closed its connection.
+1773528174: New connection from 172.18.0.4:52929 on port 1883.
+1773528174: New client connected from 172.18.0.4:52929 as smarthome-agent (p2, c1, k60).
+1773528175: New connection from 172.18.0.7:41929 on port 1883.
+1773528175: New client connected from 172.18.0.7:41929 as smarthome-simulator (p2, c1, k60).
+1773528175: Client smarthome-simulator closed its connection.
+1773528235: New connection from 172.18.0.7:38951 on port 1883.
+1773528235: New client connected from 172.18.0.7:38951 as smarthome-simulator (p2, c1, k60).
+1773528235: Client smarthome-simulator closed its connection.
+1773528295: New connection from 172.18.0.7:45461 on port 1883.
+1773528295: New client connected from 172.18.0.7:45461 as smarthome-simulator (p2, c1, k60).
+1773528295: Client smarthome-simulator closed its connection.
+1773528355: New connection from 172.18.0.7:54459 on port 1883.
+1773528355: New client connected from 172.18.0.7:54459 as smarthome-simulator (p2, c1, k60).
+1773528355: Client smarthome-simulator closed its connection.
+1773528385: Client smarthome-agent closed its connection.
+1773528388: New connection from 172.18.0.4:56065 on port 1883.
+1773528388: New client connected from 172.18.0.4:56065 as smarthome-agent (p2, c1, k60).
+1773528415: New connection from 172.18.0.7:41423 on port 1883.
+1773528415: New client connected from 172.18.0.7:41423 as smarthome-simulator (p2, c1, k60).
+1773528415: Client smarthome-simulator closed its connection.
+1773528432: Client smarthome-agent closed its connection.
+1773528435: New connection from 172.18.0.4:33723 on port 1883.
+1773528435: New client connected from 172.18.0.4:33723 as smarthome-agent (p2, c1, k60).
+1773528475: New connection from 172.18.0.7:58511 on port 1883.
+1773528475: New client connected from 172.18.0.7:58511 as smarthome-simulator (p2, c1, k60).
+1773528475: Client smarthome-simulator closed its connection.
+1773528536: New connection from 172.18.0.7:54053 on port 1883.
+1773528536: New client connected from 172.18.0.7:54053 as smarthome-simulator (p2, c1, k60).
+1773528536: Client smarthome-simulator closed its connection.
+1773528596: New connection from 172.18.0.7:33453 on port 1883.
+1773528596: New client connected from 172.18.0.7:33453 as smarthome-simulator (p2, c1, k60).
+1773528596: Client smarthome-simulator closed its connection.
+1773528656: New connection from 172.18.0.7:53191 on port 1883.
+1773528656: New client connected from 172.18.0.7:53191 as smarthome-simulator (p2, c1, k60).
+1773528656: Client smarthome-simulator closed its connection.
+1773528716: New connection from 172.18.0.7:43881 on port 1883.
+1773528716: New client connected from 172.18.0.7:43881 as smarthome-simulator (p2, c1, k60).
+1773528716: Client smarthome-simulator closed its connection.
+1773528776: New connection from 172.18.0.7:51413 on port 1883.
+1773528776: New client connected from 172.18.0.7:51413 as smarthome-simulator (p2, c1, k60).
+1773528776: Client smarthome-simulator closed its connection.
+1773528836: New connection from 172.18.0.7:40665 on port 1883.
+1773528836: New client connected from 172.18.0.7:40665 as smarthome-simulator (p2, c1, k60).
+1773528836: Client smarthome-simulator closed its connection.
+1773528874: Client smarthome-agent closed its connection.
+1773528878: New connection from 172.18.0.4:40153 on port 1883.
+1773528878: New client connected from 172.18.0.4:40153 as smarthome-agent (p2, c1, k60).
+1773528894: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773528896: New connection from 172.18.0.7:52925 on port 1883.
+1773528896: New client connected from 172.18.0.7:52925 as smarthome-simulator (p2, c1, k60).
+1773528896: Client smarthome-simulator closed its connection.
+1773528956: New connection from 172.18.0.7:55857 on port 1883.
+1773528956: New client connected from 172.18.0.7:55857 as smarthome-simulator (p2, c1, k60).
+1773528956: Client smarthome-simulator closed its connection.
+1773529016: New connection from 172.18.0.7:58743 on port 1883.
+1773529016: New client connected from 172.18.0.7:58743 as smarthome-simulator (p2, c1, k60).
+1773529016: Client smarthome-simulator closed its connection.
+1773529076: New connection from 172.18.0.7:43533 on port 1883.
+1773529076: New client connected from 172.18.0.7:43533 as smarthome-simulator (p2, c1, k60).
+1773529076: Client smarthome-simulator closed its connection.
+1773529136: New connection from 172.18.0.7:54247 on port 1883.
+1773529136: New client connected from 172.18.0.7:54247 as smarthome-simulator (p2, c1, k60).
+1773529136: Client smarthome-simulator closed its connection.
+1773529168: Client smarthome-agent closed its connection.
+1773529173: New connection from 172.18.0.4:55999 on port 1883.
+1773529173: New client connected from 172.18.0.4:55999 as smarthome-agent (p2, c1, k60).
+1773529197: New connection from 172.18.0.7:41193 on port 1883.
+1773529197: New client connected from 172.18.0.7:41193 as smarthome-simulator (p2, c1, k60).
+1773529197: Client smarthome-simulator closed its connection.
+1773529257: New connection from 172.18.0.7:49927 on port 1883.
+1773529257: New client connected from 172.18.0.7:49927 as smarthome-simulator (p2, c1, k60).
+1773529257: Client smarthome-simulator closed its connection.
+1773529317: New connection from 172.18.0.7:53533 on port 1883.
+1773529317: New client connected from 172.18.0.7:53533 as smarthome-simulator (p2, c1, k60).
+1773529317: Client smarthome-simulator closed its connection.
+1773529377: New connection from 172.18.0.7:46717 on port 1883.
+1773529377: New client connected from 172.18.0.7:46717 as smarthome-simulator (p2, c1, k60).
+1773529377: Client smarthome-simulator closed its connection.
+1773529437: New connection from 172.18.0.7:34543 on port 1883.
+1773529437: New client connected from 172.18.0.7:34543 as smarthome-simulator (p2, c1, k60).
+1773529437: Client smarthome-simulator closed its connection.
+1773529498: New connection from 172.18.0.7:34153 on port 1883.
+1773529498: New client connected from 172.18.0.7:34153 as smarthome-simulator (p2, c1, k60).
+1773529498: Client smarthome-simulator closed its connection.
+1773529558: New connection from 172.18.0.7:35149 on port 1883.
+1773529558: New client connected from 172.18.0.7:35149 as smarthome-simulator (p2, c1, k60).
+1773529558: Client smarthome-simulator closed its connection.
+1773529618: New connection from 172.18.0.7:47257 on port 1883.
+1773529618: New client connected from 172.18.0.7:47257 as smarthome-simulator (p2, c1, k60).
+1773529618: Client smarthome-simulator closed its connection.
+1773529679: New connection from 172.18.0.7:52161 on port 1883.
+1773529679: New client connected from 172.18.0.7:52161 as smarthome-simulator (p2, c1, k60).
+1773529679: Client smarthome-simulator closed its connection.
+1773529739: New connection from 172.18.0.7:35771 on port 1883.
+1773529739: New client connected from 172.18.0.7:35771 as smarthome-simulator (p2, c1, k60).
+1773529758: Client smarthome-simulator closed its connection.
+1773529759: New connection from 172.18.0.7:54003 on port 1883.
+1773529759: New client connected from 172.18.0.7:54003 as smarthome-simulator (p2, c1, k60).
+1773529825: Client smarthome-agent closed its connection.
+1773529830: New connection from 172.18.0.4:60545 on port 1883.
+1773529830: New client connected from 172.18.0.4:60545 as smarthome-agent (p2, c1, k60).
+1773530060: Client smarthome-agent closed its connection.
+1773530065: New connection from 172.18.0.4:49469 on port 1883.
+1773530065: New client connected from 172.18.0.4:49469 as smarthome-agent (p2, c1, k60).
+1773530200: Client smarthome-agent closed its connection.
+1773530205: New connection from 172.18.0.4:32787 on port 1883.
+1773530205: New client connected from 172.18.0.4:32787 as smarthome-agent (p2, c1, k60).
+1773530239: Client smarthome-agent closed its connection.
+1773530242: New connection from 172.18.0.4:38263 on port 1883.
+1773530242: New client connected from 172.18.0.4:38263 as smarthome-agent (p2, c1, k60).
+1773530451: Client smarthome-agent closed its connection.
+1773530459: New connection from 172.18.0.4:51725 on port 1883.
+1773530459: New client connected from 172.18.0.4:51725 as smarthome-agent (p2, c1, k60).
+1773530513: Client smarthome-agent closed its connection.
+1773530516: New connection from 172.18.0.4:36227 on port 1883.
+1773530516: New client connected from 172.18.0.4:36227 as smarthome-agent (p2, c1, k60).
+1773530664: Client smarthome-agent closed its connection.
+1773530668: New connection from 172.18.0.4:43143 on port 1883.
+1773530668: New client connected from 172.18.0.4:43143 as smarthome-agent (p2, c1, k60).
+1773530687: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773532125: Client smarthome-telegram-bot closed its connection.
+1773532135: Client smarthome-simulator closed its connection.
+1773532135: Client smarthome-agent closed its connection.
+1773532136: New connection from 172.18.0.4:41433 on port 1883.
+1773532136: New client connected from 172.18.0.4:41433 as smarthome-simulator (p2, c1, k60).
+1773532136: New connection from 172.18.0.7:55563 on port 1883.
+1773532136: New client connected from 172.18.0.7:55563 as smarthome-telegram-bot (p2, c1, k60).
+1773532140: New connection from 172.18.0.5:38927 on port 1883.
+1773532140: New client connected from 172.18.0.5:38927 as smarthome-agent (p2, c1, k60).
+1773532480: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773533429: Client smarthome-simulator closed its connection.
+1773533430: New connection from 172.18.0.4:33927 on port 1883.
+1773533430: New client connected from 172.18.0.4:33927 as smarthome-simulator (p2, c1, k60).
+1773533512: Client smarthome-simulator closed its connection.
+1773533512: New connection from 172.18.0.4:34027 on port 1883.
+1773533512: New client connected from 172.18.0.4:34027 as smarthome-simulator (p2, c1, k60).
+1773534272: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773534401: Client smarthome-agent closed its connection.
+1773534404: New connection from 172.18.0.5:35777 on port 1883.
+1773534404: New client connected from 172.18.0.5:35777 as smarthome-agent (p2, c1, k60).
+1773535356: Client smarthome-simulator closed its connection.
+1773535356: New connection from 172.18.0.4:34543 on port 1883.
+1773535356: New client connected from 172.18.0.4:34543 as smarthome-simulator (p2, c1, k60).

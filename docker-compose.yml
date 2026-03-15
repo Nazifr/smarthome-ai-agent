@@ -1,0 +1,117 @@
+version: '3.8'
+
+services:
+
+  # ─────────────────────────────────────────
+  # MQTT BROKER (Mosquitto)
+  # Tüm cihazlar ve agent buradan haberleşir
+  # ─────────────────────────────────────────
+  mosquitto:
+    image: eclipse-mosquitto:2.0
+    container_name: smarthome-mqtt
+    ports:
+      - "1883:1883"       # MQTT port
+      - "9001:9001"       # WebSocket port (dashboard için)
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+      - ./mosquitto/data:/mosquitto/data
+      - ./mosquitto/log:/mosquitto/log
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # NODE-RED (Flow Engine)
+  # Mesaj doğrulama, routing, dashboard
+  # ─────────────────────────────────────────
+  nodered:
+    image: nodered/node-red:latest
+    container_name: smarthome-nodered
+    ports:
+      - "1880:1880"       # Node-RED arayüzü: http://localhost:1880
+    volumes:
+      - ./nodered:/data
+    environment:
+      - TZ=Europe/Istanbul
+    depends_on:
+      - mosquitto
+      - influxdb
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # INFLUXDB (Zaman Serisi Veritabanı)
+  # Tüm sensör verileri ve action logları burada
+  # ─────────────────────────────────────────
+  influxdb:
+    image: influxdb:2.7
+    container_name: smarthome-influxdb
+    ports:
+      - "8086:8086"       # InfluxDB arayüzü: http://localhost:8086
+    volumes:
+      - ./influxdb:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=smarthome123
+      - DOCKER_INFLUXDB_INIT_ORG=smarthome
+      - DOCKER_INFLUXDB_INIT_BUCKET=sensor_data
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # AI AGENT (Python)
+  # Karar veren, öğrenen ana bileşen
+  # ─────────────────────────────────────────
+  agent:
+    build: ./agent
+    container_name: smarthome-agent
+    volumes:
+      - ./agent:/app
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - WEATHER_API_KEY=${WEATHER_API_KEY}
+      - MQTT_BROKER=mosquitto
+      - MQTT_PORT=1883
+      - INFLUX_URL=http://influxdb:8086
+      - INFLUX_TOKEN=smarthome-super-secret-token
+      - INFLUX_ORG=smarthome
+      - INFLUX_BUCKET=sensor_data
+      - TZ=Europe/Istanbul
+    depends_on:
+      - mosquitto
+      - influxdb
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # SENSOR SIMULATOR (Python)
+  # Gerçek dataset'ten sanki canlı geliyormuş gibi veri yayınlar
+  # ─────────────────────────────────────────
+  simulator:
+    build: ./simulator
+    container_name: smarthome-simulator
+    volumes:
+      - ./simulator:/app
+    environment:
+      - MQTT_BROKER=mosquitto
+      - MQTT_PORT=1883
+      - TZ=Europe/Istanbul
+      - PUBLISH_INTERVAL=30
+    depends_on:
+      - mosquitto
+    restart: unless-stopped
+
+  # ─────────────────────────────────────────
+  # TELEGRAM BOT (Python)
+  # Alert bildirimleri ve kullanıcı komutları
+  # ─────────────────────────────────────────
+  telegram_bot:
+    build: ./telegram_bot
+    container_name: smarthome-telegram
+    volumes:
+      - ./telegram_bot:/app
+    environment:
+      - MQTT_BROKER=mosquitto
+      - MQTT_PORT=1883
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
+      - TZ=Europe/Istanbul
+    depends_on:
+      - mosquitto
+    restart: unless-stopped

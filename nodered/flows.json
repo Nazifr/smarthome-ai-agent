@@ -1,0 +1,684 @@
+[
+    {
+        "id": "44162578c2bd78b4",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "mqtt-broker-config",
+        "type": "mqtt-broker",
+        "name": "SmartHome MQTT",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "nodered-dashboard",
+        "autoConnect": true,
+        "usetls": false,
+        "keepalive": "60",
+        "cleansession": true
+    },
+    {
+        "id": "ui-base",
+        "type": "ui-base",
+        "name": "SmartHome Dashboard",
+        "path": "/dashboard",
+        "includeClientData": true,
+        "acceptsClientConfig": []
+    },
+    {
+        "id": "ui-page-sensors",
+        "type": "ui-page",
+        "name": "Sensörler",
+        "ui": "ui-base",
+        "path": "/sensors",
+        "icon": "home",
+        "layout": "grid",
+        "theme": "ui-theme",
+        "order": 3
+    },
+    {
+        "id": "ui-page-agent",
+        "type": "ui-page",
+        "name": "Agent Kararları",
+        "ui": "ui-base",
+        "path": "/agent",
+        "icon": "robot",
+        "layout": "grid",
+        "theme": "ui-theme",
+        "order": 2
+    },
+    {
+        "id": "ui-page-alerts",
+        "type": "ui-page",
+        "name": "Uyarılar",
+        "ui": "ui-base",
+        "path": "/alerts",
+        "icon": "bell",
+        "layout": "grid",
+        "theme": "ui-theme",
+        "order": 1
+    },
+    {
+        "id": "ui-group-temp",
+        "type": "ui-group",
+        "name": "Sıcaklık & Nem",
+        "page": "ui-page-sensors",
+        "width": 6,
+        "height": 1,
+        "order": 2
+    },
+    {
+        "id": "ui-group-motion",
+        "type": "ui-group",
+        "name": "Hareket & Işık",
+        "page": "ui-page-sensors",
+        "width": 6,
+        "height": 1,
+        "order": 1
+    },
+    {
+        "id": "ui-group-agent",
+        "type": "ui-group",
+        "name": "Son Kararlar",
+        "page": "ui-page-agent",
+        "width": 12,
+        "height": 1,
+        "order": 1
+    },
+    {
+        "id": "ui-group-alerts",
+        "type": "ui-group",
+        "name": "Aktif Uyarılar",
+        "page": "ui-page-alerts",
+        "width": 12,
+        "height": 1,
+        "order": 1
+    },
+    {
+        "id": "mqtt-broker-1",
+        "type": "mqtt-broker",
+        "name": "SmartHome MQTT",
+        "broker": "mosquitto",
+        "port": "1883",
+        "clientid": "nodered-ui",
+        "autoConnect": true,
+        "usetls": false,
+        "keepalive": "60",
+        "cleansession": true
+    },
+    {
+        "id": "ui_tab_sensors",
+        "type": "ui_tab",
+        "name": "Sensörler",
+        "icon": "dashboard",
+        "order": 1
+    },
+    {
+        "id": "ui_tab_agent",
+        "type": "ui_tab",
+        "name": "Agent Kararları",
+        "icon": "timeline",
+        "order": 2
+    },
+    {
+        "id": "ui_tab_alerts",
+        "type": "ui_tab",
+        "name": "Uyarılar",
+        "icon": "notifications",
+        "order": 3
+    },
+    {
+        "id": "ui_group_temp",
+        "type": "ui_group",
+        "name": "Sıcaklık & Nem",
+        "tab": "ui_tab_sensors",
+        "order": 1,
+        "disp": true,
+        "width": "6"
+    },
+    {
+        "id": "ui_group_motion",
+        "type": "ui_group",
+        "name": "Hareket & Işık",
+        "tab": "ui_tab_sensors",
+        "order": 2,
+        "disp": true,
+        "width": "6"
+    },
+    {
+        "id": "ui_group_agent",
+        "type": "ui_group",
+        "name": "Son Kararlar",
+        "tab": "ui_tab_agent",
+        "order": 1,
+        "disp": true,
+        "width": "12"
+    },
+    {
+        "id": "ui_group_alerts",
+        "type": "ui_group",
+        "name": "Aktif Uyarılar",
+        "tab": "ui_tab_alerts",
+        "order": 1,
+        "disp": true,
+        "width": "12"
+    },
+    {
+        "id": "e0af422eb5c84c44",
+        "type": "ui_base",
+        "theme": {
+            "name": "theme-light",
+            "lightTheme": {
+                "default": "#0094CE",
+                "baseColor": "#0094CE",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "darkTheme": {
+                "default": "#097479",
+                "baseColor": "#097479",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif",
+                "edited": false
+            },
+            "customTheme": {
+                "name": "Untitled Theme 1",
+                "default": "#4B7930",
+                "baseColor": "#4B7930",
+                "baseFont": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+            },
+            "themeState": {
+                "base-color": {
+                    "default": "#0094CE",
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-titlebar-backgroundColor": {
+                    "value": "#0094CE",
+                    "edited": false
+                },
+                "page-backgroundColor": {
+                    "value": "#fafafa",
+                    "edited": false
+                },
+                "page-sidebar-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-textColor": {
+                    "value": "#1bbfff",
+                    "edited": false
+                },
+                "group-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "group-backgroundColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "widget-textColor": {
+                    "value": "#111111",
+                    "edited": false
+                },
+                "widget-backgroundColor": {
+                    "value": "#0094ce",
+                    "edited": false
+                },
+                "widget-borderColor": {
+                    "value": "#ffffff",
+                    "edited": false
+                },
+                "base-font": {
+                    "value": "-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,Oxygen-Sans,Ubuntu,Cantarell,Helvetica Neue,sans-serif"
+                }
+            },
+            "angularTheme": {
+                "primary": "indigo",
+                "accents": "blue",
+                "warn": "red",
+                "background": "grey",
+                "palette": "light"
+            }
+        },
+        "site": {
+            "name": "Node-RED Dashboard",
+            "hideToolbar": "false",
+            "allowSwipe": "false",
+            "lockMenu": "false",
+            "allowTempTheme": "true",
+            "dateFormat": "DD/MM/YYYY",
+            "sizes": {
+                "sx": 48,
+                "sy": 48,
+                "gx": 6,
+                "gy": 6,
+                "cx": 6,
+                "cy": 6,
+                "px": 0,
+                "py": 0
+            }
+        }
+    },
+    {
+        "id": "ui_group_agent_decision",
+        "type": "ui_group",
+        "name": "Son Karar",
+        "tab": "ui_tab_agent",
+        "order": 1,
+        "disp": true,
+        "width": "6"
+    },
+    {
+        "id": "ui_group_agent_meta",
+        "type": "ui_group",
+        "name": "Karar Detayları",
+        "tab": "ui_tab_agent",
+        "order": 2,
+        "disp": true,
+        "width": "6"
+    },
+    {
+        "id": "ui_group_agent_history",
+        "type": "ui_group",
+        "name": "Gerekçe",
+        "tab": "ui_tab_agent",
+        "order": 3,
+        "disp": true,
+        "width": "12"
+    },
+    {
+        "id": "7ef3d89aa36cb7ba",
+        "type": "mqtt in",
+        "z": "44162578c2bd78b4",
+        "name": "Sensör Verisi",
+        "topic": "home/+/sensor/all",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker-1",
+        "inputs": 0,
+        "x": 130,
+        "y": 120,
+        "wires": [
+            [
+                "82e0196178c6f3d2"
+            ]
+        ]
+    },
+    {
+        "id": "82e0196178c6f3d2",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Veriyi Ayrıştır",
+        "func": "var data = msg.payload;\nvar room = msg.topic.split('/')[1];\nmsg.temperature = data.temperature;\nmsg.humidity = data.humidity;\nmsg.motion = data.motion;\nmsg.light = data.light;\nmsg.room = room;\nreturn msg;",
+        "outputs": 1,
+        "x": 350,
+        "y": 120,
+        "wires": [
+            [
+                "8fcef70646a0f34a",
+                "47db518d27361861",
+                "6c7870bf20f61d2d",
+                "80454053900b1831"
+            ]
+        ]
+    },
+    {
+        "id": "8fcef70646a0f34a",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Sıcaklık",
+        "func": "msg.payload = msg.temperature;\nreturn msg;",
+        "outputs": 1,
+        "x": 550,
+        "y": 80,
+        "wires": [
+            [
+                "6517223afac442b4"
+            ]
+        ]
+    },
+    {
+        "id": "47db518d27361861",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Nem",
+        "func": "msg.payload = msg.humidity;\nreturn msg;",
+        "outputs": 1,
+        "x": 550,
+        "y": 140,
+        "wires": [
+            [
+                "5dfa3aadadbaee9c"
+            ]
+        ]
+    },
+    {
+        "id": "6c7870bf20f61d2d",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Hareket",
+        "func": "msg.payload = msg.motion === 1 ? 'VAR ✓' : 'YOK';\nreturn msg;",
+        "outputs": 1,
+        "x": 550,
+        "y": 200,
+        "wires": [
+            [
+                "213a7e2d4296afd1"
+            ]
+        ]
+    },
+    {
+        "id": "80454053900b1831",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Işık",
+        "func": "msg.payload = msg.light;\nreturn msg;",
+        "outputs": 1,
+        "x": 550,
+        "y": 260,
+        "wires": [
+            [
+                "cc4250eeddf58a00"
+            ]
+        ]
+    },
+    {
+        "id": "6517223afac442b4",
+        "type": "ui_gauge",
+        "z": "44162578c2bd78b4",
+        "name": "Sıcaklık",
+        "group": "ui_group_temp",
+        "order": 1,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Sıcaklık",
+        "label": "°C",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 50,
+        "colors": [
+            "#0000ff",
+            "#00ff00",
+            "#ff0000"
+        ],
+        "seg1": 18,
+        "seg2": 28,
+        "x": 750,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "5dfa3aadadbaee9c",
+        "type": "ui_gauge",
+        "z": "44162578c2bd78b4",
+        "name": "Nem",
+        "group": "ui_group_temp",
+        "order": 2,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Nem",
+        "label": "%",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 100,
+        "colors": [
+            "#ff9900",
+            "#00ff00",
+            "#0000ff"
+        ],
+        "seg1": 30,
+        "seg2": 60,
+        "x": 750,
+        "y": 140,
+        "wires": []
+    },
+    {
+        "id": "213a7e2d4296afd1",
+        "type": "ui_text",
+        "z": "44162578c2bd78b4",
+        "group": "ui_group_motion",
+        "order": 1,
+        "width": 3,
+        "height": 2,
+        "name": "Hareket",
+        "format": "{{msg.payload}}",
+        "x": 750,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "cc4250eeddf58a00",
+        "type": "ui_gauge",
+        "z": "44162578c2bd78b4",
+        "name": "Işık",
+        "group": "ui_group_motion",
+        "order": 2,
+        "width": 3,
+        "height": 3,
+        "gtype": "gage",
+        "title": "Işık",
+        "label": "lux",
+        "format": "{{value}}",
+        "min": 0,
+        "max": 1000,
+        "colors": [
+            "#333333",
+            "#ffcc00",
+            "#ffffff"
+        ],
+        "seg1": 50,
+        "seg2": 300,
+        "x": 750,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "0074574bfad9df1f",
+        "type": "mqtt in",
+        "z": "44162578c2bd78b4",
+        "name": "Agent Komutları",
+        "topic": "home/+/+/command",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker-1",
+        "inputs": 0,
+        "x": 130,
+        "y": 440,
+        "wires": [
+            [
+                "cf32e3ac061e8823"
+            ]
+        ]
+    },
+    {
+        "id": "cf32e3ac061e8823",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Kararı Ayrıştır",
+        "func": "var parts = msg.topic.split('/');\nvar room = parts[1];\nvar device = parts[2];\nvar data = msg.payload;\nvar time = new Date().toLocaleTimeString('tr-TR');\n\nmsg.room = room;\nmsg.device = device;\nmsg.command = data.command;\nmsg.reason = data.reason;\nmsg.method = data.method || 'heuristic';\nmsg.confidence = data.confidence || '—';\nmsg.context_label = data.context_label || '—';\nmsg.time = time;\n\nreturn [msg, msg, msg, msg];",
+        "outputs": 4,
+        "x": 370,
+        "y": 440,
+        "wires": [
+            [
+                "6ff66b30d8af4fb9"
+            ],
+            [
+                "9e42022075a6c5a5"
+            ],
+            [
+                "66a22080338cc35a"
+            ],
+            [
+                "a3e9cb2dca52f031"
+            ]
+        ]
+    },
+    {
+        "id": "6ff66b30d8af4fb9",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Karar",
+        "func": "msg.payload = msg.time + '\\n' + msg.room + ' → ' + msg.device + ': ' + msg.command;\nreturn msg;",
+        "outputs": 1,
+        "x": 590,
+        "y": 400,
+        "wires": [
+            [
+                "cbc8c38571476af6"
+            ]
+        ]
+    },
+    {
+        "id": "9e42022075a6c5a5",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Bağlam",
+        "func": "msg.payload = msg.context_label + '\\nYöntem: ' + msg.method;\nreturn msg;",
+        "outputs": 1,
+        "x": 590,
+        "y": 450,
+        "wires": [
+            [
+                "95866571b31e4a9d"
+            ]
+        ]
+    },
+    {
+        "id": "66a22080338cc35a",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Güven",
+        "func": "msg.payload = msg.confidence;\nreturn msg;",
+        "outputs": 1,
+        "x": 590,
+        "y": 500,
+        "wires": [
+            [
+                "ebb653cc8a41aa8b"
+            ]
+        ]
+    },
+    {
+        "id": "a3e9cb2dca52f031",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Gerekçe",
+        "func": "msg.payload = msg.time + ' | ' + msg.reason;\nreturn msg;",
+        "outputs": 1,
+        "x": 590,
+        "y": 550,
+        "wires": [
+            [
+                "b4e4b68ab2edeb41"
+            ]
+        ]
+    },
+    {
+        "id": "cbc8c38571476af6",
+        "type": "ui_text",
+        "z": "44162578c2bd78b4",
+        "group": "ui_group_agent_decision",
+        "order": 1,
+        "width": 6,
+        "height": 3,
+        "name": "Son Karar",
+        "format": "{{msg.payload}}",
+        "x": 790,
+        "y": 400,
+        "wires": []
+    },
+    {
+        "id": "95866571b31e4a9d",
+        "type": "ui_text",
+        "z": "44162578c2bd78b4",
+        "group": "ui_group_agent_meta",
+        "order": 1,
+        "width": 3,
+        "height": 3,
+        "name": "Bağlam",
+        "format": "{{msg.payload}}",
+        "x": 790,
+        "y": 450,
+        "wires": []
+    },
+    {
+        "id": "ebb653cc8a41aa8b",
+        "type": "ui_text",
+        "z": "44162578c2bd78b4",
+        "group": "ui_group_agent_meta",
+        "order": 2,
+        "width": 3,
+        "height": 3,
+        "name": "Güven Oranı",
+        "format": "{{msg.payload}}",
+        "x": 790,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "b4e4b68ab2edeb41",
+        "type": "ui_text",
+        "z": "44162578c2bd78b4",
+        "group": "ui_group_agent_history",
+        "order": 1,
+        "width": 12,
+        "height": 2,
+        "name": "Gerekçe",
+        "format": "{{msg.payload}}",
+        "x": 790,
+        "y": 550,
+        "wires": []
+    },
+    {
+        "id": "97e9ddcba07d7a66",
+        "type": "mqtt in",
+        "z": "44162578c2bd78b4",
+        "name": "Uyarılar",
+        "topic": "home/alerts",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker-1",
+        "inputs": 0,
+        "x": 130,
+        "y": 640,
+        "wires": [
+            [
+                "426a4901a34f8693"
+            ]
+        ]
+    },
+    {
+        "id": "426a4901a34f8693",
+        "type": "function",
+        "z": "44162578c2bd78b4",
+        "name": "Uyarıyı Formatla",
+        "func": "var data = msg.payload;\nvar time = new Date().toLocaleTimeString('tr-TR');\nmsg.payload = time + ' | ' + data.message;\nreturn msg;",
+        "outputs": 1,
+        "x": 350,
+        "y": 640,
+        "wires": [
+            [
+                "acddbddbdabbf65c"
+            ]
+        ]
+    },
+    {
+        "id": "acddbddbdabbf65c",
+        "type": "ui_text",
+        "z": "44162578c2bd78b4",
+        "group": "ui_group_alerts",
+        "order": 1,
+        "width": 12,
+        "height": 2,
+        "name": "Uyarı",
+        "format": "{{msg.payload}}",
+        "x": 550,
+        "y": 640,
+        "wires": []
+    }
+]
