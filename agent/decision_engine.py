@@ -38,6 +38,7 @@ class DecisionEngine:
             self.model   = joblib.load(MODEL_PATH)
             self.encoder = joblib.load(ENCODER_PATH)
             print("[DecisionEngine] ✓ Kayıtlı model yüklendi")
+            print(f"[DecisionEngine] Model tipi: {type(self.model)}")
         except FileNotFoundError:
             print("[DecisionEngine] Model bulunamadı, heuristic modda başlıyor")
 
