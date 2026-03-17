@@ -3,7 +3,6 @@ DecisionEngine — Hibrit Karar Motoru
 
 Basit/rutin kararlar → Random Forest (hızlı, deterministik)
 Karmaşık/çok faktörlü kararlar → Gemini LLM (esnek, açıklanabilir)
-Feedback öğrenme → Kullanıcı override'larından öğren
 """
 
 import os
@@ -21,17 +20,15 @@ except ImportError:
 GEMINI_API_KEY       = os.getenv("GEMINI_API_KEY", "")
 MODEL_PATH           = os.path.join(os.path.dirname(__file__), "models", "decision_model.pkl")
 ENCODER_PATH         = os.path.join(os.path.dirname(__file__), "models", "label_encoder.pkl")
-MAPPING_PATH         = os.path.join(os.path.dirname(__file__), "models", "label_mapping.json")
 MIN_SAMPLES_FOR_ML   = int(os.getenv("MIN_SAMPLES_FOR_ML", "0"))
 CONFIDENCE_THRESHOLD = 0.60
-RETRAIN_THRESHOLD    = int(os.getenv("RETRAIN_THRESHOLD", "20"))  # kaç feedback'te yeniden eğit
 
 
 class DecisionEngine:
     def __init__(self):
         self.model   = None
         self.encoder = None
-        self.samples = []       # feedback örnekleri
+        self.samples = []
         self.gemini  = None
         self._load_model()
         self._init_gemini()
@@ -125,13 +122,12 @@ class DecisionEngine:
         humidity      = context.get("humidity", 50)
         occupancy     = context.get("occupancy", "unknown")
         context_label = context.get("context_label", "genel")
-        weather       = context.get("weather_str", "bilinmiyor")
-        sentiment     = context.get("sentiment_str", "nötr")
-        day_type      = context.get("day_type", 0)
+        weather       = context.get("weather", "bilinmiyor")
+        sentiment     = context.get("sentiment", "nötr")
+        day_type      = context.get("day_type", "hafta içi")
         energy_mode   = context.get("energy_mode", "normal")
         room          = context.get("room", "living_room")
         conf_str      = f"{confidence:.0%}" if confidence else "belirsiz"
-        day_str       = "hafta sonu" if day_type == 1 else "hafta içi"
 
         return f"""Sen bir akıllı ev yönetim sistemisin. Aşağıdaki bağlam bilgilerine göre en uygun cihaz kararını ver.
 
@@ -144,7 +140,7 @@ MEVCUT DURUM:
 - Bağlam: {context_label}
 - Hava durumu: {weather}
 - Kullanıcı duygu durumu: {sentiment}
-- Gün tipi: {day_str}
+- Gün tipi: {day_type}
 - Enerji modu: {energy_mode}
 - ML model güveni: {conf_str}
 
@@ -165,12 +161,12 @@ Geçerli cihazlar: ac, lights, fan, heater
 Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
 
     def _is_complex(self, context: dict) -> bool:
-        if context.get("sentiment_str") in ["stresli", "yorgun"]:
+        if context.get("sentiment") in ["negatif", "stresli", "yorgun"]:
             return True
-        if context.get("weather_str") in ["yağmurlu", "fırtınalı", "karlı"]:
+        if context.get("weather") in ["yağmurlu", "fırtınalı", "karlı"]:
             return True
         hour = context.get("hour", 12)
-        if context.get("day_type") == 1 and 9 <= hour <= 12:
+        if context.get("day_type") == "hafta sonu" and 9 <= hour <= 12:
             return True
         return False
 
@@ -180,24 +176,29 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
         occupancy = context.get("occupancy", "unknown")
         actions   = []
         if occupancy == "bos_ev":
-            actions.append({"device": "ac",     "command": "OFF",      "reason": "Ev boş — klima kapatılıyor",   "confidence": None, "method": "heuristic"})
-            actions.append({"device": "lights",  "command": "OFF",      "reason": "Ev boş — ışıklar kapatılıyor", "confidence": None, "method": "heuristic"})
-            actions.append({"device": "fan",     "command": "OFF",      "reason": "Ev boş — fan kapatılıyor",     "confidence": None, "method": "heuristic"})
+            actions.append({"device": "ac",      "command": "OFF",      "reason": "Ev boş — klima kapatılıyor",   "confidence": None, "method": "heuristic"})
+            actions.append({"device": "lights",   "command": "OFF",      "reason": "Ev boş — ışıklar kapatılıyor", "confidence": None, "method": "heuristic"})
+            actions.append({"device": "fan",      "command": "OFF",      "reason": "Ev boş — fan kapatılıyor",     "confidence": None, "method": "heuristic"})
         elif temp > 28:
-            actions.append({"device": "ac",     "command": "COOL_HIGH", "reason": f"Sıcaklık yüksek ({temp}°C)", "confidence": None, "method": "heuristic"})
+            actions.append({"device": "ac",      "command": "COOL_HIGH", "reason": f"Sıcaklık yüksek ({temp}°C)", "confidence": None, "method": "heuristic"})
         elif temp > 24:
-            actions.append({"device": "ac",     "command": "COOL_LOW",  "reason": f"Sıcaklık biraz yüksek ({temp}°C)", "confidence": None, "method": "heuristic"})
+            actions.append({"device": "ac",      "command": "COOL_LOW",  "reason": f"Sıcaklık biraz yüksek ({temp}°C)", "confidence": None, "method": "heuristic"})
         elif temp < 16:
-            actions.append({"device": "heater", "command": "ON",        "reason": f"Sıcaklık düşük ({temp}°C)",  "confidence": None, "method": "heuristic"})
+            actions.append({"device": "heater",  "command": "ON",        "reason": f"Sıcaklık düşük ({temp}°C)",  "confidence": None, "method": "heuristic"})
         elif 23 <= hour or hour < 7:
-            actions.append({"device": "lights", "command": "OFF",       "reason": "Gece modu",                   "confidence": None, "method": "heuristic"})
+            actions.append({"device": "lights",  "command": "OFF",       "reason": "Gece modu",                   "confidence": None, "method": "heuristic"})
         else:
-            actions.append({"device": "lights", "command": "ON",        "reason": "Normal mod",                  "confidence": None, "method": "heuristic"})
+            actions.append({"device": "lights",  "command": "ON",        "reason": "Normal mod",                  "confidence": None, "method": "heuristic"})
         return actions
 
     def _label_to_actions(self, label: str, context: dict, confidence: float, method: str) -> list:
+        """
+        label_mapping.json'dan tüm cihaz komutlarını al ve liste olarak döndür.
+        Eskiden sadece ilk cihaz döndürülüyordu, artık tüm cihazlar döndürülüyor.
+        """
         try:
-            with open(MAPPING_PATH, "r", encoding="utf-8") as f:
+            mapping_path = os.path.join(os.path.dirname(__file__), "models", "label_mapping.json")
+            with open(mapping_path, "r", encoding="utf-8") as f:
                 label_mapping = json.load(f)
             commands = label_mapping.get(label, {"lights": "ON"})
         except Exception:
@@ -205,6 +206,7 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
 
         actions = []
         for device, command in commands.items():
+            # music komutu şimdilik MQTT'ye gönderilmiyor, sadece loglanıyor
             if device == "music":
                 print(f"[DecisionEngine] Müzik modu: {command} (Spotify entegrasyonu bekliyor)")
                 continue
@@ -216,71 +218,23 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
                 "method":     method,
                 "scenario":   label,
             })
+
         return actions
 
-    # ── Feedback Öğrenme ──────────────────────────────────────────────
-
-    def record_feedback(self, features: list, device: str, command: str):
-        """
-        Kullanıcı manuel override yaptığında çağrılır.
-        Cihaz + komut kombinasyonundan senaryo etiketi türetilir.
-        """
-        label = self._infer_label_from_feedback(device, command)
-        if label:
-            self.samples.append((features, label))
-            print(f"[DecisionEngine] Feedback kaydedildi: {device}→{command} = {label} ({len(self.samples)}/{RETRAIN_THRESHOLD})")
-
-            if len(self.samples) >= RETRAIN_THRESHOLD:
-                self._retrain()
-
-    def _infer_label_from_feedback(self, device: str, command: str) -> str:
-        """
-        Kullanıcının yaptığı override'dan senaryo etiketi çıkar.
-        Örneğin: lights=DIM → dinlenme_modu, lights=OFF → uyku_modu
-        """
-        mapping = {
-            ("lights", "OFF"):      "uyku_modu",
-            ("lights", "DIM"):      "dinlenme_modu",
-            ("lights", "ON"):       "sabah_rutini",
-            ("ac", "OFF"):          "ev_bos",
-            ("ac", "COOL_LOW"):     "dinlenme_modu",
-            ("ac", "COOL_HIGH"):    "misafir_modu",
-            ("fan", "ON"):          "dinlenme_modu",
-            ("fan", "OFF"):         "uyku_modu",
-            ("heater", "ON"):       "dinlenme_modu",
-        }
-        return mapping.get((device, command), None)
-
     def add_sample(self, features: list, label: str):
-        """Direkt etiketle örnek ekle."""
         self.samples.append((features, label))
-        if len(self.samples) >= RETRAIN_THRESHOLD:
+        if len(self.samples) >= 100:
             self._retrain()
 
     def _retrain(self):
         from sklearn.ensemble import RandomForestClassifier
         from sklearn.preprocessing import LabelEncoder
-
-        print(f"[DecisionEngine] {len(self.samples)} feedback örneğiyle yeniden eğitiliyor...")
-
-        # Mevcut model varsa onun verisiyle birleştir (weighted)
-        X_new = np.array([s[0] for s in self.samples])
-        y_labels = [s[1] for s in self.samples]
-
-        le_new = LabelEncoder()
-        y_new  = le_new.fit_transform(y_labels)
-
-        new_model = RandomForestClassifier(n_estimators=50, random_state=42)
-        new_model.fit(X_new, y_new)
-
-        self.model   = new_model
-        self.encoder = le_new
+        print(f"[DecisionEngine] {len(self.samples)} örnekle yeniden eğitiliyor...")
+        X      = np.array([s[0] for s in self.samples])
+        labels = [s[1] for s in self.samples]
+        self.encoder = LabelEncoder()
+        y = self.encoder.fit_transform(labels)
+        self.model = RandomForestClassifier(n_estimators=50, random_state=42)
+        self.model.fit(X, y)
         self.samples = []
-
-        # Güncellenmiş modeli kaydet
-        try:
-            joblib.dump(self.model,   MODEL_PATH)
-            joblib.dump(self.encoder, ENCODER_PATH)
-            print("[DecisionEngine] ✓ Model güncellendi ve kaydedildi")
-        except Exception as e:
-            print(f"[DecisionEngine] Model kaydetme hatası: {e}")
+        print("[DecisionEngine] ✓ Model güncellendi")
