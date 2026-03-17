@@ -10,6 +10,11 @@ import os
 import json
 import joblib
 import numpy as np
+try:
+    from spotify_controller import SpotifyController
+    _spotify = SpotifyController()
+except Exception:
+    _spotify = None
 
 try:
     from google import genai
@@ -206,7 +211,10 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
         actions = []
         for device, command in commands.items():
             if device == "music":
-                print(f"[DecisionEngine] Müzik modu: {command} (Spotify entegrasyonu bekliyor)")
+                if _spotify:
+                    _spotify.play(command)
+                else:
+                     print(f"[DecisionEngine] Müzik modu: {command} (Spotify devre dışı)")
                 continue
             actions.append({
                 "device":     device,

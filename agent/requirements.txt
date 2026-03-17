@@ -5,3 +5,4 @@ numpy==1.26.4
 influxdb-client==1.40.0
 joblib==1.3.2
 google-genai
+spotipy
