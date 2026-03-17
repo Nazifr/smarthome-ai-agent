@@ -1198,3 +1198,641 @@
 1773538851: Client smarthome-agent closed its connection.
 1773538851: mosquitto version 2.0.22 terminating
 1773538851: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773538870: mosquitto version 2.0.22 starting
+1773538870: Config loaded from /mosquitto/config/mosquitto.conf.
+1773538870: Opening ipv4 listen socket on port 1883.
+1773538870: Opening ipv6 listen socket on port 1883.
+1773538870: mosquitto version 2.0.22 running
+1773538871: New connection from 172.18.0.5:41263 on port 1883.
+1773538871: New client connected from 172.18.0.5:41263 as smarthome-simulator (p2, c1, k60).
+1773538871: New connection from 172.18.0.7:43861 on port 1883.
+1773538871: New client connected from 172.18.0.7:43861 as smarthome-telegram-bot (p2, c1, k60).
+1773538875: New connection from 172.18.0.4:43157 on port 1883.
+1773538875: New client connected from 172.18.0.4:43157 as smarthome-agent (p2, c1, k60).
+1773538879: New connection from 172.18.0.6:55392 on port 1883.
+1773538879: New client connected from 172.18.0.6:55392 as nodered-ui (p2, c1, k60).
+1773538974: New connection from 172.18.0.5:41677 on port 1883.
+1773538974: Client smarthome-simulator already connected, closing old connection.
+1773538974: New client connected from 172.18.0.5:41677 as smarthome-simulator (p2, c1, k60).
+1773538975: New connection from 172.18.0.5:35121 on port 1883.
+1773538975: Client smarthome-simulator already connected, closing old connection.
+1773538975: New client connected from 172.18.0.5:35121 as smarthome-simulator (p2, c1, k60).
+1773538976: New connection from 172.18.0.5:57719 on port 1883.
+1773538976: Client smarthome-simulator already connected, closing old connection.
+1773538976: New client connected from 172.18.0.5:57719 as smarthome-simulator (p2, c1, k60).
+1773538977: New connection from 172.18.0.5:57185 on port 1883.
+1773538977: Client smarthome-simulator already connected, closing old connection.
+1773538977: New client connected from 172.18.0.5:57185 as smarthome-simulator (p2, c1, k60).
+1773538978: New connection from 172.18.0.5:42311 on port 1883.
+1773538978: Client smarthome-simulator already connected, closing old connection.
+1773538978: New client connected from 172.18.0.5:42311 as smarthome-simulator (p2, c1, k60).
+1773538979: New connection from 172.18.0.5:46777 on port 1883.
+1773538979: Client smarthome-simulator already connected, closing old connection.
+1773538979: New client connected from 172.18.0.5:46777 as smarthome-simulator (p2, c1, k60).
+1773538980: New connection from 172.18.0.5:33045 on port 1883.
+1773538980: Client smarthome-simulator already connected, closing old connection.
+1773538980: New client connected from 172.18.0.5:33045 as smarthome-simulator (p2, c1, k60).
+1773538981: New connection from 172.18.0.5:58603 on port 1883.
+1773538981: Client smarthome-simulator already connected, closing old connection.
+1773538981: New client connected from 172.18.0.5:58603 as smarthome-simulator (p2, c1, k60).
+1773538982: New connection from 172.18.0.5:53013 on port 1883.
+1773538982: Client smarthome-simulator already connected, closing old connection.
+1773538982: New client connected from 172.18.0.5:53013 as smarthome-simulator (p2, c1, k60).
+1773538983: New connection from 172.18.0.5:34933 on port 1883.
+1773538983: Client smarthome-simulator already connected, closing old connection.
+1773538983: New client connected from 172.18.0.5:34933 as smarthome-simulator (p2, c1, k60).
+1773538984: New connection from 172.18.0.5:47189 on port 1883.
+1773538984: Client smarthome-simulator already connected, closing old connection.
+1773538984: New client connected from 172.18.0.5:47189 as smarthome-simulator (p2, c1, k60).
+1773538985: New connection from 172.18.0.5:46155 on port 1883.
+1773538985: Client smarthome-simulator already connected, closing old connection.
+1773538985: New client connected from 172.18.0.5:46155 as smarthome-simulator (p2, c1, k60).
+1773538986: New connection from 172.18.0.5:34967 on port 1883.
+1773538986: Client smarthome-simulator already connected, closing old connection.
+1773538986: New client connected from 172.18.0.5:34967 as smarthome-simulator (p2, c1, k60).
+1773538987: New connection from 172.18.0.5:57465 on port 1883.
+1773538987: Client smarthome-simulator already connected, closing old connection.
+1773538987: New client connected from 172.18.0.5:57465 as smarthome-simulator (p2, c1, k60).
+1773538988: New connection from 172.18.0.5:45099 on port 1883.
+1773538988: Client smarthome-simulator already connected, closing old connection.
+1773538988: New client connected from 172.18.0.5:45099 as smarthome-simulator (p2, c1, k60).
+1773538989: New connection from 172.18.0.5:49639 on port 1883.
+1773538989: Client smarthome-simulator already connected, closing old connection.
+1773538989: New client connected from 172.18.0.5:49639 as smarthome-simulator (p2, c1, k60).
+1773538990: New connection from 172.18.0.5:40455 on port 1883.
+1773538990: Client smarthome-simulator already connected, closing old connection.
+1773538990: New client connected from 172.18.0.5:40455 as smarthome-simulator (p2, c1, k60).
+1773538991: New connection from 172.18.0.5:50761 on port 1883.
+1773538991: Client smarthome-simulator already connected, closing old connection.
+1773538991: New client connected from 172.18.0.5:50761 as smarthome-simulator (p2, c1, k60).
+1773538992: New connection from 172.18.0.5:56439 on port 1883.
+1773538992: Client smarthome-simulator already connected, closing old connection.
+1773538992: New client connected from 172.18.0.5:56439 as smarthome-simulator (p2, c1, k60).
+1773538993: New connection from 172.18.0.5:46379 on port 1883.
+1773538993: Client smarthome-simulator already connected, closing old connection.
+1773538993: New client connected from 172.18.0.5:46379 as smarthome-simulator (p2, c1, k60).
+1773538994: New connection from 172.18.0.5:56109 on port 1883.
+1773538994: Client smarthome-simulator already connected, closing old connection.
+1773538994: New client connected from 172.18.0.5:56109 as smarthome-simulator (p2, c1, k60).
+1773538995: New connection from 172.18.0.5:53369 on port 1883.
+1773538995: Client smarthome-simulator already connected, closing old connection.
+1773538995: New client connected from 172.18.0.5:53369 as smarthome-simulator (p2, c1, k60).
+1773538996: New connection from 172.18.0.5:55209 on port 1883.
+1773538996: Client smarthome-simulator already connected, closing old connection.
+1773538996: New client connected from 172.18.0.5:55209 as smarthome-simulator (p2, c1, k60).
+1773538997: New connection from 172.18.0.5:39779 on port 1883.
+1773538997: Client smarthome-simulator already connected, closing old connection.
+1773538997: New client connected from 172.18.0.5:39779 as smarthome-simulator (p2, c1, k60).
+1773538998: New connection from 172.18.0.5:54505 on port 1883.
+1773538998: Client smarthome-simulator already connected, closing old connection.
+1773538998: New client connected from 172.18.0.5:54505 as smarthome-simulator (p2, c1, k60).
+1773538999: New connection from 172.18.0.5:56209 on port 1883.
+1773538999: Client smarthome-simulator already connected, closing old connection.
+1773538999: New client connected from 172.18.0.5:56209 as smarthome-simulator (p2, c1, k60).
+1773539000: New connection from 172.18.0.5:43977 on port 1883.
+1773539000: Client smarthome-simulator already connected, closing old connection.
+1773539000: New client connected from 172.18.0.5:43977 as smarthome-simulator (p2, c1, k60).
+1773539001: New connection from 172.18.0.5:39043 on port 1883.
+1773539001: Client smarthome-simulator already connected, closing old connection.
+1773539001: New client connected from 172.18.0.5:39043 as smarthome-simulator (p2, c1, k60).
+1773539002: New connection from 172.18.0.5:38277 on port 1883.
+1773539002: Client smarthome-simulator already connected, closing old connection.
+1773539002: New client connected from 172.18.0.5:38277 as smarthome-simulator (p2, c1, k60).
+1773539003: New connection from 172.18.0.5:40619 on port 1883.
+1773539003: Client smarthome-simulator already connected, closing old connection.
+1773539003: New client connected from 172.18.0.5:40619 as smarthome-simulator (p2, c1, k60).
+1773539004: New connection from 172.18.0.5:47709 on port 1883.
+1773539004: Client smarthome-simulator already connected, closing old connection.
+1773539004: New client connected from 172.18.0.5:47709 as smarthome-simulator (p2, c1, k60).
+1773539005: New connection from 172.18.0.5:37053 on port 1883.
+1773539005: Client smarthome-simulator already connected, closing old connection.
+1773539005: New client connected from 172.18.0.5:37053 as smarthome-simulator (p2, c1, k60).
+1773539006: New connection from 172.18.0.5:50131 on port 1883.
+1773539006: Client smarthome-simulator already connected, closing old connection.
+1773539006: New client connected from 172.18.0.5:50131 as smarthome-simulator (p2, c1, k60).
+1773539007: New connection from 172.18.0.5:50867 on port 1883.
+1773539007: Client smarthome-simulator already connected, closing old connection.
+1773539007: New client connected from 172.18.0.5:50867 as smarthome-simulator (p2, c1, k60).
+1773539008: New connection from 172.18.0.5:60607 on port 1883.
+1773539008: Client smarthome-simulator already connected, closing old connection.
+1773539008: New client connected from 172.18.0.5:60607 as smarthome-simulator (p2, c1, k60).
+1773539009: New connection from 172.18.0.5:52265 on port 1883.
+1773539009: Client smarthome-simulator already connected, closing old connection.
+1773539009: New client connected from 172.18.0.5:52265 as smarthome-simulator (p2, c1, k60).
+1773539010: New connection from 172.18.0.5:34397 on port 1883.
+1773539010: Client smarthome-simulator already connected, closing old connection.
+1773539010: New client connected from 172.18.0.5:34397 as smarthome-simulator (p2, c1, k60).
+1773539011: New connection from 172.18.0.5:53403 on port 1883.
+1773539011: Client smarthome-simulator already connected, closing old connection.
+1773539011: New client connected from 172.18.0.5:53403 as smarthome-simulator (p2, c1, k60).
+1773539012: New connection from 172.18.0.5:57641 on port 1883.
+1773539012: Client smarthome-simulator already connected, closing old connection.
+1773539012: New client connected from 172.18.0.5:57641 as smarthome-simulator (p2, c1, k60).
+1773539013: New connection from 172.18.0.5:47837 on port 1883.
+1773539013: Client smarthome-simulator already connected, closing old connection.
+1773539013: New client connected from 172.18.0.5:47837 as smarthome-simulator (p2, c1, k60).
+1773539014: New connection from 172.18.0.5:36637 on port 1883.
+1773539014: Client smarthome-simulator already connected, closing old connection.
+1773539014: New client connected from 172.18.0.5:36637 as smarthome-simulator (p2, c1, k60).
+1773539015: New connection from 172.18.0.5:49457 on port 1883.
+1773539015: Client smarthome-simulator already connected, closing old connection.
+1773539015: New client connected from 172.18.0.5:49457 as smarthome-simulator (p2, c1, k60).
+1773539016: New connection from 172.18.0.5:57185 on port 1883.
+1773539016: Client smarthome-simulator already connected, closing old connection.
+1773539016: New client connected from 172.18.0.5:57185 as smarthome-simulator (p2, c1, k60).
+1773539017: New connection from 172.18.0.5:52729 on port 1883.
+1773539017: Client smarthome-simulator already connected, closing old connection.
+1773539017: New client connected from 172.18.0.5:52729 as smarthome-simulator (p2, c1, k60).
+1773539018: New connection from 172.18.0.5:38033 on port 1883.
+1773539018: Client smarthome-simulator already connected, closing old connection.
+1773539018: New client connected from 172.18.0.5:38033 as smarthome-simulator (p2, c1, k60).
+1773539019: New connection from 172.18.0.5:41959 on port 1883.
+1773539019: Client smarthome-simulator already connected, closing old connection.
+1773539019: New client connected from 172.18.0.5:41959 as smarthome-simulator (p2, c1, k60).
+1773539020: New connection from 172.18.0.5:44633 on port 1883.
+1773539020: Client smarthome-simulator already connected, closing old connection.
+1773539020: New client connected from 172.18.0.5:44633 as smarthome-simulator (p2, c1, k60).
+1773539021: New connection from 172.18.0.5:40591 on port 1883.
+1773539021: Client smarthome-simulator already connected, closing old connection.
+1773539021: New client connected from 172.18.0.5:40591 as smarthome-simulator (p2, c1, k60).
+1773539022: New connection from 172.18.0.5:35869 on port 1883.
+1773539022: Client smarthome-simulator already connected, closing old connection.
+1773539022: New client connected from 172.18.0.5:35869 as smarthome-simulator (p2, c1, k60).
+1773539023: New connection from 172.18.0.5:60757 on port 1883.
+1773539023: Client smarthome-simulator already connected, closing old connection.
+1773539023: New client connected from 172.18.0.5:60757 as smarthome-simulator (p2, c1, k60).
+1773539024: New connection from 172.18.0.5:51889 on port 1883.
+1773539024: Client smarthome-simulator already connected, closing old connection.
+1773539024: New client connected from 172.18.0.5:51889 as smarthome-simulator (p2, c1, k60).
+1773539025: New connection from 172.18.0.5:51943 on port 1883.
+1773539025: Client smarthome-simulator already connected, closing old connection.
+1773539025: New client connected from 172.18.0.5:51943 as smarthome-simulator (p2, c1, k60).
+1773539026: New connection from 172.18.0.5:53813 on port 1883.
+1773539026: Client smarthome-simulator already connected, closing old connection.
+1773539026: New client connected from 172.18.0.5:53813 as smarthome-simulator (p2, c1, k60).
+1773539027: New connection from 172.18.0.5:44267 on port 1883.
+1773539027: Client smarthome-simulator already connected, closing old connection.
+1773539027: New client connected from 172.18.0.5:44267 as smarthome-simulator (p2, c1, k60).
+1773539028: New connection from 172.18.0.5:50481 on port 1883.
+1773539028: Client smarthome-simulator already connected, closing old connection.
+1773539028: New client connected from 172.18.0.5:50481 as smarthome-simulator (p2, c1, k60).
+1773539029: New connection from 172.18.0.5:35145 on port 1883.
+1773539029: Client smarthome-simulator already connected, closing old connection.
+1773539029: New client connected from 172.18.0.5:35145 as smarthome-simulator (p2, c1, k60).
+1773539030: New connection from 172.18.0.5:60055 on port 1883.
+1773539030: Client smarthome-simulator already connected, closing old connection.
+1773539030: New client connected from 172.18.0.5:60055 as smarthome-simulator (p2, c1, k60).
+1773539031: New connection from 172.18.0.5:46435 on port 1883.
+1773539031: Client smarthome-simulator already connected, closing old connection.
+1773539031: New client connected from 172.18.0.5:46435 as smarthome-simulator (p2, c1, k60).
+1773539032: New connection from 172.18.0.5:36515 on port 1883.
+1773539032: Client smarthome-simulator already connected, closing old connection.
+1773539032: New client connected from 172.18.0.5:36515 as smarthome-simulator (p2, c1, k60).
+1773539033: New connection from 172.18.0.5:52805 on port 1883.
+1773539033: Client smarthome-simulator already connected, closing old connection.
+1773539033: New client connected from 172.18.0.5:52805 as smarthome-simulator (p2, c1, k60).
+1773539034: New connection from 172.18.0.5:48913 on port 1883.
+1773539034: Client smarthome-simulator already connected, closing old connection.
+1773539034: New client connected from 172.18.0.5:48913 as smarthome-simulator (p2, c1, k60).
+1773539035: New connection from 172.18.0.5:44129 on port 1883.
+1773539035: Client smarthome-simulator already connected, closing old connection.
+1773539035: New client connected from 172.18.0.5:44129 as smarthome-simulator (p2, c1, k60).
+1773539036: New connection from 172.18.0.5:36013 on port 1883.
+1773539036: Client smarthome-simulator already connected, closing old connection.
+1773539036: New client connected from 172.18.0.5:36013 as smarthome-simulator (p2, c1, k60).
+1773539037: New connection from 172.18.0.5:55717 on port 1883.
+1773539037: Client smarthome-simulator already connected, closing old connection.
+1773539037: New client connected from 172.18.0.5:55717 as smarthome-simulator (p2, c1, k60).
+1773539038: New connection from 172.18.0.5:39337 on port 1883.
+1773539038: Client smarthome-simulator already connected, closing old connection.
+1773539038: New client connected from 172.18.0.5:39337 as smarthome-simulator (p2, c1, k60).
+1773539039: New connection from 172.18.0.5:47017 on port 1883.
+1773539039: Client smarthome-simulator already connected, closing old connection.
+1773539039: New client connected from 172.18.0.5:47017 as smarthome-simulator (p2, c1, k60).
+1773539040: New connection from 172.18.0.5:39139 on port 1883.
+1773539040: Client smarthome-simulator already connected, closing old connection.
+1773539040: New client connected from 172.18.0.5:39139 as smarthome-simulator (p2, c1, k60).
+1773539041: New connection from 172.18.0.5:43873 on port 1883.
+1773539041: Client smarthome-simulator already connected, closing old connection.
+1773539041: New client connected from 172.18.0.5:43873 as smarthome-simulator (p2, c1, k60).
+1773539042: New connection from 172.18.0.5:52611 on port 1883.
+1773539042: Client smarthome-simulator already connected, closing old connection.
+1773539042: New client connected from 172.18.0.5:52611 as smarthome-simulator (p2, c1, k60).
+1773539043: New connection from 172.18.0.5:57269 on port 1883.
+1773539043: Client smarthome-simulator already connected, closing old connection.
+1773539043: New client connected from 172.18.0.5:57269 as smarthome-simulator (p2, c1, k60).
+1773539044: New connection from 172.18.0.5:44645 on port 1883.
+1773539044: Client smarthome-simulator already connected, closing old connection.
+1773539044: New client connected from 172.18.0.5:44645 as smarthome-simulator (p2, c1, k60).
+1773539045: New connection from 172.18.0.5:35095 on port 1883.
+1773539045: Client smarthome-simulator already connected, closing old connection.
+1773539045: New client connected from 172.18.0.5:35095 as smarthome-simulator (p2, c1, k60).
+1773539046: New connection from 172.18.0.5:58681 on port 1883.
+1773539046: Client smarthome-simulator already connected, closing old connection.
+1773539046: New client connected from 172.18.0.5:58681 as smarthome-simulator (p2, c1, k60).
+1773539047: New connection from 172.18.0.5:46689 on port 1883.
+1773539047: Client smarthome-simulator already connected, closing old connection.
+1773539047: New client connected from 172.18.0.5:46689 as smarthome-simulator (p2, c1, k60).
+1773539048: New connection from 172.18.0.5:52037 on port 1883.
+1773539048: Client smarthome-simulator already connected, closing old connection.
+1773539048: New client connected from 172.18.0.5:52037 as smarthome-simulator (p2, c1, k60).
+1773539049: New connection from 172.18.0.5:57083 on port 1883.
+1773539049: Client smarthome-simulator already connected, closing old connection.
+1773539049: New client connected from 172.18.0.5:57083 as smarthome-simulator (p2, c1, k60).
+1773539050: New connection from 172.18.0.5:60011 on port 1883.
+1773539050: Client smarthome-simulator already connected, closing old connection.
+1773539050: New client connected from 172.18.0.5:60011 as smarthome-simulator (p2, c1, k60).
+1773539051: New connection from 172.18.0.5:58721 on port 1883.
+1773539051: Client smarthome-simulator already connected, closing old connection.
+1773539051: New client connected from 172.18.0.5:58721 as smarthome-simulator (p2, c1, k60).
+1773539052: New connection from 172.18.0.5:49701 on port 1883.
+1773539052: Client smarthome-simulator already connected, closing old connection.
+1773539052: New client connected from 172.18.0.5:49701 as smarthome-simulator (p2, c1, k60).
+1773539053: New connection from 172.18.0.5:54943 on port 1883.
+1773539053: Client smarthome-simulator already connected, closing old connection.
+1773539053: New client connected from 172.18.0.5:54943 as smarthome-simulator (p2, c1, k60).
+1773539054: New connection from 172.18.0.5:60283 on port 1883.
+1773539054: Client smarthome-simulator already connected, closing old connection.
+1773539054: New client connected from 172.18.0.5:60283 as smarthome-simulator (p2, c1, k60).
+1773539055: New connection from 172.18.0.5:38021 on port 1883.
+1773539055: Client smarthome-simulator already connected, closing old connection.
+1773539055: New client connected from 172.18.0.5:38021 as smarthome-simulator (p2, c1, k60).
+1773539056: New connection from 172.18.0.5:36709 on port 1883.
+1773539056: Client smarthome-simulator already connected, closing old connection.
+1773539056: New client connected from 172.18.0.5:36709 as smarthome-simulator (p2, c1, k60).
+1773539057: New connection from 172.18.0.5:58367 on port 1883.
+1773539057: Client smarthome-simulator already connected, closing old connection.
+1773539057: New client connected from 172.18.0.5:58367 as smarthome-simulator (p2, c1, k60).
+1773539058: New connection from 172.18.0.5:51553 on port 1883.
+1773539058: Client smarthome-simulator already connected, closing old connection.
+1773539058: New client connected from 172.18.0.5:51553 as smarthome-simulator (p2, c1, k60).
+1773539059: New connection from 172.18.0.5:55579 on port 1883.
+1773539059: Client smarthome-simulator already connected, closing old connection.
+1773539059: New client connected from 172.18.0.5:55579 as smarthome-simulator (p2, c1, k60).
+1773539060: New connection from 172.18.0.5:43019 on port 1883.
+1773539060: Client smarthome-simulator already connected, closing old connection.
+1773539060: New client connected from 172.18.0.5:43019 as smarthome-simulator (p2, c1, k60).
+1773539061: New connection from 172.18.0.5:53987 on port 1883.
+1773539061: Client smarthome-simulator already connected, closing old connection.
+1773539061: New client connected from 172.18.0.5:53987 as smarthome-simulator (p2, c1, k60).
+1773539062: New connection from 172.18.0.5:49175 on port 1883.
+1773539062: Client smarthome-simulator already connected, closing old connection.
+1773539062: New client connected from 172.18.0.5:49175 as smarthome-simulator (p2, c1, k60).
+1773539063: New connection from 172.18.0.5:36033 on port 1883.
+1773539063: Client smarthome-simulator already connected, closing old connection.
+1773539063: New client connected from 172.18.0.5:36033 as smarthome-simulator (p2, c1, k60).
+1773539064: New connection from 172.18.0.5:60315 on port 1883.
+1773539064: Client smarthome-simulator already connected, closing old connection.
+1773539064: New client connected from 172.18.0.5:60315 as smarthome-simulator (p2, c1, k60).
+1773539065: New connection from 172.18.0.5:52057 on port 1883.
+1773539065: Client smarthome-simulator already connected, closing old connection.
+1773539065: New client connected from 172.18.0.5:52057 as smarthome-simulator (p2, c1, k60).
+1773539066: New connection from 172.18.0.5:52535 on port 1883.
+1773539066: Client smarthome-simulator already connected, closing old connection.
+1773539066: New client connected from 172.18.0.5:52535 as smarthome-simulator (p2, c1, k60).
+1773539067: New connection from 172.18.0.5:42197 on port 1883.
+1773539067: Client smarthome-simulator already connected, closing old connection.
+1773539067: New client connected from 172.18.0.5:42197 as smarthome-simulator (p2, c1, k60).
+1773539068: New connection from 172.18.0.5:34007 on port 1883.
+1773539068: Client smarthome-simulator already connected, closing old connection.
+1773539068: New client connected from 172.18.0.5:34007 as smarthome-simulator (p2, c1, k60).
+1773539069: New connection from 172.18.0.5:39547 on port 1883.
+1773539069: Client smarthome-simulator already connected, closing old connection.
+1773539069: New client connected from 172.18.0.5:39547 as smarthome-simulator (p2, c1, k60).
+1773539070: New connection from 172.18.0.5:46243 on port 1883.
+1773539070: Client smarthome-simulator already connected, closing old connection.
+1773539070: New client connected from 172.18.0.5:46243 as smarthome-simulator (p2, c1, k60).
+1773539071: New connection from 172.18.0.5:56409 on port 1883.
+1773539071: Client smarthome-simulator already connected, closing old connection.
+1773539071: New client connected from 172.18.0.5:56409 as smarthome-simulator (p2, c1, k60).
+1773539072: New connection from 172.18.0.5:42583 on port 1883.
+1773539072: Client smarthome-simulator already connected, closing old connection.
+1773539072: New client connected from 172.18.0.5:42583 as smarthome-simulator (p2, c1, k60).
+1773539073: New connection from 172.18.0.5:57865 on port 1883.
+1773539073: Client smarthome-simulator already connected, closing old connection.
+1773539073: New client connected from 172.18.0.5:57865 as smarthome-simulator (p2, c1, k60).
+1773539074: New connection from 172.18.0.5:46695 on port 1883.
+1773539074: Client smarthome-simulator already connected, closing old connection.
+1773539074: New client connected from 172.18.0.5:46695 as smarthome-simulator (p2, c1, k60).
+1773539075: New connection from 172.18.0.5:33363 on port 1883.
+1773539075: Client smarthome-simulator already connected, closing old connection.
+1773539075: New client connected from 172.18.0.5:33363 as smarthome-simulator (p2, c1, k60).
+1773539076: New connection from 172.18.0.5:38453 on port 1883.
+1773539076: Client smarthome-simulator already connected, closing old connection.
+1773539076: New client connected from 172.18.0.5:38453 as smarthome-simulator (p2, c1, k60).
+1773539077: New connection from 172.18.0.5:41695 on port 1883.
+1773539077: Client smarthome-simulator already connected, closing old connection.
+1773539077: New client connected from 172.18.0.5:41695 as smarthome-simulator (p2, c1, k60).
+1773539078: New connection from 172.18.0.5:56103 on port 1883.
+1773539078: Client smarthome-simulator already connected, closing old connection.
+1773539078: New client connected from 172.18.0.5:56103 as smarthome-simulator (p2, c1, k60).
+1773539079: New connection from 172.18.0.5:49503 on port 1883.
+1773539079: Client smarthome-simulator already connected, closing old connection.
+1773539079: New client connected from 172.18.0.5:49503 as smarthome-simulator (p2, c1, k60).
+1773539080: New connection from 172.18.0.5:43495 on port 1883.
+1773539080: Client smarthome-simulator already connected, closing old connection.
+1773539080: New client connected from 172.18.0.5:43495 as smarthome-simulator (p2, c1, k60).
+1773539081: New connection from 172.18.0.5:59543 on port 1883.
+1773539081: Client smarthome-simulator already connected, closing old connection.
+1773539081: New client connected from 172.18.0.5:59543 as smarthome-simulator (p2, c1, k60).
+1773539082: New connection from 172.18.0.5:52249 on port 1883.
+1773539082: Client smarthome-simulator already connected, closing old connection.
+1773539082: New client connected from 172.18.0.5:52249 as smarthome-simulator (p2, c1, k60).
+1773539083: New connection from 172.18.0.5:52411 on port 1883.
+1773539083: Client smarthome-simulator already connected, closing old connection.
+1773539083: New client connected from 172.18.0.5:52411 as smarthome-simulator (p2, c1, k60).
+1773539084: New connection from 172.18.0.5:55269 on port 1883.
+1773539084: Client smarthome-simulator already connected, closing old connection.
+1773539084: New client connected from 172.18.0.5:55269 as smarthome-simulator (p2, c1, k60).
+1773539085: New connection from 172.18.0.5:49463 on port 1883.
+1773539085: Client smarthome-simulator already connected, closing old connection.
+1773539085: New client connected from 172.18.0.5:49463 as smarthome-simulator (p2, c1, k60).
+1773539086: New connection from 172.18.0.5:51273 on port 1883.
+1773539086: Client smarthome-simulator already connected, closing old connection.
+1773539086: New client connected from 172.18.0.5:51273 as smarthome-simulator (p2, c1, k60).
+1773539087: New connection from 172.18.0.5:47227 on port 1883.
+1773539087: Client smarthome-simulator already connected, closing old connection.
+1773539087: New client connected from 172.18.0.5:47227 as smarthome-simulator (p2, c1, k60).
+1773539088: New connection from 172.18.0.5:43211 on port 1883.
+1773539088: Client smarthome-simulator already connected, closing old connection.
+1773539088: New client connected from 172.18.0.5:43211 as smarthome-simulator (p2, c1, k60).
+1773539089: New connection from 172.18.0.5:38485 on port 1883.
+1773539089: Client smarthome-simulator already connected, closing old connection.
+1773539089: New client connected from 172.18.0.5:38485 as smarthome-simulator (p2, c1, k60).
+1773539090: New connection from 172.18.0.5:32801 on port 1883.
+1773539090: Client smarthome-simulator already connected, closing old connection.
+1773539090: New client connected from 172.18.0.5:32801 as smarthome-simulator (p2, c1, k60).
+1773539091: New connection from 172.18.0.5:41777 on port 1883.
+1773539091: Client smarthome-simulator already connected, closing old connection.
+1773539091: New client connected from 172.18.0.5:41777 as smarthome-simulator (p2, c1, k60).
+1773539092: New connection from 172.18.0.5:57999 on port 1883.
+1773539092: Client smarthome-simulator already connected, closing old connection.
+1773539092: New client connected from 172.18.0.5:57999 as smarthome-simulator (p2, c1, k60).
+1773539093: New connection from 172.18.0.5:50269 on port 1883.
+1773539093: Client smarthome-simulator already connected, closing old connection.
+1773539093: New client connected from 172.18.0.5:50269 as smarthome-simulator (p2, c1, k60).
+1773539094: New connection from 172.18.0.5:34555 on port 1883.
+1773539094: Client smarthome-simulator already connected, closing old connection.
+1773539094: New client connected from 172.18.0.5:34555 as smarthome-simulator (p2, c1, k60).
+1773539095: New connection from 172.18.0.5:54891 on port 1883.
+1773539095: Client smarthome-simulator already connected, closing old connection.
+1773539095: New client connected from 172.18.0.5:54891 as smarthome-simulator (p2, c1, k60).
+1773539096: New connection from 172.18.0.5:55285 on port 1883.
+1773539096: Client smarthome-simulator already connected, closing old connection.
+1773539096: New client connected from 172.18.0.5:55285 as smarthome-simulator (p2, c1, k60).
+1773539097: New connection from 172.18.0.5:54145 on port 1883.
+1773539097: Client smarthome-simulator already connected, closing old connection.
+1773539097: New client connected from 172.18.0.5:54145 as smarthome-simulator (p2, c1, k60).
+1773539098: New connection from 172.18.0.5:41661 on port 1883.
+1773539098: Client smarthome-simulator already connected, closing old connection.
+1773539098: New client connected from 172.18.0.5:41661 as smarthome-simulator (p2, c1, k60).
+1773539099: New connection from 172.18.0.5:60609 on port 1883.
+1773539099: Client smarthome-simulator already connected, closing old connection.
+1773539099: New client connected from 172.18.0.5:60609 as smarthome-simulator (p2, c1, k60).
+1773539100: New connection from 172.18.0.5:56655 on port 1883.
+1773539100: Client smarthome-simulator already connected, closing old connection.
+1773539100: New client connected from 172.18.0.5:56655 as smarthome-simulator (p2, c1, k60).
+1773539101: New connection from 172.18.0.5:54501 on port 1883.
+1773539101: Client smarthome-simulator already connected, closing old connection.
+1773539101: New client connected from 172.18.0.5:54501 as smarthome-simulator (p2, c1, k60).
+1773539102: New connection from 172.18.0.5:60009 on port 1883.
+1773539102: Client smarthome-simulator already connected, closing old connection.
+1773539102: New client connected from 172.18.0.5:60009 as smarthome-simulator (p2, c1, k60).
+1773539103: New connection from 172.18.0.5:43661 on port 1883.
+1773539103: Client smarthome-simulator already connected, closing old connection.
+1773539103: New client connected from 172.18.0.5:43661 as smarthome-simulator (p2, c1, k60).
+1773539104: New connection from 172.18.0.5:49337 on port 1883.
+1773539104: Client smarthome-simulator already connected, closing old connection.
+1773539104: New client connected from 172.18.0.5:49337 as smarthome-simulator (p2, c1, k60).
+1773539105: New connection from 172.18.0.5:47223 on port 1883.
+1773539105: Client smarthome-simulator already connected, closing old connection.
+1773539105: New client connected from 172.18.0.5:47223 as smarthome-simulator (p2, c1, k60).
+1773539106: New connection from 172.18.0.5:33737 on port 1883.
+1773539106: Client smarthome-simulator already connected, closing old connection.
+1773539106: New client connected from 172.18.0.5:33737 as smarthome-simulator (p2, c1, k60).
+1773539107: New connection from 172.18.0.5:58967 on port 1883.
+1773539107: Client smarthome-simulator already connected, closing old connection.
+1773539107: New client connected from 172.18.0.5:58967 as smarthome-simulator (p2, c1, k60).
+1773539108: New connection from 172.18.0.5:57623 on port 1883.
+1773539108: Client smarthome-simulator already connected, closing old connection.
+1773539108: New client connected from 172.18.0.5:57623 as smarthome-simulator (p2, c1, k60).
+1773539109: New connection from 172.18.0.5:43439 on port 1883.
+1773539109: Client smarthome-simulator already connected, closing old connection.
+1773539109: New client connected from 172.18.0.5:43439 as smarthome-simulator (p2, c1, k60).
+1773539110: New connection from 172.18.0.5:32809 on port 1883.
+1773539110: Client smarthome-simulator already connected, closing old connection.
+1773539110: New client connected from 172.18.0.5:32809 as smarthome-simulator (p2, c1, k60).
+1773539111: New connection from 172.18.0.5:49117 on port 1883.
+1773539111: Client smarthome-simulator already connected, closing old connection.
+1773539111: New client connected from 172.18.0.5:49117 as smarthome-simulator (p2, c1, k60).
+1773539112: New connection from 172.18.0.5:38501 on port 1883.
+1773539112: Client smarthome-simulator already connected, closing old connection.
+1773539112: New client connected from 172.18.0.5:38501 as smarthome-simulator (p2, c1, k60).
+1773539113: New connection from 172.18.0.5:40111 on port 1883.
+1773539113: Client smarthome-simulator already connected, closing old connection.
+1773539113: New client connected from 172.18.0.5:40111 as smarthome-simulator (p2, c1, k60).
+1773539114: New connection from 172.18.0.5:33463 on port 1883.
+1773539114: Client smarthome-simulator already connected, closing old connection.
+1773539114: New client connected from 172.18.0.5:33463 as smarthome-simulator (p2, c1, k60).
+1773539115: New connection from 172.18.0.5:51091 on port 1883.
+1773539115: Client smarthome-simulator already connected, closing old connection.
+1773539115: New client connected from 172.18.0.5:51091 as smarthome-simulator (p2, c1, k60).
+1773539116: New connection from 172.18.0.5:54525 on port 1883.
+1773539116: Client smarthome-simulator already connected, closing old connection.
+1773539116: New client connected from 172.18.0.5:54525 as smarthome-simulator (p2, c1, k60).
+1773539117: New connection from 172.18.0.5:51775 on port 1883.
+1773539117: Client smarthome-simulator already connected, closing old connection.
+1773539117: New client connected from 172.18.0.5:51775 as smarthome-simulator (p2, c1, k60).
+1773539118: New connection from 172.18.0.5:55267 on port 1883.
+1773539118: Client smarthome-simulator already connected, closing old connection.
+1773539118: New client connected from 172.18.0.5:55267 as smarthome-simulator (p2, c1, k60).
+1773539119: New connection from 172.18.0.5:46395 on port 1883.
+1773539119: Client smarthome-simulator already connected, closing old connection.
+1773539119: New client connected from 172.18.0.5:46395 as smarthome-simulator (p2, c1, k60).
+1773539120: New connection from 172.18.0.5:48909 on port 1883.
+1773539120: Client smarthome-simulator already connected, closing old connection.
+1773539120: New client connected from 172.18.0.5:48909 as smarthome-simulator (p2, c1, k60).
+1773539121: New connection from 172.18.0.5:52497 on port 1883.
+1773539121: Client smarthome-simulator already connected, closing old connection.
+1773539121: New client connected from 172.18.0.5:52497 as smarthome-simulator (p2, c1, k60).
+1773539122: New connection from 172.18.0.5:50549 on port 1883.
+1773539122: Client smarthome-simulator already connected, closing old connection.
+1773539122: New client connected from 172.18.0.5:50549 as smarthome-simulator (p2, c1, k60).
+1773539123: New connection from 172.18.0.5:51069 on port 1883.
+1773539123: Client smarthome-simulator already connected, closing old connection.
+1773539123: New client connected from 172.18.0.5:51069 as smarthome-simulator (p2, c1, k60).
+1773539124: New connection from 172.18.0.5:59065 on port 1883.
+1773539124: Client smarthome-simulator already connected, closing old connection.
+1773539124: New client connected from 172.18.0.5:59065 as smarthome-simulator (p2, c1, k60).
+1773539125: New connection from 172.18.0.5:46273 on port 1883.
+1773539125: Client smarthome-simulator already connected, closing old connection.
+1773539125: New client connected from 172.18.0.5:46273 as smarthome-simulator (p2, c1, k60).
+1773539126: New connection from 172.18.0.5:55899 on port 1883.
+1773539126: Client smarthome-simulator already connected, closing old connection.
+1773539126: New client connected from 172.18.0.5:55899 as smarthome-simulator (p2, c1, k60).
+1773539127: New connection from 172.18.0.5:58351 on port 1883.
+1773539127: Client smarthome-simulator already connected, closing old connection.
+1773539127: New client connected from 172.18.0.5:58351 as smarthome-simulator (p2, c1, k60).
+1773539128: New connection from 172.18.0.5:48471 on port 1883.
+1773539128: Client smarthome-simulator already connected, closing old connection.
+1773539128: New client connected from 172.18.0.5:48471 as smarthome-simulator (p2, c1, k60).
+1773539129: New connection from 172.18.0.5:44113 on port 1883.
+1773539129: Client smarthome-simulator already connected, closing old connection.
+1773539129: New client connected from 172.18.0.5:44113 as smarthome-simulator (p2, c1, k60).
+1773539130: New connection from 172.18.0.5:50279 on port 1883.
+1773539130: Client smarthome-simulator already connected, closing old connection.
+1773539130: New client connected from 172.18.0.5:50279 as smarthome-simulator (p2, c1, k60).
+1773539131: New connection from 172.18.0.5:53789 on port 1883.
+1773539131: Client smarthome-simulator already connected, closing old connection.
+1773539131: New client connected from 172.18.0.5:53789 as smarthome-simulator (p2, c1, k60).
+1773539132: New connection from 172.18.0.5:46655 on port 1883.
+1773539132: Client smarthome-simulator already connected, closing old connection.
+1773539132: New client connected from 172.18.0.5:46655 as smarthome-simulator (p2, c1, k60).
+1773539133: New connection from 172.18.0.5:36793 on port 1883.
+1773539133: Client smarthome-simulator already connected, closing old connection.
+1773539133: New client connected from 172.18.0.5:36793 as smarthome-simulator (p2, c1, k60).
+1773539134: New connection from 172.18.0.5:40497 on port 1883.
+1773539134: Client smarthome-simulator already connected, closing old connection.
+1773539134: New client connected from 172.18.0.5:40497 as smarthome-simulator (p2, c1, k60).
+1773539135: New connection from 172.18.0.5:48971 on port 1883.
+1773539135: Client smarthome-simulator already connected, closing old connection.
+1773539135: New client connected from 172.18.0.5:48971 as smarthome-simulator (p2, c1, k60).
+1773539136: New connection from 172.18.0.5:48449 on port 1883.
+1773539136: Client smarthome-simulator already connected, closing old connection.
+1773539136: New client connected from 172.18.0.5:48449 as smarthome-simulator (p2, c1, k60).
+1773539137: New connection from 172.18.0.5:59521 on port 1883.
+1773539137: Client smarthome-simulator already connected, closing old connection.
+1773539137: New client connected from 172.18.0.5:59521 as smarthome-simulator (p2, c1, k60).
+1773539138: New connection from 172.18.0.5:47015 on port 1883.
+1773539138: Client smarthome-simulator already connected, closing old connection.
+1773539138: New client connected from 172.18.0.5:47015 as smarthome-simulator (p2, c1, k60).
+1773539139: New connection from 172.18.0.5:49149 on port 1883.
+1773539139: Client smarthome-simulator already connected, closing old connection.
+1773539139: New client connected from 172.18.0.5:49149 as smarthome-simulator (p2, c1, k60).
+1773539140: New connection from 172.18.0.5:56723 on port 1883.
+1773539140: Client smarthome-simulator already connected, closing old connection.
+1773539140: New client connected from 172.18.0.5:56723 as smarthome-simulator (p2, c1, k60).
+1773539141: New connection from 172.18.0.5:48349 on port 1883.
+1773539141: Client smarthome-simulator already connected, closing old connection.
+1773539141: New client connected from 172.18.0.5:48349 as smarthome-simulator (p2, c1, k60).
+1773539142: New connection from 172.18.0.5:50567 on port 1883.
+1773539142: Client smarthome-simulator already connected, closing old connection.
+1773539142: New client connected from 172.18.0.5:50567 as smarthome-simulator (p2, c1, k60).
+1773539143: New connection from 172.18.0.5:54789 on port 1883.
+1773539143: Client smarthome-simulator already connected, closing old connection.
+1773539143: New client connected from 172.18.0.5:54789 as smarthome-simulator (p2, c1, k60).
+1773539144: New connection from 172.18.0.5:56613 on port 1883.
+1773539144: Client smarthome-simulator already connected, closing old connection.
+1773539144: New client connected from 172.18.0.5:56613 as smarthome-simulator (p2, c1, k60).
+1773539145: New connection from 172.18.0.5:47911 on port 1883.
+1773539145: Client smarthome-simulator already connected, closing old connection.
+1773539145: New client connected from 172.18.0.5:47911 as smarthome-simulator (p2, c1, k60).
+1773539146: New connection from 172.18.0.5:34763 on port 1883.
+1773539146: Client smarthome-simulator already connected, closing old connection.
+1773539146: New client connected from 172.18.0.5:34763 as smarthome-simulator (p2, c1, k60).
+1773539147: New connection from 172.18.0.5:33369 on port 1883.
+1773539147: Client smarthome-simulator already connected, closing old connection.
+1773539147: New client connected from 172.18.0.5:33369 as smarthome-simulator (p2, c1, k60).
+1773539148: New connection from 172.18.0.5:44443 on port 1883.
+1773539148: Client smarthome-simulator already connected, closing old connection.
+1773539148: New client connected from 172.18.0.5:44443 as smarthome-simulator (p2, c1, k60).
+1773539149: New connection from 172.18.0.5:57217 on port 1883.
+1773539149: Client smarthome-simulator already connected, closing old connection.
+1773539149: New client connected from 172.18.0.5:57217 as smarthome-simulator (p2, c1, k60).
+1773539150: New connection from 172.18.0.5:54729 on port 1883.
+1773539150: Client smarthome-simulator already connected, closing old connection.
+1773539150: New client connected from 172.18.0.5:54729 as smarthome-simulator (p2, c1, k60).
+1773539151: New connection from 172.18.0.5:52913 on port 1883.
+1773539151: Client smarthome-simulator already connected, closing old connection.
+1773539151: New client connected from 172.18.0.5:52913 as smarthome-simulator (p2, c1, k60).
+1773539152: New connection from 172.18.0.5:53597 on port 1883.
+1773539152: Client smarthome-simulator already connected, closing old connection.
+1773539152: New client connected from 172.18.0.5:53597 as smarthome-simulator (p2, c1, k60).
+1773539153: New connection from 172.18.0.5:41573 on port 1883.
+1773539153: Client smarthome-simulator already connected, closing old connection.
+1773539153: New client connected from 172.18.0.5:41573 as smarthome-simulator (p2, c1, k60).
+1773539154: New connection from 172.18.0.5:53565 on port 1883.
+1773539154: Client smarthome-simulator already connected, closing old connection.
+1773539154: New client connected from 172.18.0.5:53565 as smarthome-simulator (p2, c1, k60).
+1773539155: New connection from 172.18.0.5:56361 on port 1883.
+1773539155: Client smarthome-simulator already connected, closing old connection.
+1773539155: New client connected from 172.18.0.5:56361 as smarthome-simulator (p2, c1, k60).
+1773539156: New connection from 172.18.0.5:60567 on port 1883.
+1773539156: Client smarthome-simulator already connected, closing old connection.
+1773539156: New client connected from 172.18.0.5:60567 as smarthome-simulator (p2, c1, k60).
+1773539157: New connection from 172.18.0.5:34341 on port 1883.
+1773539157: Client smarthome-simulator already connected, closing old connection.
+1773539157: New client connected from 172.18.0.5:34341 as smarthome-simulator (p2, c1, k60).
+1773539158: New connection from 172.18.0.5:50401 on port 1883.
+1773539158: Client smarthome-simulator already connected, closing old connection.
+1773539158: New client connected from 172.18.0.5:50401 as smarthome-simulator (p2, c1, k60).
+1773539159: New connection from 172.18.0.5:45277 on port 1883.
+1773539159: Client smarthome-simulator already connected, closing old connection.
+1773539159: New client connected from 172.18.0.5:45277 as smarthome-simulator (p2, c1, k60).
+1773539160: New connection from 172.18.0.5:47767 on port 1883.
+1773539160: Client smarthome-simulator already connected, closing old connection.
+1773539160: New client connected from 172.18.0.5:47767 as smarthome-simulator (p2, c1, k60).
+1773539161: New connection from 172.18.0.5:40499 on port 1883.
+1773539161: Client smarthome-simulator already connected, closing old connection.
+1773539161: New client connected from 172.18.0.5:40499 as smarthome-simulator (p2, c1, k60).
+1773539162: New connection from 172.18.0.5:54851 on port 1883.
+1773539162: Client smarthome-simulator already connected, closing old connection.
+1773539162: New client connected from 172.18.0.5:54851 as smarthome-simulator (p2, c1, k60).
+1773539163: New connection from 172.18.0.5:38579 on port 1883.
+1773539163: Client smarthome-simulator already connected, closing old connection.
+1773539163: New client connected from 172.18.0.5:38579 as smarthome-simulator (p2, c1, k60).
+1773539164: New connection from 172.18.0.5:53541 on port 1883.
+1773539164: Client smarthome-simulator already connected, closing old connection.
+1773539164: New client connected from 172.18.0.5:53541 as smarthome-simulator (p2, c1, k60).
+1773539165: New connection from 172.18.0.5:33415 on port 1883.
+1773539165: Client smarthome-simulator already connected, closing old connection.
+1773539165: New client connected from 172.18.0.5:33415 as smarthome-simulator (p2, c1, k60).
+1773539166: New connection from 172.18.0.5:53819 on port 1883.
+1773539166: Client smarthome-simulator already connected, closing old connection.
+1773539166: New client connected from 172.18.0.5:53819 as smarthome-simulator (p2, c1, k60).
+1773539167: New connection from 172.18.0.5:37713 on port 1883.
+1773539167: Client smarthome-simulator already connected, closing old connection.
+1773539167: New client connected from 172.18.0.5:37713 as smarthome-simulator (p2, c1, k60).
+1773539168: New connection from 172.18.0.5:55441 on port 1883.
+1773539168: Client smarthome-simulator already connected, closing old connection.
+1773539168: New client connected from 172.18.0.5:55441 as smarthome-simulator (p2, c1, k60).
+1773539169: New connection from 172.18.0.5:48427 on port 1883.
+1773539169: Client smarthome-simulator already connected, closing old connection.
+1773539169: New client connected from 172.18.0.5:48427 as smarthome-simulator (p2, c1, k60).
+1773539170: New connection from 172.18.0.5:54409 on port 1883.
+1773539170: Client smarthome-simulator already connected, closing old connection.
+1773539170: New client connected from 172.18.0.5:54409 as smarthome-simulator (p2, c1, k60).
+1773539171: Client smarthome-simulator closed its connection.
+1773539171: New connection from 172.18.0.5:49693 on port 1883.
+1773539171: New client connected from 172.18.0.5:49693 as smarthome-simulator (p2, c1, k60).
+1773539186: Client smarthome-simulator closed its connection.
+1773539187: New connection from 172.18.0.5:48505 on port 1883.
+1773539187: New client connected from 172.18.0.5:48505 as smarthome-simulator (p2, c1, k60).
+1773539285: Client smarthome-agent closed its connection.
+1773539288: New connection from 172.18.0.4:32983 on port 1883.
+1773539288: New client connected from 172.18.0.4:32983 as smarthome-agent (p2, c1, k60).
+1773558841: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773560633: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773562425: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773564217: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773657429: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773659238: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773662213: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773664022: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773665831: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773782120: mosquitto version 2.0.22 starting
+1773782120: Config loaded from /mosquitto/config/mosquitto.conf.
+1773782120: Opening ipv4 listen socket on port 1883.
+1773782120: Opening ipv6 listen socket on port 1883.
+1773782120: mosquitto version 2.0.22 running
+1773782121: New connection from 172.18.0.2:42383 on port 1883.
+1773782121: New client connected from 172.18.0.2:42383 as smarthome-simulator (p2, c1, k60).
+1773782123: New connection from 172.18.0.6:35325 on port 1883.
+1773782123: New client connected from 172.18.0.6:35325 as smarthome-telegram-bot (p2, c1, k60).
+1773782129: New connection from 172.18.0.5:38165 on port 1883.
+1773782129: New client connected from 172.18.0.5:38165 as smarthome-agent (p2, c1, k60).
+1773782151: New connection from 172.18.0.3:48480 on port 1883.
+1773782151: New client connected from 172.18.0.3:48480 as nodered-ui (p2, c1, k60).
+1773782750: Client smarthome-agent closed its connection.
+1773782753: New connection from 172.18.0.5:35777 on port 1883.
+1773782753: New client connected from 172.18.0.5:35777 as smarthome-agent (p2, c1, k60).
