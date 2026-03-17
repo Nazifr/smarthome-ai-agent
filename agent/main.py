@@ -22,37 +22,33 @@ INFLUX_ORG   = os.getenv("INFLUX_ORG", "smarthome")
 INFLUX_BUCKET= os.getenv("INFLUX_BUCKET", "sensor_data")
 
 # ── MQTT Topic'leri ───────────────────────────────────────────────────
-TOPIC_SENSOR_ALL    = "home/+/sensor/+"     # tüm sensör verilerini dinle
-TOPIC_CMD_PREFIX    = "home"                # komut gönderme prefix'i
-TOPIC_FEEDBACK      = "home/+/feedback"     # kullanıcı override bildirimleri
-TOPIC_PREFERENCES   = "home/preferences"   # tercih güncellemeleri
-TOPIC_ALERT         = "home/alerts"         # uyarı yayını
+TOPIC_SENSOR_ALL    = "home/+/sensor/+"
+TOPIC_CMD_PREFIX    = "home"
+TOPIC_FEEDBACK      = "home/+/feedback"
+TOPIC_PREFERENCES   = "home/preferences"
+TOPIC_ALERT         = "home/alerts"
+TOPIC_SENTIMENT     = "home/user/sentiment"   # Telegram'dan gelen duygu durumu
 
-# Simülasyon modu: True ise actuator'lara komut gönderilmez, sadece loglanır
 SIMULATION_MODE = os.getenv("SIMULATION_MODE", "false").lower() == "true"
 
 
 class SmartHomeAgent:
     def __init__(self):
-        self._last_context = {}   # önceki bağlamı sakla
+        self._last_context = {}
         self.analyzer = ContextAnalyzer()
         self.engine   = DecisionEngine()
         self.policy   = PolicyManager()
         self.enricher = ContextEnricher()
 
-        # InfluxDB bağlantısı
         self.influx_client = InfluxDBClient(
             url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG
         )
         self.write_api = self.influx_client.write_api(write_options=SYNCHRONOUS)
 
-        # MQTT istemcisi
         self.mqtt_client = mqtt.Client(client_id="smarthome-agent")
         self.mqtt_client.on_connect    = self._on_connect
         self.mqtt_client.on_message    = self._on_message
         self.mqtt_client.on_disconnect = self._on_disconnect
-
-    # ── MQTT Callbacks ────────────────────────────────────────────────
 
     def _on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -60,6 +56,7 @@ class SmartHomeAgent:
             client.subscribe(TOPIC_SENSOR_ALL)
             client.subscribe(TOPIC_FEEDBACK)
             client.subscribe(TOPIC_PREFERENCES)
+            client.subscribe(TOPIC_SENTIMENT)   # duygu durumu topic'i eklendi
             print(f"[Agent] Dinleniyor: {TOPIC_SENSOR_ALL}")
         else:
             print(f"[Agent] Bağlantı hatası, kod: {rc}")
@@ -75,87 +72,80 @@ class SmartHomeAgent:
             print(f"[Agent] Geçersiz JSON — topic: {topic}")
             return
 
-        # ── Sensör Verisi ─────────────────────────────────────────────
         if "/sensor/" in topic:
             self._handle_sensor(topic, payload)
-
-        # ── Kullanıcı Feedback (Manuel Override) ─────────────────────
         elif "/feedback" in topic:
             self._handle_feedback(topic, payload)
-
-        # ── Tercih Güncellemesi ───────────────────────────────────────
         elif topic == TOPIC_PREFERENCES:
             self.policy.update_preferences(payload)
             print(f"[Agent] Tercihler güncellendi: {payload}")
+        elif topic == TOPIC_SENTIMENT:
+            self._handle_sentiment(payload)   # duygu durumu işleme eklendi
 
-    # ── Sensör İşleme ─────────────────────────────────────────────────
+    def _handle_sentiment(self, payload: dict):
+        """
+        Telegram'dan gelen kullanıcı duygu durumunu ContextEnricher'a ilet.
+        payload: {"sentiment": "yorgun", "chat_id": 123456}
+        """
+        sentiment = payload.get("sentiment", "nötr")
+        self.enricher.update_sentiment(sentiment)
+        print(f"[Agent] Kullanıcı duygu durumu güncellendi: {sentiment}")
+
+        # Duygu durumu değişince bağlam değişmiş sayılır, yeni karar tetikle
+        self._last_context = {}
 
     def _handle_sensor(self, topic, payload):
-        parts = topic.split("/")        # home / room / sensor / type
+        parts = topic.split("/")
         room = parts[1] if len(parts) > 1 else "unknown"
 
         payload["timestamp"] = payload.get("timestamp", datetime.now().isoformat())
         payload["room"] = room
 
-        # 1. Veritabanına kaydet
         self._write_to_influx(payload)
 
-        # 2. Bağlam çıkar
         context = self.analyzer.analyze(payload)
         context = self.enricher.enrich(context)
-
         features = self.analyzer.to_feature_vector(context)
 
         print(f"[Agent] Bağlam: {context['context_label']} | "
               f"Sıcaklık: {context['temperature']}°C | "
               f"Hareket: {context['occupancy']}")
 
-        # 3. Eşik aşıldı mı kontrol et — alert gönder
         self._check_alerts(context, room)
 
-        # Bağlam değişmediyse karar verme
         current_label  = context.get("context_label")
         last_label     = self._last_context.get("context_label")
         temp_diff      = abs(context.get("temperature", 0) - self._last_context.get("temperature", 0))
         motion_changed = context.get("occupancy") != self._last_context.get("occupancy")
 
         if current_label == last_label and temp_diff < 2.0 and not motion_changed:
-         return  # hiçbir şey değişmedi, karar verme
+            return
 
         self._last_context = context
 
-        # 4. Kararları al
         actions = self.engine.decide(context, features)
 
-        # 5. Her kararı politika filtresinden geçir
         for action in actions:
             action["room"] = room
             result = self.policy.apply(action, context)
-
             if result["approved"]:
                 self._execute_action(action, context)
             else:
                 print(f"[Agent] Karar reddedildi: {result['reason']}")
 
-    # ── Aksiyon Çalıştırma ────────────────────────────────────────────
-
     def _execute_action(self, action: dict, context: dict):
-        device  = action["device"]
-        room    = action["room"]
-        command = action["command"]
-        reason  = action["reason"]
-
-        # Güven oranı ve bağlam bilgisini mesaja ekle
-        confidence    = action.get("confidence", None)
-        method        = action.get("method", "heuristic")
-        context_label = context.get("context_label", "bilinmiyor")
-
+        device         = action["device"]
+        room           = action["room"]
+        command        = action["command"]
+        reason         = action["reason"]
+        confidence     = action.get("confidence", None)
+        method         = action.get("method", "heuristic")
+        context_label  = context.get("context_label", "bilinmiyor")
         confidence_str = f"{confidence:.0%}" if confidence else "—"
 
         if SIMULATION_MODE:
             print(f"[Agent][SİMÜLASYON] Komut → {room}/{device}: {command}")
-            print(f"         Gerekçe: {reason}")
-            print(f"         Yöntem: {method} | Güven: {confidence_str} | Bağlam: {context_label}")
+            print(f"         Gerekçe: {reason} | Yöntem: {method} | Güven: {confidence_str} | Bağlam: {context_label}")
         else:
             topic = f"{TOPIC_CMD_PREFIX}/{room}/{device}/command"
             self.mqtt_client.publish(topic, json.dumps({
@@ -169,50 +159,35 @@ class SmartHomeAgent:
             print(f"[Agent] ✓ Komut → {topic}: {command}")
             print(f"         Gerekçe: {reason} | Yöntem: {method} | Güven: {confidence_str} | Bağlam: {context_label}")
 
-        # Her iki modda da action log kaydet
         self._log_action(device, room, command, reason, context)
 
-    # ── Feedback İşleme ───────────────────────────────────────────────
-
     def _handle_feedback(self, topic, payload):
-        """
-        Kullanıcı bir cihaza manuel dokunduysa agent öğrenir.
-        payload: {"device": "ac", "command": "ON", "sensor_data": {...}}
-        """
-        device   = payload.get("device")
-        command  = payload.get("command")
-        sensor   = payload.get("sensor_data", {})
+        device  = payload.get("device")
+        command = payload.get("command")
+        sensor  = payload.get("sensor_data", {})
 
         if device and command and sensor:
             context  = self.analyzer.analyze(sensor)
             features = self.analyzer.to_feature_vector(context)
             self.engine.record_feedback(features, device, command)
-
-            # Override'ı policy'ye bildir
             room = payload.get("room", "general")
             self.policy.set_manual_override(f"{room}_{device}", command)
             print(f"[Agent] Feedback alındı: {device} → {command} (öğrenme kaydedildi)")
 
-    # ── Alert Kontrolü ────────────────────────────────────────────────
-
     def _check_alerts(self, context: dict, room: str):
         alerts = []
-
         if context["temperature"] > 35:
             alerts.append(f"⚠️ {room} odasında sıcaklık kritik: {context['temperature']}°C")
         if context["temperature"] < 10:
             alerts.append(f"⚠️ {room} odasında düşük sıcaklık: {context['temperature']}°C")
-
         for alert in alerts:
             self.mqtt_client.publish(TOPIC_ALERT, json.dumps({
-                "message": alert,
-                "room": room,
+                "message":   alert,
+                "room":      room,
                 "timestamp": datetime.now().isoformat(),
-                "severity": "high",
+                "severity":  "high",
             }))
             print(f"[Agent] ALERT: {alert}")
-
-    # ── InfluxDB Yazma ────────────────────────────────────────────────
 
     def _write_to_influx(self, data: dict):
         try:
@@ -232,18 +207,16 @@ class SmartHomeAgent:
         try:
             point = (
                 Point("action_log")
-                .tag("device", device)
-                .tag("room", room)
+                .tag("device",  device)
+                .tag("room",    room)
                 .tag("command", command)
                 .tag("context", context.get("context_label", "unknown"))
-                .field("reason", reason)
+                .field("reason",      reason)
                 .field("temperature", float(context.get("temperature", 0)))
             )
             self.write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
         except Exception as e:
             print(f"[Agent] Action log hatası: {e}")
-
-    # ── Başlat ────────────────────────────────────────────────────────
 
     def run(self):
         print("[Agent] Akıllı ev agent'ı başlatılıyor...")
