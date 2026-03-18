@@ -1892,3 +1892,22 @@
 1773807361: New client connected from 172.18.0.2:36983 as smarthome-simulator (p2, c1, k60).
 1773807361: New connection from 172.18.0.5:38771 on port 1883.
 1773807361: New client connected from 172.18.0.5:38771 as smarthome-telegram-bot (p2, c1, k60).
+1773807911: mosquitto version 2.0.22 starting
+1773807911: Config loaded from /mosquitto/config/mosquitto.conf.
+1773807911: Opening ipv4 listen socket on port 1883.
+1773807911: Opening ipv6 listen socket on port 1883.
+1773807911: mosquitto version 2.0.22 running
+1773807911: New connection from 172.18.0.5:44031 on port 1883.
+1773807911: New client connected from 172.18.0.5:44031 as smarthome-simulator (p2, c1, k60).
+1773807913: New connection from 172.18.0.6:59627 on port 1883.
+1773807913: New client connected from 172.18.0.6:59627 as smarthome-telegram-bot (p2, c1, k60).
+1773807938: New connection from 172.18.0.2:57454 on port 1883.
+1773807938: New client connected from 172.18.0.2:57454 as nodered-ui (p2, c1, k60).
+1773808307: Client smarthome-telegram-bot closed its connection.
+1773808316: Client smarthome-simulator closed its connection.
+1773808318: New connection from 172.18.0.6:33021 on port 1883.
+1773808318: New client connected from 172.18.0.6:33021 as smarthome-simulator (p2, c1, k60).
+1773808319: New connection from 172.18.0.4:37211 on port 1883.
+1773808319: New client connected from 172.18.0.4:37211 as smarthome-telegram-bot (p2, c1, k60).
+1773808331: New connection from 172.18.0.5:58429 on port 1883.
+1773808331: New client connected from 172.18.0.5:58429 as smarthome-agent (p2, c1, k60).

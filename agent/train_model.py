@@ -50,7 +50,9 @@ print(f"   Satir: {len(df):,} | Kolon: {len(df.columns)}")
 
 # ── 2. Zaman Ozellikleri ──────────────────────────────────────────────
 print("\nZaman ozellikleri cıkarılıyor...")
-df["time"] = pd.to_datetime(df["time"], unit="s", errors="coerce")
+# df["time"] = pd.to_datetime(df["time"], unit="s", errors="coerce")
+df["time"] = pd.to_datetime(df["time"].astype(float), unit="s", errors="coerce")
+
 df = df.dropna(subset=["time"])
 df["hour"]        = df["time"].dt.hour
 df["minute"]      = df["time"].dt.minute
