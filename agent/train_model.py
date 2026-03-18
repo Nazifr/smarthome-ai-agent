@@ -1,30 +1,28 @@
 """
-Veri Hazırlama ve ML Model Eğitimi - v2
+Veri Hazırlama ve ML Model Eğitimi - v3 (LightGBM)
 
 Senaryo bazlı etiketler:
     sabah_rutini, is_modu, dinlenme_modu,
     uyku_hazirlik, uyku_modu, ev_bos, misafir_modu
 
-Çalıştırma:
-    python train_model.py
+Model: LightGBM (Random Forest'tan daha yüksek doğruluk)
 
-Çıktı:
-    models/decision_model.pkl
-    models/label_encoder.pkl
-    models/label_mapping.json
+Çalıştırma:
+    pip install lightgbm
+    python train_model.py
 """
 
 import os
 import json
+import collections
 import pandas as pd
 import numpy as np
 import joblib
-from sklearn.ensemble import RandomForestClassifier
+from lightgbm import LGBMClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
 from sklearn.metrics import classification_report, accuracy_score
-from imblearn.over_sampling import SMOTE 
-""" Oversample (SMOTE) — az olan etiketler için sentetik örnek üret."""
+from imblearn.over_sampling import SMOTE
 
 CSV_PATH     = "HomeC.csv"
 MODEL_DIR    = "models"
@@ -47,7 +45,7 @@ LABEL_MAPPING = {
 
 # ── 1. Veriyi Yükle ───────────────────────────────────────────────────
 print("Veri yukleniyor...")
-df = pd.read_csv(CSV_PATH)
+df = pd.read_csv(CSV_PATH, low_memory=False)
 print(f"   Satir: {len(df):,} | Kolon: {len(df.columns)}")
 
 # ── 2. Zaman Ozellikleri ──────────────────────────────────────────────
@@ -69,31 +67,52 @@ df["solar_kw"]    = pd.to_numeric(df["Solar [kW]"], errors="coerce").fillna(0)
 df["light"]       = df["solar_kw"] * 500
 df["motion"]      = (df["use_kw"] > 1.0).astype(int)
 
-# ── 4. Dis Baglem (Placeholder) ───────────────────────────────────────
-print("\nDis baglem simule ediliyor (placeholder)...")
+# ── 4. Yeni Feature'lar ───────────────────────────────────────────────
+print("\nYeni feature'lar hesaplaniyor...")
+
+# İç/dış sıcaklık farkı (dış sıcaklık yoksa temperature'u kullan)
+df["temp_hour_interaction"] = df["temperature"] * df["hour"] / 24.0
+
+# Saatlik enerji tüketim trendi (son 1 saatteki ortalama)
+df = df.sort_values("time")
+df["use_kw_rolling"] = df["use_kw"].rolling(window=120, min_periods=1).mean()
+
+# Sabah mı akşam mı? (0=gece, 1=sabah, 2=öğlen, 3=akşam)
+def time_of_day(hour):
+    if 0 <= hour < 6:   return 0
+    elif 6 <= hour < 12: return 1
+    elif 12 <= hour < 18: return 2
+    else: return 3
+
+df["time_of_day"] = df["hour"].apply(time_of_day)
+
+# ── 5. Dis Baglem (Placeholder) ───────────────────────────────────────
+print("\nDis baglem simule ediliyor...")
 np.random.seed(42)
 
 df["weather"] = np.where(
     df["solar_kw"] > 1.0, 0,
     np.where(df["solar_kw"] > 0.1, 1, 2)
 )
-df["sentiment"]     = 0  # placeholder - Telegram entegrasyonu eklenince guncellenir
-df["energy_price"]  = np.where(
+df["sentiment"]    = 0
+df["energy_price"] = np.where(
     (df["hour"] >= 23) | (df["hour"] < 6), 0,
     np.where((df["hour"] >= 17) & (df["hour"] < 23), 2, 1)
 )
 
-# ── 5. Feature Set ────────────────────────────────────────────────────
+# ── 6. Feature Set ────────────────────────────────────────────────────
 features = [
     "hour", "minute", "day_of_week", "is_weekend", "day_type",
     "temperature", "humidity", "motion", "light",
-    "weather", "sentiment", "energy_price"
+    "weather", "sentiment", "energy_price",
+    "temp_hour_interaction", "use_kw_rolling", "time_of_day"
 ]
 
 df = df[features + ["use_kw"]].dropna()
 print(f"   Temiz satir sayisi: {len(df):,}")
+print(f"   Feature sayisi: {len(features)}")
 
-# ── 6. Etiket Olustur ─────────────────────────────────────────────────
+# ── 7. Etiket Olustur ─────────────────────────────────────────────────
 print("\nSenaryo bazli etiketler olusturuluyor...")
 
 low  = df["use_kw"].quantile(0.33)
@@ -105,7 +124,6 @@ def assign_label(row):
     use        = row["use_kw"]
     is_weekend = row["is_weekend"]
 
-    
     if (0 <= hour < 6) and use < low:
         return "uyku_modu"
     if (22 <= hour < 24) and motion == 1:
@@ -127,37 +145,38 @@ def assign_label(row):
 df["label"] = df.apply(assign_label, axis=1)
 print(f"\n   Etiket dagilimi:\n{df['label'].value_counts()}\n")
 
-
-# ── 7. Modeli Egit ────────────────────────────────────────────────────
-print("Model egitiliyor...")
+# ── 8. SMOTE ile Dengeleme ────────────────────────────────────────────
+print("SMOTE ile veri dengeleniyor...")
 X  = df[features].values
 le = LabelEncoder()
 y  = le.fit_transform(df["label"].values)
 
-# ── 6.5. SMOTE ile Dengeleme ──────────────────────────────────────────
-print("\nSMOTE ile veri dengeleniyor...")
 smote = SMOTE(random_state=42)
 X_balanced, y_balanced = smote.fit_resample(X, y)
 print(f"   Dengeli satir sayisi: {len(X_balanced):,}")
-balanced_labels = le.inverse_transform(y_balanced)
-import collections
-print(f"   Yeni dagilim:\n{collections.Counter(balanced_labels)}")
-
+print(f"   Yeni dagilim:\n{collections.Counter(le.inverse_transform(y_balanced))}")
 
 X_train, X_test, y_train, y_test = train_test_split(
     X_balanced, y_balanced, test_size=0.2, random_state=42, stratify=y_balanced
 )
 
-model = RandomForestClassifier(
-    n_estimators=100,
-    max_depth=10,
-    min_samples_leaf=15,
+# ── 9. LightGBM Modeli Egit ───────────────────────────────────────────
+print("\nLightGBM modeli egitiliyor...")
+model = LGBMClassifier(
+    n_estimators=500,        # daha fazla ağaç
+    learning_rate=0.05,      # yavaş ama dikkatli öğren
+    max_depth=8,
+    num_leaves=63,           # LightGBM'in temel parametresi
+    min_child_samples=20,
+    subsample=0.8,           # her ağaçta verinin %80'ini kullan
+    colsample_bytree=0.8,    # her ağaçta feature'ların %80'ini kullan
     random_state=42,
-    n_jobs=-1
+    n_jobs=-1,
+    verbose=-1               # gereksiz log basma
 )
 model.fit(X_train, y_train)
 
-# ── 8. Degerlendirme ──────────────────────────────────────────────────
+# ── 10. Degerlendirme ─────────────────────────────────────────────────
 print("\nModel Degerlendirmesi:")
 y_pred = model.predict(X_test)
 acc    = accuracy_score(y_test, y_pred)
@@ -168,7 +187,7 @@ print("\nFeature Onem Sirasi:")
 importances = pd.Series(model.feature_importances_, index=features)
 print(importances.sort_values(ascending=False).to_string())
 
-# ── 9. Kaydet ─────────────────────────────────────────────────────────
+# ── 11. Kaydet ────────────────────────────────────────────────────────
 joblib.dump(model, MODEL_PATH)
 joblib.dump(le, ENCODER_PATH)
 with open(MAPPING_PATH, "w", encoding="utf-8") as f:
@@ -178,4 +197,3 @@ print(f"\nModel kaydedildi: {MODEL_PATH}")
 print(f"Encoder kaydedildi: {ENCODER_PATH}")
 print(f"Mapping kaydedildi: {MAPPING_PATH}")
 print("\nEgitim tamamlandi!")
-print("Sonraki adim: models/ klasorunu docker container'a kopyala")

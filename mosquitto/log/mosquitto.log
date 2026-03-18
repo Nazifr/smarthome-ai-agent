@@ -1836,3 +1836,59 @@
 1773782750: Client smarthome-agent closed its connection.
 1773782753: New connection from 172.18.0.5:35777 on port 1883.
 1773782753: New client connected from 172.18.0.5:35777 as smarthome-agent (p2, c1, k60).
+1773783793: Client smarthome-telegram-bot closed its connection.
+1773783794: New connection from 172.18.0.6:50345 on port 1883.
+1773783794: New client connected from 172.18.0.6:50345 as smarthome-telegram-bot (p2, c1, k60).
+1773783960: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773784653: Client smarthome-telegram-bot closed its connection.
+1773784654: New connection from 172.18.0.6:39155 on port 1883.
+1773784654: New client connected from 172.18.0.6:39155 as smarthome-telegram-bot (p2, c1, k60).
+1773785280: New connection from 172.18.0.5:38263 on port 1883.
+1773785280: New client connected from 172.18.0.5:38263 as test-sub (p2, c1, k60).
+1773785295: Client test-sub closed its connection.
+1773785341: Client smarthome-agent closed its connection.
+1773785346: New connection from 172.18.0.5:40979 on port 1883.
+1773785346: New client connected from 172.18.0.5:40979 as smarthome-agent (p2, c1, k60).
+1773785808: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773785876: Client smarthome-agent closed its connection.
+1773785880: New connection from 172.18.0.5:60931 on port 1883.
+1773785880: New client connected from 172.18.0.5:60931 as smarthome-agent (p2, c1, k60).
+1773787659: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773788007: Client smarthome-telegram-bot closed its connection.
+1773788017: Client smarthome-simulator closed its connection.
+1773788017: Client smarthome-agent closed its connection.
+1773788019: New connection from 172.18.0.2:37109 on port 1883.
+1773788019: New client connected from 172.18.0.2:37109 as smarthome-simulator (p2, c1, k60).
+1773788020: New connection from 172.18.0.5:53395 on port 1883.
+1773788020: New client connected from 172.18.0.5:53395 as smarthome-telegram-bot (p2, c1, k60).
+1773788023: New connection from 172.18.0.6:59611 on port 1883.
+1773788023: New client connected from 172.18.0.6:59611 as smarthome-agent (p2, c1, k60).
+1773788156: Client smarthome-telegram-bot closed its connection.
+1773788165: Client smarthome-simulator closed its connection.
+1773788165: Client smarthome-agent closed its connection.
+1773788167: New connection from 172.18.0.5:56649 on port 1883.
+1773788167: New client connected from 172.18.0.5:56649 as smarthome-simulator (p2, c1, k60).
+1773788167: New connection from 172.18.0.2:35537 on port 1883.
+1773788167: New client connected from 172.18.0.2:35537 as smarthome-telegram-bot (p2, c1, k60).
+1773788170: New connection from 172.18.0.6:59675 on port 1883.
+1773788170: New client connected from 172.18.0.6:59675 as smarthome-agent (p2, c1, k60).
+1773788258: Client smarthome-agent closed its connection.
+1773788261: New connection from 172.18.0.6:37817 on port 1883.
+1773788261: New client connected from 172.18.0.6:37817 as smarthome-agent (p2, c1, k60).
+1773788314: Client smarthome-simulator closed its connection.
+1773788314: New connection from 172.18.0.5:49335 on port 1883.
+1773788314: New client connected from 172.18.0.5:49335 as smarthome-simulator (p2, c1, k60).
+1773789512: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773791365: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773793220: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773795075: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773796932: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773798789: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773800648: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773807352: Client smarthome-telegram-bot closed its connection.
+1773807359: Client smarthome-simulator closed its connection.
+1773807359: Client smarthome-agent closed its connection.
+1773807361: New connection from 172.18.0.2:36983 on port 1883.
+1773807361: New client connected from 172.18.0.2:36983 as smarthome-simulator (p2, c1, k60).
+1773807361: New connection from 172.18.0.5:38771 on port 1883.
+1773807361: New client connected from 172.18.0.5:38771 as smarthome-telegram-bot (p2, c1, k60).
