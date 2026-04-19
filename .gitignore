@@ -7,3 +7,14 @@ nodered/node_modules/
 nodered/.npm/
 agent/HomeC.csv
 agent/check_data.py
+agent/SmartHomeEnergyConsumptionOptimization.csv
+agent/HomeC.csv
+influxdb/engine/
+influxdb/influxd.bolt
+mosquitto/data/
+mosquitto/log/
+nodered/.config.users.json
+nodered/.config.users.json.backup
+.vs/
+agent/models/
+agent/*.csv

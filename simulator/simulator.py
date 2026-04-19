@@ -14,6 +14,8 @@ import math
 from datetime import datetime
 
 import paho.mqtt.client as mqtt
+# import sys
+# sys.stdout.flush()
 
 MQTT_BROKER = os.getenv("MQTT_BROKER", "localhost")
 MQTT_PORT   = int(os.getenv("MQTT_PORT", 1883))

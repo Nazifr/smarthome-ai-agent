@@ -1911,3 +1911,88 @@
 1773808319: New client connected from 172.18.0.4:37211 as smarthome-telegram-bot (p2, c1, k60).
 1773808331: New connection from 172.18.0.5:58429 on port 1883.
 1773808331: New client connected from 172.18.0.5:58429 as smarthome-agent (p2, c1, k60).
+1773809809: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773811725: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1773811773: Client smarthome-telegram-bot closed its connection.
+1773811780: Client smarthome-simulator closed its connection.
+1773811780: Client smarthome-agent closed its connection.
+1773811781: New connection from 172.18.0.5:38577 on port 1883.
+1773811781: New client connected from 172.18.0.5:38577 as smarthome-simulator (p2, c1, k60).
+1773811782: New connection from 172.18.0.4:49417 on port 1883.
+1773811782: New client connected from 172.18.0.4:49417 as smarthome-telegram-bot (p2, c1, k60).
+1773811790: New connection from 172.18.0.6:44811 on port 1883.
+1773811790: New client connected from 172.18.0.6:44811 as smarthome-agent (p2, c1, k60).
+1774255158: mosquitto version 2.0.22 starting
+1774255158: Config loaded from /mosquitto/config/mosquitto.conf.
+1774255158: Opening ipv4 listen socket on port 1883.
+1774255158: Opening ipv6 listen socket on port 1883.
+1774255158: mosquitto version 2.0.22 running
+1774255159: New connection from 172.18.0.5:36279 on port 1883.
+1774255159: New client connected from 172.18.0.5:36279 as smarthome-simulator (p2, c1, k60).
+1774255161: New connection from 172.18.0.4:52969 on port 1883.
+1774255161: New client connected from 172.18.0.4:52969 as smarthome-telegram-bot (p2, c1, k60).
+1774255168: New connection from 172.18.0.3:58345 on port 1883.
+1774255168: New client connected from 172.18.0.3:58345 as smarthome-agent (p2, c1, k60).
+1774255185: New connection from 172.18.0.2:40530 on port 1883.
+1774255185: New client connected from 172.18.0.2:40530 as nodered-ui (p2, c1, k60).
+1774255705: Client nodered-ui disconnected.
+1774255705: Client smarthome-telegram-bot closed its connection.
+1774255708: Client smarthome-agent closed its connection.
+1774255714: Client smarthome-simulator closed its connection.
+1774255714: mosquitto version 2.0.22 terminating
+1774255714: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1774256679: mosquitto version 2.0.22 starting
+1774256679: Config loaded from /mosquitto/config/mosquitto.conf.
+1774256679: Opening ipv4 listen socket on port 1883.
+1774256679: Opening ipv6 listen socket on port 1883.
+1774256679: mosquitto version 2.0.22 running
+1774256679: New connection from 172.18.0.7:36255 on port 1883.
+1774256679: New client connected from 172.18.0.7:36255 as smarthome-simulator (p2, c1, k60).
+1774256680: New connection from 172.18.0.5:47153 on port 1883.
+1774256680: New client connected from 172.18.0.5:47153 as smarthome-telegram-bot (p2, c1, k60).
+1774256684: New connection from 172.18.0.4:57605 on port 1883.
+1774256684: New client connected from 172.18.0.4:57605 as smarthome-agent (p2, c1, k60).
+1774256689: New connection from 172.18.0.6:34412 on port 1883.
+1774256689: New client connected from 172.18.0.6:34412 as nodered-ui (p2, c1, k60).
+1774258416: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1774261065: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1774262784: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1774272740: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1776593808: mosquitto version 2.0.22 starting
+1776593808: Config loaded from /mosquitto/config/mosquitto.conf.
+1776593808: Opening ipv4 listen socket on port 1883.
+1776593808: Opening ipv6 listen socket on port 1883.
+1776593808: mosquitto version 2.0.22 running
+1776593809: New connection from 172.18.0.7:56171 on port 1883.
+1776593809: New client connected from 172.18.0.7:56171 as smarthome-simulator (p2, c1, k60).
+1776593811: New connection from 172.18.0.3:54915 on port 1883.
+1776593811: New client connected from 172.18.0.3:54915 as smarthome-telegram-bot (p2, c1, k60).
+1776593823: New connection from 172.18.0.5:38963 on port 1883.
+1776593823: New client connected from 172.18.0.5:38963 as smarthome-agent (p2, c1, k60).
+1776593847: New connection from 172.18.0.2:49904 on port 1883.
+1776593847: New client connected from 172.18.0.2:49904 as nodered-ui (p2, c1, k60).
+1776593870: mosquitto version 2.0.22 terminating
+1776593870: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1776593871: mosquitto version 2.0.22 starting
+1776593871: Config loaded from /mosquitto/config/mosquitto.conf.
+1776593871: Opening ipv4 listen socket on port 1883.
+1776593871: Opening ipv6 listen socket on port 1883.
+1776593871: mosquitto version 2.0.22 running
+1776593871: New connection from 172.18.0.6:35199 on port 1883.
+1776593871: New client connected from 172.18.0.6:35199 as smarthome-telegram-bot (p2, c1, k60).
+1776593873: New connection from 172.18.0.7:47451 on port 1883.
+1776593873: New connection from 172.18.0.5:42927 on port 1883.
+1776593873: New client connected from 172.18.0.7:47451 as smarthome-simulator (p2, c1, k60).
+1776593873: New client connected from 172.18.0.5:42927 as smarthome-agent (p2, c1, k60).
+1776593879: New connection from 172.18.0.2:34768 on port 1883.
+1776593879: New client connected from 172.18.0.2:34768 as nodered-ui (p2, c1, k60).
+1776593880: Client smarthome-simulator closed its connection.
+1776593880: Client smarthome-agent closed its connection.
+1776593881: New connection from 172.18.0.7:53281 on port 1883.
+1776593881: New client connected from 172.18.0.7:53281 as smarthome-simulator (p2, c1, k60).
+1776593884: New connection from 172.18.0.5:38115 on port 1883.
+1776593884: New client connected from 172.18.0.5:38115 as smarthome-agent (p2, c1, k60).
+1776595677: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1776596586: Client smarthome-agent closed its connection.
+1776596591: New connection from 172.18.0.5:58857 on port 1883.
+1776596591: New client connected from 172.18.0.5:58857 as smarthome-agent (p2, c1, k60).
