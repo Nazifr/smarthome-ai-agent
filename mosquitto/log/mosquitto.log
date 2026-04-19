@@ -1996,3 +1996,31 @@
 1776596586: Client smarthome-agent closed its connection.
 1776596591: New connection from 172.18.0.5:58857 on port 1883.
 1776596591: New client connected from 172.18.0.5:58857 as smarthome-agent (p2, c1, k60).
+1776597485: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1776599295: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1776599450: Client smarthome-agent closed its connection.
+1776599457: New connection from 172.18.0.5:43595 on port 1883.
+1776599457: New client connected from 172.18.0.5:43595 as smarthome-agent (p2, c1, k60).
+1776600877: Client smarthome-telegram-bot closed its connection.
+1776600887: Client smarthome-simulator closed its connection.
+1776600887: Client smarthome-agent closed its connection.
+1776600888: New connection from 172.18.0.5:44865 on port 1883.
+1776600888: New client connected from 172.18.0.5:44865 as smarthome-simulator (p2, c1, k60, u'smarthome').
+1776600889: New connection from 172.18.0.7:57693 on port 1883.
+1776600889: New client connected from 172.18.0.7:57693 as smarthome-telegram-bot (p2, c1, k60, u'smarthome').
+1776600892: New connection from 172.18.0.6:59699 on port 1883.
+1776600892: New client connected from 172.18.0.6:59699 as smarthome-agent (p2, c1, k60, u'smarthome').
+1776600946: New connection from ::1:58284 on port 1883.
+1776600946: New client connected from ::1:58284 as auto-AC648C73-BF28-CE45-F7EF-72E07C8AB6BE (p2, c1, k60).
+1776600946: Client auto-AC648C73-BF28-CE45-F7EF-72E07C8AB6BE disconnected.
+1776601073: mosquitto version 2.0.22 terminating
+1776601073: Saving in-memory database to /mosquitto/data//mosquitto.db.
+1776601073: mosquitto version 2.0.22 starting
+1776601073: Config loaded from /mosquitto/config/mosquitto.conf.
+1776601073: Opening ipv4 listen socket on port 1883.
+1776601073: Opening ipv6 listen socket on port 1883.
+1776601073: mosquitto version 2.0.22 running
+1776601074: New connection from 172.18.0.7:54363 on port 1883.
+1776601074: New connection from 172.18.0.5:41571 on port 1883.
+1776601074: New connection from 172.18.0.6:58151 on port 1883.
+1776601074: New client connected from 172.18.0.7:54363 as smarthome-telegram-bot (p2, c1, k60, u'smarthome').

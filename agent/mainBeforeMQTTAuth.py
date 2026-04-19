@@ -13,21 +13,21 @@ from context_analyzer import ContextAnalyzer
 from decision_engine import DecisionEngine
 from policy_manager import PolicyManager
 
+# ── Ortam Değişkenleri ────────────────────────────────────────────────
 MQTT_BROKER  = os.getenv("MQTT_BROKER", "localhost")
 MQTT_PORT    = int(os.getenv("MQTT_PORT", 1883))
-MQTT_USER    = os.getenv("MQTT_USER", "")
-MQTT_PASSWORD= os.getenv("MQTT_PASSWORD", "")
 INFLUX_URL   = os.getenv("INFLUX_URL", "http://localhost:8086")
 INFLUX_TOKEN = os.getenv("INFLUX_TOKEN", "smarthome-super-secret-token")
 INFLUX_ORG   = os.getenv("INFLUX_ORG", "smarthome")
 INFLUX_BUCKET= os.getenv("INFLUX_BUCKET", "sensor_data")
 
-TOPIC_SENSOR_ALL = "home/+/sensor/+"
-TOPIC_CMD_PREFIX = "home"
-TOPIC_FEEDBACK   = "home/+/feedback"
-TOPIC_PREFERENCES= "home/preferences"
-TOPIC_ALERT      = "home/alerts"
-TOPIC_SENTIMENT  = "home/user/sentiment"
+# ── MQTT Topic'leri ───────────────────────────────────────────────────
+TOPIC_SENSOR_ALL    = "home/+/sensor/+"
+TOPIC_CMD_PREFIX    = "home"
+TOPIC_FEEDBACK      = "home/+/feedback"
+TOPIC_PREFERENCES   = "home/preferences"
+TOPIC_ALERT         = "home/alerts"
+TOPIC_SENTIMENT     = "home/user/sentiment"   # Telegram'dan gelen duygu durumu
 
 SIMULATION_MODE = os.getenv("SIMULATION_MODE", "false").lower() == "true"
 
@@ -40,12 +40,12 @@ class SmartHomeAgent:
         self.policy   = PolicyManager()
         self.enricher = ContextEnricher()
 
-        self.influx_client = InfluxDBClient(url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG)
+        self.influx_client = InfluxDBClient(
+            url=INFLUX_URL, token=INFLUX_TOKEN, org=INFLUX_ORG
+        )
         self.write_api = self.influx_client.write_api(write_options=SYNCHRONOUS)
 
         self.mqtt_client = mqtt.Client(client_id="smarthome-agent")
-        if MQTT_USER and MQTT_PASSWORD:
-            self.mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
         self.mqtt_client.on_connect    = self._on_connect
         self.mqtt_client.on_message    = self._on_message
         self.mqtt_client.on_disconnect = self._on_disconnect
@@ -56,7 +56,7 @@ class SmartHomeAgent:
             client.subscribe(TOPIC_SENSOR_ALL)
             client.subscribe(TOPIC_FEEDBACK)
             client.subscribe(TOPIC_PREFERENCES)
-            client.subscribe(TOPIC_SENTIMENT)
+            client.subscribe(TOPIC_SENTIMENT)   # duygu durumu topic'i eklendi
             print(f"[Agent] Dinleniyor: {TOPIC_SENSOR_ALL}")
         else:
             print(f"[Agent] Bağlantı hatası, kod: {rc}")
@@ -80,20 +80,29 @@ class SmartHomeAgent:
             self.policy.update_preferences(payload)
             print(f"[Agent] Tercihler güncellendi: {payload}")
         elif topic == TOPIC_SENTIMENT:
-            self._handle_sentiment(payload)
+            self._handle_sentiment(payload)   # duygu durumu işleme eklendi
 
     def _handle_sentiment(self, payload: dict):
+        """
+        Telegram'dan gelen kullanıcı duygu durumunu ContextEnricher'a ilet.
+        payload: {"sentiment": "yorgun", "chat_id": 123456}
+        """
         sentiment = payload.get("sentiment", "nötr")
         self.enricher.update_sentiment(sentiment)
         print(f"[Agent] Kullanıcı duygu durumu güncellendi: {sentiment}")
+
+        # Duygu durumu değişince bağlam değişmiş sayılır, yeni karar tetikle
         self._last_context = {}
 
     def _handle_sensor(self, topic, payload):
         parts = topic.split("/")
         room = parts[1] if len(parts) > 1 else "unknown"
+
         payload["timestamp"] = payload.get("timestamp", datetime.now().isoformat())
         payload["room"] = room
+
         self._write_to_influx(payload)
+
         context = self.analyzer.analyze(payload)
         context = self.enricher.enrich(context)
         features = self.analyzer.to_feature_vector(context)
@@ -113,6 +122,7 @@ class SmartHomeAgent:
             return
 
         self._last_context = context
+
         actions = self.engine.decide(context, features)
 
         for action in actions:
@@ -139,9 +149,12 @@ class SmartHomeAgent:
         else:
             topic = f"{TOPIC_CMD_PREFIX}/{room}/{device}/command"
             self.mqtt_client.publish(topic, json.dumps({
-                "command": command, "reason": reason, "method": method,
-                "confidence": confidence_str, "context_label": context_label,
-                "timestamp": datetime.now().isoformat(),
+                "command":       command,
+                "reason":        reason,
+                "method":        method,
+                "confidence":    confidence_str,
+                "context_label": context_label,
+                "timestamp":     datetime.now().isoformat(),
             }))
             print(f"[Agent] ✓ Komut → {topic}: {command}")
             print(f"         Gerekçe: {reason} | Yöntem: {method} | Güven: {confidence_str} | Bağlam: {context_label}")
@@ -152,6 +165,7 @@ class SmartHomeAgent:
         device  = payload.get("device")
         command = payload.get("command")
         sensor  = payload.get("sensor_data", {})
+
         if device and command and sensor:
             context  = self.analyzer.analyze(sensor)
             features = self.analyzer.to_feature_vector(context)
@@ -168,30 +182,38 @@ class SmartHomeAgent:
             alerts.append(f"⚠️ {room} odasında düşük sıcaklık: {context['temperature']}°C")
         for alert in alerts:
             self.mqtt_client.publish(TOPIC_ALERT, json.dumps({
-                "message": alert, "room": room,
-                "timestamp": datetime.now().isoformat(), "severity": "high",
+                "message":   alert,
+                "room":      room,
+                "timestamp": datetime.now().isoformat(),
+                "severity":  "high",
             }))
             print(f"[Agent] ALERT: {alert}")
 
     def _write_to_influx(self, data: dict):
         try:
-            point = (Point("sensor_reading")
+            point = (
+                Point("sensor_reading")
                 .tag("room", data.get("room", "unknown"))
                 .field("temperature", float(data.get("temperature", 0)))
                 .field("humidity",    float(data.get("humidity", 0)))
                 .field("motion",      int(data.get("motion", 0)))
-                .field("light",       float(data.get("light", 0))))
+                .field("light",       float(data.get("light", 0)))
+            )
             self.write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
         except Exception as e:
             print(f"[Agent] InfluxDB yazma hatası: {e}")
 
     def _log_action(self, device, room, command, reason, context):
         try:
-            point = (Point("action_log")
-                .tag("device", device).tag("room", room)
-                .tag("command", command).tag("context", context.get("context_label", "unknown"))
-                .field("reason", reason)
-                .field("temperature", float(context.get("temperature", 0))))
+            point = (
+                Point("action_log")
+                .tag("device",  device)
+                .tag("room",    room)
+                .tag("command", command)
+                .tag("context", context.get("context_label", "unknown"))
+                .field("reason",      reason)
+                .field("temperature", float(context.get("temperature", 0)))
+            )
             self.write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
         except Exception as e:
             print(f"[Agent] Action log hatası: {e}")
