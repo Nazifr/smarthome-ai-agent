@@ -1,9 +1,10 @@
 """
-Veri Hazırlama ve ML Model Eğitimi - v5
+Veri Hazırlama ve ML Model Eğitimi - v6
 
 Dataset: SmartHomeEnergyConsumptionOptimization.csv
 Model: LightGBM
 Feature sayısı: 18
+Değişiklik: is_modu etiketi eklendi
 """
 
 import os
@@ -81,7 +82,7 @@ df_home["timestamp"] = pd.to_datetime(df_home["timestamp"], errors="coerce")
 df_home = df_home.dropna(subset=["timestamp"]).reset_index(drop=True)
 df_home["hour"]       = df_home["hour_of_day"].astype(int)
 df_home["minute"]     = df_home["timestamp"].dt.minute.astype(int)
-df_home["is_weekend"] = ((df_home["day_of_week"] >= 5).astype(int))
+df_home["is_weekend"] = (df_home["day_of_week"] >= 5).astype(int)
 df_home["day_type"]   = df_home["is_weekend"]
 
 # ── 4. Sensör Verileri ────────────────────────────────────────────────
@@ -127,7 +128,6 @@ features = [
     "temp_diff", "heat_index", "ac_need_score"
 ]
 
-# activity ayrı tut, features listesinde yok
 df_clean = df_home[features + ["activity"]].dropna().reset_index(drop=True)
 print(f"   Temiz satir: {len(df_clean):,}")
 print(f"   Feature sayisi: {len(features)}")
@@ -137,25 +137,39 @@ print("\nEtiketler olusturuluyor...")
 
 activity = df_clean["activity"]
 hour     = df_clean["hour"]
-is_wknd  = df_home.loc[df_clean.index, "is_weekend"] if len(df_clean) == len(df_home) else df_clean.get("is_weekend", pd.Series(0, index=df_clean.index))
 
-# np.select ile vektörize etiketleme
 conditions = [
+    # Uyku
     (activity == "sleeping") & ((hour >= 21) | (hour < 6)),
     (activity == "sleeping"),
+    # Ev boş
     (activity == "away"),
+    # Sabah rutini
     (activity == "cooking") & hour.between(6, 9),
     (activity == "cooking"),
+    # Uyku hazırlık
     (activity == "watching_tv") & ((hour >= 21) | (hour < 6)),
-    (activity == "watching_tv"),
+    # İş modu — hafta içi gündüz saatleri (idle veya watching_tv)
+    (activity == "idle") & hour.between(9, 17) & (df_clean["is_weekend"] == 0),
+    (activity == "watching_tv") & hour.between(9, 17) & (df_clean["is_weekend"] == 0),
+    # Misafir modu — hafta sonu
     (activity == "idle") & (df_clean["is_weekend"] == 1),
+    # Dinlenme
+    (activity == "watching_tv"),
     (activity == "idle"),
 ]
 choices = [
-    "uyku_modu", "uyku_hazirlik", "ev_bos",
-    "sabah_rutini", "dinlenme_modu",
-    "uyku_hazirlik", "dinlenme_modu",
-    "misafir_modu", "dinlenme_modu",
+    "uyku_modu",
+    "uyku_hazirlik",
+    "ev_bos",
+    "sabah_rutini",
+    "dinlenme_modu",
+    "uyku_hazirlik",
+    "is_modu",
+    "is_modu",
+    "misafir_modu",
+    "dinlenme_modu",
+    "dinlenme_modu",
 ]
 df_clean["label"] = np.select(conditions, choices, default="dinlenme_modu")
 
