@@ -33,6 +33,13 @@ def _on_message(client, userdata, msg):
         room_id = topic_parts[1]
         device = topic_parts[3]
 
+        # Normalise generic "fan" to room-specific device names expected by the frontend
+        if device == "fan":
+            if room_id == "kitchen":
+                device = "exhaust_fan"
+            elif room_id == "bathroom":
+                device = "ventilation_fan"
+
         if room_id not in ACTUATOR_STATES:
             ACTUATOR_STATES[room_id] = {}
 

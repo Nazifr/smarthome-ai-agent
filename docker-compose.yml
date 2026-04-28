@@ -163,6 +163,7 @@ services:
       - MQTT_PORT=1883
       - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - TZ=Europe/Istanbul
+      - PYTHONUNBUFFERED=1
     depends_on:
       - mosquitto
     restart: unless-stopped
