@@ -8,6 +8,14 @@
         "env": []
     },
     {
+        "id": "bridge-tab-01",
+        "type": "tab",
+        "label": "Agent Command Bridge",
+        "disabled": false,
+        "info": "Translates agent home/room/device/command → home/room/actuator/device/state so the FastAPI backend tracks AI-driven actuator changes.",
+        "env": []
+    },
+    {
         "id": "mqtt-broker-config",
         "type": "mqtt-broker",
         "name": "SmartHome MQTT",
@@ -16,8 +24,23 @@
         "clientid": "nodered-dashboard",
         "autoConnect": true,
         "usetls": false,
+        "protocolVersion": 4,
         "keepalive": "60",
-        "cleansession": true
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
     },
     {
         "id": "ui-base",
@@ -105,8 +128,23 @@
         "clientid": "nodered-ui",
         "autoConnect": true,
         "usetls": false,
+        "protocolVersion": 4,
         "keepalive": "60",
-        "cleansession": true
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
     },
     {
         "id": "ui_tab_sensors",
@@ -679,6 +717,56 @@
         "format": "{{msg.payload}}",
         "x": 550,
         "y": 640,
+        "wires": []
+    },
+    {
+        "id": "bridge-mqtt-in-01",
+        "type": "mqtt in",
+        "z": "bridge-tab-01",
+        "name": "Agent Commands",
+        "topic": "home/+/+/command",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker-config",
+        "inputs": 0,
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "bridge-func-01"
+            ]
+        ]
+    },
+    {
+        "id": "bridge-func-01",
+        "type": "function",
+        "z": "bridge-tab-01",
+        "name": "Reformat → actuator/state",
+        "func": "// Extract: home/living_room/light/command → parts\nconst parts = msg.topic.split(\"/\");\nconst room   = parts[1];  // living_room\nconst device = parts[2];  // light\n\n// Parse payload (may arrive as object or JSON string)\nlet cmd = msg.payload;\nif (typeof cmd === \"string\") {\n    try { cmd = JSON.parse(cmd); } catch(e) {}\n}\n\nconst state = (cmd && (cmd.command || cmd.state)) || \"OFF\";\n\n// Rebuild topic: home/living_room/actuator/light/state\nmsg.topic   = `home/${room}/actuator/${device}/state`;\nmsg.payload = JSON.stringify({ state: state });\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 240,
+        "wires": [
+            [
+                "bridge-mqtt-out-01"
+            ]
+        ]
+    },
+    {
+        "id": "bridge-mqtt-out-01",
+        "type": "mqtt out",
+        "z": "bridge-tab-01",
+        "name": "Publish State",
+        "topic": "",
+        "qos": "0",
+        "retain": "",
+        "broker": "mqtt-broker-config",
+        "x": 650,
+        "y": 240,
         "wires": []
     }
 ]

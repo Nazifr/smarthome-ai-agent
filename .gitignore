@@ -18,3 +18,8 @@ nodered/.config.users.json.backup
 .vs/
 agent/models/
 agent/*.csv
+backend/__pycache__/
+backend/app/__pycache__/
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
