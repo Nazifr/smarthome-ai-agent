@@ -1,174 +1,231 @@
-import { useEffect, useState } from "react"
-import { getSystemOverview, controlActuator, setSystemMode, getRoomHistory } from "./services/api"
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import { useEffect, useMemo, useRef, useState } from 'react'
+import { AnimatePresence } from 'framer-motion'
+import Header from './components/Header'
+import StatsBar from './components/StatsBar'
+import RoomGrid from './components/RoomGrid'
+import ActivityFeed from './components/ActivityFeed'
+import AiExplanation from './components/AiExplanation'
+import AiTimeline from './components/AiTimeline'
+import DemoConsole from './components/DemoConsole'
+import EnergySavings from './components/EnergySavings'
+import IntegrationDock from './components/IntegrationDock'
+import RoomPanel from './components/RoomPanel'
+import {
+  controlActuator,
+  getRoomHistory,
+  getSystemOverview,
+  getSystemDiagnostics,
+  setSystemMode,
+  triggerDemoScenario,
+} from './services/api'
 
-const ROOM_CONFIG = {
+export const ROOM_CONFIG = {
   living_room: {
-    sensors: ["temperature"],
+    zone: 'West Wing',
+    sensors: ['temperature'],
     controls: [
-      { key: "light", label: "Light", onColor: "bg-amber-500 hover:bg-amber-400" },
-      { key: "ac", label: "AC", onColor: "bg-sky-600 hover:bg-sky-500" },
-      { key: "fan", label: "Fan", onColor: "bg-cyan-600 hover:bg-cyan-500" },
+      { key: 'light', label: 'Light' },
+      { key: 'ac', label: 'AC' },
+      { key: 'fan', label: 'Fan' },
     ],
   },
   bedroom: {
-    sensors: ["temperature"],
+    zone: 'Private Zone',
+    sensors: ['temperature'],
     controls: [
-      { key: "light", label: "Light", onColor: "bg-amber-500 hover:bg-amber-400" },
-      { key: "ac", label: "AC", onColor: "bg-sky-600 hover:bg-sky-500" },
-      { key: "fan", label: "Fan", onColor: "bg-cyan-600 hover:bg-cyan-500" },
+      { key: 'light', label: 'Light' },
+      { key: 'ac', label: 'AC' },
+      { key: 'fan', label: 'Fan' },
     ],
   },
   kitchen: {
-    sensors: ["temperature", "motion", "smoke"],
+    zone: 'Safety Critical',
+    sensors: ['temperature', 'motion', 'smoke'],
     controls: [
-      { key: "light", label: "Light", onColor: "bg-amber-500 hover:bg-amber-400" },
-      { key: "exhaust_fan", label: "Exhaust Fan", onColor: "bg-cyan-600 hover:bg-cyan-500" },
+      { key: 'light', label: 'Light' },
+      { key: 'exhaust_fan', label: 'Exhaust Fan' },
     ],
   },
   bathroom: {
-    sensors: ["temperature", "humidity", "motion"],
+    zone: 'Humidity Watch',
+    sensors: ['temperature', 'humidity', 'motion'],
     controls: [
-      { key: "light", label: "Light", onColor: "bg-amber-500 hover:bg-amber-400" },
-      { key: "ventilation_fan", label: "Ventilation Fan", onColor: "bg-cyan-600 hover:bg-cyan-500" },
+      { key: 'light', label: 'Light' },
+      { key: 'ventilation_fan', label: 'Ventilation Fan' },
     ],
   },
   hallway: {
-    sensors: ["motion"],
-    controls: [
-      { key: "light", label: "Light", onColor: "bg-amber-500 hover:bg-amber-400" },
-    ],
+    zone: 'Transit',
+    sensors: ['motion'],
+    controls: [{ key: 'light', label: 'Light' }],
   },
 }
 
-const SENSOR_LABELS = {
-  temperature: "Temperature",
-  humidity: "Humidity",
-  motion: "Motion",
-  smoke: "Smoke",
+export const SENSOR_LABELS = {
+  temperature: 'Temperature',
+  humidity: 'Humidity',
+  motion: 'Motion',
+  smoke: 'Smoke',
 }
 
-function formatSensorValue(sensorKey, value) {
-  if (sensorKey === "temperature") return `${value} °C`
-  if (sensorKey === "humidity") return `${value} %`
-  return value
-}
-
-function formatRoomName(roomId) {
+export function formatRoomName(roomId = '') {
   return roomId
-    .replaceAll("_", " ")
+    .replaceAll('_', ' ')
     .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-function calculateAlerts(overview) {
-  if (!overview) return []
-
-  const alerts = []
-
-  for (const room of overview.rooms ?? []) {
-    if (Number(room.smoke) > 0) {
-      alerts.push({
-        id: `${room.room_id}-smoke`,
-        text: `${formatRoomName(room.room_id)} smoke detected`,
-      })
-    }
-  }
-
-  return alerts
+export function formatDeviceName(device = '') {
+  return device
+    .replaceAll('_', ' ')
+    .replace(/\b\w/g, (char) => char.toUpperCase())
 }
 
-function buildEventsFromOverviewChange(previousOverview, nextOverview) {
+export function formatSensorValue(sensor, value) {
+  if (value === undefined || value === null || value === '') return 'N/A'
+  if (sensor === 'temperature') return `${Number(value).toFixed(1)} C`
+  if (sensor === 'humidity') return `${Number(value).toFixed(0)}%`
+  if (sensor === 'motion') return Number(value) > 0 ? 'Detected' : 'Clear'
+  if (sensor === 'smoke') return Number(value) > 0 ? 'Alert' : 'Clear'
+  return String(value)
+}
+
+function calculateAlerts(overview) {
+  return (overview?.rooms ?? [])
+    .filter((room) => Number(room.smoke) > 0)
+    .map((room) => ({
+      id: `${room.room_id}-smoke`,
+      room: room.room_id,
+      text: `${formatRoomName(room.room_id)} smoke detected`,
+      level: 'critical',
+    }))
+}
+
+function calculateHealth(overview, alerts) {
+  const rooms = overview?.rooms ?? []
+  if (!rooms.length) return 0
+
+  const activeRooms = rooms.filter((room) => {
+    const sensors = ROOM_CONFIG[room.room_id]?.sensors ?? []
+    return sensors.some((sensor) => room[sensor] !== undefined && room[sensor] !== null)
+  }).length
+
+  return Math.max(0, Math.round((activeRooms / rooms.length) * 100) - alerts.length * 18)
+}
+
+function buildEvents(previousOverview, nextOverview) {
   if (!previousOverview || !nextOverview) return []
 
-  const newEvents = []
+  const now = new Date().toLocaleTimeString([], {
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+  })
+  const events = []
 
   if (previousOverview.mode !== nextOverview.mode) {
-    newEvents.push({
+    events.push({
       id: `mode-${Date.now()}-${nextOverview.mode}`,
-      text: `System mode changed to ${nextOverview.mode}`,
-      time: new Date().toLocaleTimeString(),
-      level: "info",
+      title: 'Mode Updated',
+      text: `System mode switched to ${nextOverview.mode}`,
+      time: now,
+      level: nextOverview.mode === 'AI' ? 'ai' : 'info',
     })
   }
 
   for (const nextRoom of nextOverview.rooms ?? []) {
-    const prevRoom = previousOverview.rooms?.find(
+    const previousRoom = previousOverview.rooms?.find(
       (room) => room.room_id === nextRoom.room_id
     )
-
-    if (!prevRoom) continue
+    if (!previousRoom) continue
 
     for (const [device, nextState] of Object.entries(nextRoom.actuators ?? {})) {
-      const prevState = prevRoom.actuators?.[device]
-
-      if (prevState && prevState !== nextState) {
-        newEvents.push({
+      const previousState = previousRoom.actuators?.[device]
+      if (previousState && previousState !== nextState) {
+        events.push({
           id: `actuator-${nextRoom.room_id}-${device}-${Date.now()}`,
-          text: `${formatRoomName(nextRoom.room_id)} ${device.replaceAll("_", " ")} turned ${nextState}`,
-          time: new Date().toLocaleTimeString(),
-          level: "info",
+          title: formatRoomName(nextRoom.room_id),
+          text: `${formatDeviceName(device)} changed to ${nextState}`,
+          time: now,
+          level: 'info',
         })
       }
     }
 
-    for (const [sensor, value] of Object.entries(nextRoom.sensors ?? {})) {
-      const prevValue = prevRoom.sensors?.[sensor]
+    for (const sensor of ['smoke', 'motion']) {
+      const previousValue = Number(previousRoom[sensor])
+      const nextValue = Number(nextRoom[sensor])
 
-      if (sensor === "smoke" && value > 0 && prevValue !== value) {
-        newEvents.push({
+      if (sensor === 'smoke' && nextValue > 0 && previousValue !== nextValue) {
+        events.push({
           id: `smoke-${nextRoom.room_id}-${Date.now()}`,
-          text: `${formatRoomName(nextRoom.room_id)} smoke detected`,
-          time: new Date().toLocaleTimeString(),
-          level: "alert",
+          title: 'Safety Alert',
+          text: `${formatRoomName(nextRoom.room_id)} smoke sensor triggered`,
+          time: now,
+          level: 'critical',
         })
       }
 
-      if (sensor === "motion" && value > 0 && prevValue !== value) {
-        newEvents.push({
+      if (sensor === 'motion' && nextValue > 0 && previousValue !== nextValue) {
+        events.push({
           id: `motion-${nextRoom.room_id}-${Date.now()}`,
+          title: 'Occupancy',
           text: `${formatRoomName(nextRoom.room_id)} motion detected`,
-          time: new Date().toLocaleTimeString(),
-          level: "info",
+          time: now,
+          level: 'motion',
         })
       }
     }
   }
 
-  return newEvents
+  return events
+}
+
+function formatHistory(data) {
+  return (data ?? [])
+    .map((item) => {
+      const rawTime = item.time || item.ts || item.timestamp
+      const date = rawTime ? new Date(rawTime) : new Date()
+      return {
+        time: date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        value: Number(item.value),
+      }
+    })
+    .filter((item) => Number.isFinite(item.value))
 }
 
 export default function App() {
   const [overview, setOverview] = useState(null)
+  const previousOverviewRef = useRef(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState("")
-  const [actionLoading, setActionLoading] = useState("")
-  const [localStates, setLocalStates] = useState({})
+  const [error, setError] = useState('')
   const [events, setEvents] = useState([])
-  const [previousOverview, setPreviousOverview] = useState(null)
-  const [eventLimit, setEventLimit] = useState(10)
-  const alerts = calculateAlerts(overview)
   const [selectedRoomId, setSelectedRoomId] = useState(null)
-  const [isClosingModal, setIsClosingModal] = useState(false)
-  const selectedRoom = overview?.rooms?.find((room) => room.room_id === selectedRoomId) ?? null
+  const [actionLoading, setActionLoading] = useState('')
+  const [localStates, setLocalStates] = useState({})
   const [roomHistory, setRoomHistory] = useState([])
   const [historyLoading, setHistoryLoading] = useState(false)
   const [historyMinutes, setHistoryMinutes] = useState(60)
+  const [diagnostics, setDiagnostics] = useState(null)
+  const [demoLoading, setDemoLoading] = useState('')
 
+  const rooms = overview?.rooms ?? []
+  const alerts = useMemo(() => calculateAlerts(overview), [overview])
+  const health = useMemo(() => calculateHealth(overview, alerts), [overview, alerts])
+  const selectedRoom = rooms.find((room) => room.room_id === selectedRoomId) ?? null
 
   async function loadOverview() {
     try {
       const data = await getSystemOverview()
 
-      setEvents((prevEvents) => {
-        const generatedEvents = buildEventsFromOverviewChange(previousOverview, data)
-        return [...generatedEvents, ...prevEvents].slice(0, 20)
+      setEvents((currentEvents) => {
+        const generatedEvents = buildEvents(previousOverviewRef.current, data)
+        return [...generatedEvents, ...currentEvents].slice(0, 24)
       })
-
-      setPreviousOverview(data)
+      previousOverviewRef.current = data
       setOverview(data)
-      setError("")
+      setError('')
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Failed to load dashboard')
     } finally {
       setLoading(false)
     }
@@ -176,12 +233,23 @@ export default function App() {
 
   useEffect(() => {
     loadOverview()
+    const interval = window.setInterval(loadOverview, 700)
+    return () => window.clearInterval(interval)
+  }, [])
 
-    const interval = setInterval(() => {
-      loadOverview()
-    }, 500)
+  useEffect(() => {
+    async function loadDiagnostics() {
+      try {
+        const data = await getSystemDiagnostics()
+        setDiagnostics(data)
+      } catch (err) {
+        console.error('Failed to load diagnostics', err)
+      }
+    }
 
-    return () => clearInterval(interval)
+    loadDiagnostics()
+    const interval = window.setInterval(loadDiagnostics, 5000)
+    return () => window.clearInterval(interval)
   }, [])
 
   useEffect(() => {
@@ -190,474 +258,193 @@ export default function App() {
       return
     }
 
-    loadRoomHistory(selectedRoomId)
-  }, [selectedRoomId, historyMinutes])
-
-
-
-  async function handleActuator(roomId, device, state) {
-    const actionKey = `${roomId}-${device}-${state}`
-    setActionLoading(actionKey)
-
-    setLocalStates((prev) => ({
-      ...prev,
-      [`${roomId}-${device}`]: state,
-    }))
-
-    try {
-      await controlActuator(roomId, device, state)
-
-      // stop loading quickly
-      setActionLoading("")
-
-      // refresh once, but dont block the button on it
-      loadOverview()
-    } catch (err) {
-      setError(err.message)
-      setActionLoading("")
+    async function loadHistory() {
+      try {
+        setHistoryLoading(true)
+        const data = await getRoomHistory(selectedRoomId, 'temperature', historyMinutes)
+        setRoomHistory(formatHistory(data))
+      } catch (err) {
+        console.error('Failed to load room history', err)
+        setRoomHistory([])
+      } finally {
+        setHistoryLoading(false)
+      }
     }
-  }
+
+    loadHistory()
+  }, [selectedRoomId, historyMinutes])
 
   async function handleModeChange(mode) {
     try {
       await setSystemMode(mode)
+      setEvents((current) => [
+        {
+          id: `mode-manual-${Date.now()}`,
+          title: 'Manual Command',
+          text: `System mode requested: ${mode}`,
+          time: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+          level: mode === 'AI' ? 'ai' : 'info',
+        },
+        ...current,
+      ].slice(0, 24))
       await loadOverview()
     } catch (err) {
-      setError(err.message)
+      setError(err.message || 'Failed to change system mode')
     }
   }
 
-  function closeRoomModal() {
-    setIsClosingModal(true)
-
-    setTimeout(() => {
-      setSelectedRoomId(null)
-      setIsClosingModal(false)
-    }, 200)
-  }
-
-  async function loadRoomHistory(roomId) {
-    try {
-      setHistoryLoading(true)
-
-      const data = await getRoomHistory(roomId, "temperature", historyMinutes)
-
-      const formatted = (data ?? []).map((item) => ({
-        time: new Date(item.time || item.ts || item.timestamp).toLocaleTimeString([], {
-          hour: "2-digit",
-          minute: "2-digit",
+  async function handleActuator(roomId, device, state) {
+    const key = `${roomId}-${device}-${state}`
+    setActionLoading(key)
+    setLocalStates((current) => ({
+      ...current,
+      [`${roomId}-${device}`]: state,
+    }))
+    setEvents((current) => [
+      {
+        id: `manual-${roomId}-${device}-${state}-${Date.now()}`,
+        title: formatRoomName(roomId),
+        text: `${formatDeviceName(device)} turned ${state}`,
+        time: new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
         }),
-        value: Number(item.value),
-      }))
-      setRoomHistory(formatted)
+        level: 'manual',
+      },
+      ...current,
+    ].slice(0, 24))
+
+    try {
+      await controlActuator(roomId, device, state)
+      await loadOverview()
     } catch (err) {
-      console.error("Failed to load room history", err)
-      setRoomHistory([])
+      setError(err.message || 'Failed to control device')
     } finally {
-      setHistoryLoading(false)
+      setActionLoading('')
     }
   }
 
-  function getOnButtonClass(currentState, loadingKey, expectedKey, colorClass) {
-    const active = currentState === "ON"
-    const loading = loadingKey === expectedKey
-
-    return `flex-1 rounded-xl px-4 py-2 font-medium ${active ? colorClass : "bg-slate-700 hover:bg-slate-600"
-      } ${loading ? "opacity-80" : ""}`
+  async function handleDemoScenario(scenario) {
+    setDemoLoading(scenario)
+    try {
+      const demo = await triggerDemoScenario(scenario)
+      setDiagnostics((current) => ({
+        ...current,
+        demo,
+      }))
+      setEvents((current) => [
+        {
+          id: `demo-${scenario}-${Date.now()}`,
+          title: 'Demo Scenario',
+          text: `${scenario.replaceAll('_', ' ')} activated`,
+          time: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+          level: scenario === 'kitchen_smoke' ? 'critical' : 'manual',
+        },
+        ...current,
+      ].slice(0, 24))
+      await loadOverview()
+    } catch (err) {
+      setError(err.message || 'Failed to trigger demo scenario')
+    } finally {
+      setDemoLoading('')
+    }
   }
-
-  function getOffButtonClass(currentState, loadingKey, expectedKey) {
-    const active = currentState === "OFF"
-    const loading = loadingKey === expectedKey
-
-    return `flex-1 rounded-xl px-4 py-2 font-medium ${active ? "bg-rose-600 hover:bg-rose-500" : "bg-slate-700 hover:bg-slate-600"
-      } ${loading ? "opacity-80" : ""}`
-  }
-
-
 
   if (loading) {
     return (
-      <div className="w-full min-h-screen bg-slate-950 text-white px-6 py-8">
-        <p className="text-xl">Loading dashboard...</p>
-      </div>
+      <main className="boot-screen">
+        <div className="boot-mark" />
+        <p>Synchronizing smart home telemetry...</p>
+      </main>
     )
   }
 
   if (error && !overview) {
     return (
-      <div className="min-h-screen bg-slate-950 text-red-400 flex items-center justify-center">
-        <p className="text-xl">{error}</p>
-      </div>
+      <main className="boot-screen boot-screen--error">
+        <p>{error}</p>
+      </main>
     )
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white px-6 py-8 flex justify-center">
-      <div className="max-w-6xl mx-auto">
-        <header className="mb-8">
-          <h1 className="text-4xl font-bold mb-2 text-yellow-400 !text-yellow-400">
-            Smart Home Dashboard
-          </h1>
-          <p className="text-slate-400">Adaptive AI-Based IoT Smart Home System</p>
-        </header>
+    <main className="app-shell">
+      <div className="ambient-grid" aria-hidden="true" />
+      <Header overview={overview} alerts={alerts} health={health} />
 
-        {error && (
-          <div className="mb-6 bg-red-900/40 border border-red-700 text-red-300 rounded-2xl p-4">
-            {error}
-          </div>
-        )}
-
-        <section className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-          <div className="bg-slate-900 rounded-2xl p-5 shadow-lg">
-            <p className="text-slate-400 text-sm mb-2">System Mode</p>
-
-            <div className="flex gap-2">
-              {["Manual", "Static", "AI"].map((mode) => (
-                <button
-                  key={mode}
-                  onClick={() => handleModeChange(mode)}
-                  className={`flex-1 rounded-xl px-3 py-2 text-sm font-medium ${overview.mode === mode
-                    ? "bg-yellow-500 text-black"
-                    : "bg-slate-700 hover:bg-slate-600"
-                    }`}
-                >
-                  {mode}
-                </button>
-              ))}
+      <section className="dashboard-layout">
+        <div className="dashboard-main">
+          {error && (
+            <div className="inline-alert" role="alert">
+              {error}
             </div>
-          </div>
+          )}
 
-          <div className="bg-slate-900 rounded-2xl p-5 shadow-lg">
-            <p className="text-slate-400 text-sm mb-2">Total Rooms</p>
-            <p className="text-2xl font-semibold">{overview.total_rooms}</p>
-          </div>
+          <StatsBar
+            overview={overview}
+            alerts={alerts}
+            health={health}
+            onModeChange={handleModeChange}
+          />
 
-          <div className="bg-slate-900 rounded-2xl p-5 shadow-lg">
-            <p className="text-slate-400 text-sm mb-2">Active Alerts</p>
-            <p className="text-2xl font-semibold">{alerts.length}</p>
-            {alerts.length > 0 && (
-              <p className="text-xs text-red-300 mt-2">
-                {alerts[0].text}
-              </p>
-            )}
-          </div>
-        </section>
+          <DemoConsole
+            diagnostics={diagnostics}
+            loading={demoLoading}
+            onScenario={handleDemoScenario}
+          />
 
-        <section>
-          <h2 className="text-2xl font-semibold mb-4 gap-6">Rooms</h2>
+          <EnergySavings overview={overview} diagnostics={diagnostics} />
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <RoomGrid
+            rooms={rooms}
+            selectedRoomId={selectedRoomId}
+            localStates={localStates}
+            onRoomClick={setSelectedRoomId}
+          />
+        </div>
 
-            {overview.rooms.map((room) => {
-              const config = ROOM_CONFIG[room.room_id]
-              const hasAlert = Number(room.smoke) > 0
-              return (
-                <div
+        <aside className="side-stack">
+          <AiExplanation
+            overview={overview}
+            diagnostics={diagnostics}
+            alerts={alerts}
+          />
+          <AiTimeline overview={overview} diagnostics={diagnostics} alerts={alerts} />
+          <ActivityFeed
+            events={events}
+            alerts={alerts}
+            rooms={rooms}
+            diagnostics={diagnostics}
+          />
+          <IntegrationDock diagnostics={diagnostics} mode={overview?.mode ?? 'Manual'} />
+        </aside>
+      </section>
 
-                  key={room.room_id}
-                  onClick={() => {
-                    setIsClosingModal(false)
-                    setSelectedRoomId(room.room_id)
-                  }}
-                  className={`cursor-pointer rounded-2xl p-5 shadow-lg border transition hover:scale-[1.01] ${hasAlert
-                    ? "bg-red-950/40 border-red-800 shadow-red-900/40"
-                    : "bg-slate-900 border-slate-800"
-                    } ${selectedRoomId === room.room_id ? "ring-2 ring-yellow-400" : ""
-                    }`}
-                >
-                  <div className="mb-4 flex items-center justify-center gap-2">
-                    <h3 className="text-xl font-semibold capitalize tracking-wide">
-                      {formatRoomName(room.room_id)}
-                    </h3>
-
-                    {hasAlert && (
-                      <span className="text-xs text-red-300 bg-red-900/50 px-2 py-1 rounded-md">
-                        ALERT
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="space-y-2 text-slate-300 mb-6 text-center text-sm">
-                    {config.sensors.map((sensorKey) => (
-                      <p key={sensorKey}>
-                        {SENSOR_LABELS[sensorKey]}:{" "}
-                        {formatSensorValue(sensorKey, room[sensorKey])}
-                      </p>
-                    ))}
-
-                    {config.controls.map((control, index) => (
-                      <p key={`${control.label}-${index}`}>
-                        {control.label}: {room.actuators[control.key]}
-                      </p>
-                    ))}
-                  </div>
-
-                  <div className="space-y-4">
-                    {config.controls.map((control, index) => {
-                      const localKey = `${room.room_id}-${control.key}`
-                      const currentState = localStates[localKey] ?? room.actuators[control.key]
-
-                      return (
-                        <div key={`${control.label}-${index}`}>
-                          <p className="text-sm text-slate-400 mb-2 text-center">
-                            {control.label} Control
-                          </p>
-
-                          <div className="flex gap-2">
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleActuator(room.room_id, control.key, "ON")
-                              }}
-                              disabled={actionLoading !== ""}
-                              className={getOnButtonClass(
-                                currentState,
-                                actionLoading,
-                                `${room.room_id}-${control.key}-ON`,
-                                control.onColor
-                              )}
-                            >
-                              {actionLoading === `${room.room_id}-${control.key}-ON`
-                                ? "Sending..."
-                                : `${control.label} ON`}
-                            </button>
-
-                            <button
-                              onClick={(e) => {
-                                e.stopPropagation()
-                                handleActuator(room.room_id, control.key, "OFF")
-                              }}
-                              disabled={actionLoading !== ""}
-                              className={getOffButtonClass(
-                                currentState,
-                                actionLoading,
-                                `${room.room_id}-${control.key}-OFF`
-                              )}
-                            >
-                              {actionLoading === `${room.room_id}-${control.key}-OFF`
-                                ? "Sending..."
-                                : `${control.label} OFF`}
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-          </div>
-        </section>
-
-
-
-        <section className="mt-8">
-          <div className="bg-slate-900 rounded-2xl p-5 shadow-lg border border-slate-800">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-semibold gap-5">Recent Activity</h2>
-
-              <div className="flex items-center gap-3">
-                <span className="text-sm text-slate-400">{Math.min(events.length, eventLimit)} / {events.length} items</span>
-
-                <select
-                  value={eventLimit}
-                  onChange={(e) => setEventLimit(Number(e.target.value))}
-                  className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm"
-                >
-                  <option value={10}>10</option>
-                  <option value={15}>15</option>
-                  <option value={20}>20</option>
-                </select>
-              </div>
-            </div>
-
-            {events.length === 0 ? (
-              <p className="text-slate-400">No recent activity yet.</p>
-            ) : (
-              <div className="space-y-3">
-                {events.slice(0, eventLimit).map((event) => (
-                  <div
-                    key={event.id}
-                    className={`rounded-xl px-4 py-3 border ${event.level === "alert"
-                      ? "bg-red-950/40 border-red-800 text-red-200"
-                      : "bg-slate-800 border-slate-700 text-slate-200"
-                      }`}
-                  >
-                    <div className="flex items-center justify-between gap-4">
-                      <p className="font-medium">{event.text}</p>
-                      <span className="text-xs text-slate-400 whitespace-nowrap">
-                        {event.time}
-                      </span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        </section>
-
+      <AnimatePresence>
         {selectedRoom && (
-          <div
-            className={`fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm px-4 ${isClosingModal ? "animate-fadeOut" : "animate-fadeIn"
-              }`}
-            onClick={closeRoomModal}
-          >
-            <div
-              className={`w-full max-w-4xl max-h-[90vh] overflow-y-auto rounded-3xl border border-slate-700 bg-slate-900 shadow-2xl ${isClosingModal ? "animate-scaleOut" : "animate-scaleIn"
-                }`}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between border-b border-slate-800 px-6 py-5">
-                <div>
-                  <h2 className="text-2xl font-semibold">
-                    {formatRoomName(selectedRoom.room_id)} Details
-                  </h2>
-                  <p className="mt-1 text-sm text-slate-400">
-                    Live room status and controls
-                  </p>
-                </div>
-
-                <button
-                  onClick={closeRoomModal}
-                  className="rounded-xl bg-slate-800 px-4 py-2 text-sm hover:bg-slate-700"
-                >
-                  Close
-                </button>
-              </div>
-
-              <div className="grid grid-cols-1 gap-6 p-6 md:grid-cols-2">
-                <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5">
-                  <h3 className="mb-4 text-lg font-semibold">Sensors</h3>
-
-                  <div className="space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Temperature</span>
-                      <span>{formatSensorValue("temperature", selectedRoom.temperature)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Humidity</span>
-                      <span>{formatSensorValue("humidity", selectedRoom.humidity)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Motion</span>
-                      <span>{formatSensorValue("motion", selectedRoom.motion)}</span>
-                    </div>
-
-                    <div className="flex items-center justify-between">
-                      <span className="text-slate-400">Smoke</span>
-                      <span>{formatSensorValue("smoke", selectedRoom.smoke)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5">
-                  <h3 className="mb-4 text-lg font-semibold">Actuators</h3>
-
-                  <div className="space-y-4">
-                    {(ROOM_CONFIG[selectedRoom.room_id]?.controls ?? []).map((control) => {
-                      const localKey = `${selectedRoom.room_id}-${control.key}`
-                      const currentState =
-                        localStates[localKey] ?? selectedRoom.actuators?.[control.key]
-
-                      return (
-                        <div key={control.key}>
-                          <p className="mb-2 font-medium">{control.label}</p>
-
-                          <div className="flex gap-3">
-                            <button
-                              onClick={() =>
-                                handleActuator(selectedRoom.room_id, control.key, "ON")
-                              }
-                              className={getOnButtonClass(
-                                currentState,
-                                actionLoading,
-                                `${selectedRoom.room_id}-${control.key}-ON`,
-                                control.onColor
-                              )}
-                            >
-                              {actionLoading === `${selectedRoom.room_id}-${control.key}-ON`
-                                ? "Sending..."
-                                : "ON"}
-                            </button>
-
-                            <button
-                              onClick={() =>
-                                handleActuator(selectedRoom.room_id, control.key, "OFF")
-                              }
-                              className={getOffButtonClass(
-                                currentState,
-                                actionLoading,
-                                `${selectedRoom.room_id}-${control.key}-OFF`
-                              )}
-                            >
-                              {actionLoading === `${selectedRoom.room_id}-${control.key}-OFF`
-                                ? "Sending..."
-                                : "OFF"}
-                            </button>
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                </div>
-
-
-                <div className="rounded-2xl border border-slate-700 bg-slate-800 p-5 md:col-span-2">
-                  <div className="mb-4 flex items-center justify-between">
-                    <div className="mb-4 flex items-center justify-between">
-                      <h3 className="text-lg font-semibold">Temperature History</h3>
-
-                      <select
-                        value={historyMinutes}
-                        onChange={(e) => setHistoryMinutes(Number(e.target.value))}
-                        className="bg-slate-800 border border-slate-700 rounded-lg px-2 py-1 text-sm"
-                      >
-                        <option value={15}>15 min</option>
-                        <option value={60}>60 min</option>
-                        <option value={180}>180 min</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {historyLoading ? (
-                    <p className="text-slate-400">Loading chart...</p>
-                  ) : roomHistory.length === 0 ? (
-                    <p className="text-slate-400">No history data available.</p>
-                  ) : (
-                    <div className="h-72">
-                      <ResponsiveContainer width="100%" height="100%">
-                        <LineChart data={roomHistory}>
-                          <CartesianGrid strokeDasharray="3 3" />
-                          <XAxis dataKey="time" />
-                          <YAxis
-                            tick={{ fill: "#94a3b8" }}
-                            domain={["auto", "auto"]}
-                          />
-
-                          <Tooltip
-                            contentStyle={{ backgroundColor: "#0f172a", border: "1px solid #334155" }}
-                            labelStyle={{ color: "#e2e8f0" }}
-                          />
-                          <Line
-                            type="monotone"
-                            dataKey="value"
-                            stroke="#38bdf8"
-                            strokeWidth={2}
-                            dot={false}
-                          />
-                        </LineChart>
-                      </ResponsiveContainer>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
+          <RoomPanel
+            key={selectedRoom.room_id}
+            room={selectedRoom}
+            history={roomHistory}
+            historyLoading={historyLoading}
+            historyMinutes={historyMinutes}
+            actionLoading={actionLoading}
+            localStates={localStates}
+            onHistoryMinutesChange={setHistoryMinutes}
+            onClose={() => setSelectedRoomId(null)}
+            onActuator={handleActuator}
+          />
         )}
-      </div>
-    </div>
+      </AnimatePresence>
+    </main>
   )
 }

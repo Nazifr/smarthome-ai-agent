@@ -70,3 +70,38 @@ def query_sensor_history(room_id: str, sensor_type: str, minutes: int = 60):
 
     finally:
         client.close()
+
+
+def query_recent_actions(minutes: int = 240, limit: int = 12):
+    client = get_client()
+    query_api = client.query_api()
+
+    query = f'''
+    from(bucket: "{INFLUX_BUCKET}")
+      |> range(start: -{minutes}m)
+      |> filter(fn: (r) => r._measurement == "action_log")
+      |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+      |> sort(columns: ["_time"], desc: true)
+      |> limit(n: {limit})
+    '''
+
+    try:
+        tables = query_api.query(query, org=INFLUX_ORG)
+        actions = []
+
+        for table in tables:
+            for record in table.records:
+                values = record.values
+                actions.append({
+                    "time": record.get_time().isoformat(),
+                    "room": values.get("room", "unknown"),
+                    "device": values.get("device", "device"),
+                    "command": values.get("command", "UNKNOWN"),
+                    "reason": values.get("reason", ""),
+                    "context": values.get("context", "unknown"),
+                })
+
+        return sorted(actions, key=lambda item: item["time"], reverse=True)[:limit]
+
+    finally:
+        client.close()

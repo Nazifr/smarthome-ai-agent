@@ -117,11 +117,16 @@ services:
     container_name: smarthome-backend
     ports:
       - "8000:8000"
+    volumes:
+      - ./agent:/agent
     environment:
       - MQTT_BROKER=mosquitto
       - MQTT_PORT=1883
       - MQTT_USER=${MQTT_USER}
       - MQTT_PASSWORD=${MQTT_PASSWORD}
+      - SPOTIFY_CLIENT_ID=${SPOTIFY_CLIENT_ID}
+      - SPOTIFY_CLIENT_SECRET=${SPOTIFY_CLIENT_SECRET}
+      - SPOTIFY_CACHE_PATH=/agent/.spotify_cache
       - INFLUX_URL=http://influxdb:8086
       - INFLUX_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
       - INFLUX_ORG=smarthome

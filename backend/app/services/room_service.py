@@ -7,7 +7,54 @@ ROOM_IDS = [
     "bedroom",
     "kitchen",
     "bathroom",
+    "hallway",
 ]
+
+DEMO_OVERRIDES = {}
+CURRENT_DEMO = "live"
+
+DEMO_SCENARIOS = {
+    "live": {
+        "label": "Live Data",
+        "description": "Return to simulator and sensor data.",
+        "rooms": {},
+    },
+    "kitchen_smoke": {
+        "label": "Kitchen Smoke",
+        "description": "Safety critical smoke event in the kitchen.",
+        "rooms": {
+            "kitchen": {"temperature": 34.5, "humidity": 62, "motion": 1, "smoke": 1},
+            "hallway": {"motion": 1},
+        },
+    },
+    "night_routine": {
+        "label": "Night Routine",
+        "description": "Late evening comfort and low-light automation.",
+        "rooms": {
+            "bedroom": {"temperature": 23.5, "humidity": 45, "motion": 1, "smoke": 0},
+            "living_room": {"temperature": 22.1, "motion": 0, "smoke": 0},
+            "hallway": {"motion": 1},
+        },
+    },
+    "bathroom_humidity": {
+        "label": "Bathroom Humidity",
+        "description": "High humidity after shower, ventilation expected.",
+        "rooms": {
+            "bathroom": {"temperature": 25.2, "humidity": 86, "motion": 1, "smoke": 0},
+        },
+    },
+    "empty_home": {
+        "label": "Empty Home",
+        "description": "No occupancy; energy saving decisions expected.",
+        "rooms": {
+            "living_room": {"motion": 0, "smoke": 0},
+            "bedroom": {"motion": 0, "smoke": 0},
+            "kitchen": {"motion": 0, "smoke": 0},
+            "bathroom": {"motion": 0, "smoke": 0},
+            "hallway": {"motion": 0, "smoke": 0},
+        },
+    },
+}
 
 
 def build_room(room_id: str) -> Room:
@@ -15,13 +62,14 @@ def build_room(room_id: str) -> Room:
     humidity = query_latest_sensor(room_id, "humidity")
     motion = query_latest_sensor(room_id, "motion")
     smoke = query_latest_sensor(room_id, "smoke")
+    override = DEMO_OVERRIDES.get(room_id, {})
 
     return Room(
         room_id=room_id,
-        temperature=float(temperature) if temperature is not None else 0.0,
-        humidity=int(humidity) if humidity is not None else 0,
-        motion=int(motion) if motion is not None else 0,
-        smoke=int(smoke) if smoke is not None else 0,
+        temperature=float(override.get("temperature", temperature if temperature is not None else 0.0)),
+        humidity=int(override.get("humidity", humidity if humidity is not None else 0)),
+        motion=int(override.get("motion", motion if motion is not None else 0)),
+        smoke=int(override.get("smoke", smoke if smoke is not None else 0)),
         actuators={
             "light": get_actuator_state(room_id, "light"),
             "fan": get_actuator_state(room_id, "fan"),
@@ -63,3 +111,29 @@ def set_actuator(room_id: str, device: str, state: str):
         "device": device,
         "state": state
     }
+
+
+def get_demo_status():
+    return {
+        "active": CURRENT_DEMO,
+        "scenarios": [
+            {
+                "id": scenario_id,
+                "label": scenario["label"],
+                "description": scenario["description"],
+            }
+            for scenario_id, scenario in DEMO_SCENARIOS.items()
+        ],
+    }
+
+
+def set_demo_scenario(scenario_id: str):
+    global CURRENT_DEMO, DEMO_OVERRIDES
+
+    if scenario_id not in DEMO_SCENARIOS:
+        return None
+
+    CURRENT_DEMO = scenario_id
+    DEMO_OVERRIDES = DEMO_SCENARIOS[scenario_id]["rooms"].copy()
+
+    return get_demo_status()
