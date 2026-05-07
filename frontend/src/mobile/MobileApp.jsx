@@ -8,7 +8,7 @@ import RoomScreen from './screens/RoomScreen.jsx'
 import EnergyScreen from './screens/EnergyScreen.jsx'
 import MeScreen from './screens/MeScreen.jsx'
 
-import { getSystemOverview, controlActuator, setSystemMode, triggerDemoScenario } from '../services/api.js'
+import { getSystemOverview, controlActuator, setSystemMode, triggerDemoScenario, getWeather } from '../services/api.js'
 
 export default function MobileApp() {
   const [tab, setTab]             = useState('home')
@@ -17,6 +17,7 @@ export default function MobileApp() {
   const [loading, setLoading]     = useState(true)
   const [toast, setToast]         = useState(null)
   const [activeScene, setActiveScene] = useState(null)
+  const [weather, setWeather]       = useState(null)
   const intervalRef = useRef(null)
   const toastTimer  = useRef(null)
 
@@ -34,8 +35,13 @@ export default function MobileApp() {
 
   useEffect(() => {
     fetchOverview()
+    getWeather().then(setWeather).catch(() => {})
     intervalRef.current = setInterval(fetchOverview, 3000)
-    return () => clearInterval(intervalRef.current)
+    // Refresh weather every 10 min
+    const weatherInterval = setInterval(() => {
+      getWeather().then(setWeather).catch(() => {})
+    }, 600000)
+    return () => { clearInterval(intervalRef.current); clearInterval(weatherInterval) }
   }, [fetchOverview])
 
   // ── toast helper ───────────────────────────────────────────────
@@ -172,6 +178,7 @@ export default function MobileApp() {
           ) : tab === 'home' || tab === 'rooms' ? (
             <HomeScreen
               overview={overview}
+              weather={weather}
               onRoomClick={handleRoomClick}
               onSceneClick={handleSceneClick}
               activeScene={activeScene}

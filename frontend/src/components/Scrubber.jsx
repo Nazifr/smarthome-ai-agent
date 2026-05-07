@@ -1,11 +1,11 @@
 import { I } from './Icons'
 
 const SCENARIOS = [
-  { id: 'live',          name: 'Live data',         desc: 'Resume real sensors' },
-  { id: 'evening',       name: 'Evening wind-down', desc: 'Warm light, low volume' },
-  { id: 'kitchen_smoke', name: 'Kitchen smoke',     desc: 'Safety alarm scenario' },
-  { id: 'empty',         name: 'Empty home',        desc: 'Energy-saving mode' },
-  { id: 'morning',       name: 'Morning routine',   desc: 'Gradual wake' },
+  { id: 'live',              name: 'Live data',         desc: 'Resume real sensors' },
+  { id: 'night_routine',     name: 'Evening wind-down', desc: 'Warm light, low volume' },
+  { id: 'kitchen_smoke',     name: 'Kitchen smoke',     desc: 'Safety alarm scenario' },
+  { id: 'empty_home',        name: 'Empty home',        desc: 'Energy-saving mode' },
+  { id: 'bathroom_humidity', name: 'Bathroom shower',   desc: 'High humidity scenario' },
 ]
 
 const bars = Array.from({ length: 60 }, (_, i) => {

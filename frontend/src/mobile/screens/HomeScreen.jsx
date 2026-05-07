@@ -26,7 +26,7 @@ function greeting() {
   return 'Good evening'
 }
 
-export default function HomeScreen({ overview, onRoomClick, onSceneClick, activeScene }) {
+export default function HomeScreen({ overview, weather, onRoomClick, onSceneClick, activeScene }) {
   const data = adaptHome(overview)
   if (!data) return <div className="m-loading">Loading…</div>
 
@@ -54,9 +54,20 @@ export default function HomeScreen({ overview, onRoomClick, onSceneClick, active
           <div className="m-stat-meta">{data.humidity != null ? `${data.humidity}% humidity` : 'No data'}</div>
         </div>
         <div className="m-stat">
-          <div className="m-stat-label">Mode</div>
-          <div className="m-stat-v" style={{ fontSize: '20px', paddingTop: '5px' }}>{modeLabel}</div>
-          <div className="m-stat-meta">System mode</div>
+          <div className="m-stat-label">Outside</div>
+          {weather?.available ? (
+            <>
+              <div className="m-stat-v">
+                {Math.round(weather.temperature)}<sup>°</sup>
+              </div>
+              <div className="m-stat-meta">{weather.condition}</div>
+            </>
+          ) : (
+            <>
+              <div className="m-stat-v" style={{ fontSize: '18px', paddingTop: '5px' }}>{modeLabel}</div>
+              <div className="m-stat-meta">System mode</div>
+            </>
+          )}
         </div>
         <div className="m-summary-divider" />
         <div className="m-stat">
