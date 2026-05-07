@@ -28,6 +28,7 @@ TOPIC_FEEDBACK   = "home/+/feedback"
 TOPIC_PREFERENCES= "home/preferences"
 TOPIC_ALERT      = "home/alerts"
 TOPIC_SENTIMENT  = "home/user/sentiment"
+TOPIC_SYSTEM_MODE= "home/system/mode"
 
 SIMULATION_MODE = os.getenv("SIMULATION_MODE", "false").lower() == "true"
 
@@ -35,6 +36,7 @@ SIMULATION_MODE = os.getenv("SIMULATION_MODE", "false").lower() == "true"
 class SmartHomeAgent:
     def __init__(self):
         self._last_context = {}
+        self._system_mode  = "AI"   # "AI" | "Static" | "Manual"
         self.analyzer = ContextAnalyzer()
         self.engine   = DecisionEngine()
         self.policy   = PolicyManager()
@@ -57,6 +59,7 @@ class SmartHomeAgent:
             client.subscribe(TOPIC_FEEDBACK)
             client.subscribe(TOPIC_PREFERENCES)
             client.subscribe(TOPIC_SENTIMENT)
+            client.subscribe(TOPIC_SYSTEM_MODE)
             print(f"[Agent] Dinleniyor: {TOPIC_SENSOR_ALL}")
         else:
             print(f"[Agent] Bağlantı hatası, kod: {rc}")
@@ -81,12 +84,20 @@ class SmartHomeAgent:
             print(f"[Agent] Tercihler güncellendi: {payload}")
         elif topic == TOPIC_SENTIMENT:
             self._handle_sentiment(payload)
+        elif topic == TOPIC_SYSTEM_MODE:
+            self._handle_system_mode(payload)
 
     def _handle_sentiment(self, payload: dict):
         sentiment = payload.get("sentiment", "nötr")
         self.enricher.update_sentiment(sentiment)
         print(f"[Agent] Kullanıcı duygu durumu güncellendi: {sentiment}")
         self._last_context = {}
+
+    def _handle_system_mode(self, payload: dict):
+        mode = payload.get("mode", "AI")
+        self._system_mode = mode
+        print(f"[Agent] Sistem modu değiştirildi: {mode}")
+        self._last_context = {}  # force re-evaluation on next sensor tick
 
     def _handle_sensor(self, topic, payload):
         parts = topic.split("/")
@@ -103,6 +114,10 @@ class SmartHomeAgent:
               f"Hareket: {context['occupancy']}")
 
         self._check_alerts(context, room)
+
+        # Respect system mode — only make autonomous decisions in AI mode
+        if self._system_mode != "AI":
+            return
 
         current_label  = context.get("context_label")
         last_label     = self._last_context.get("context_label")
@@ -174,16 +189,17 @@ class SmartHomeAgent:
             print(f"[Agent] ALERT: {alert}")
 
     def _write_to_influx(self, data: dict):
+        room = data.get("room", "unknown")
         try:
             point = (Point("sensor_reading")
-                .tag("room", data.get("room", "unknown"))
+                .tag("room", room)
                 .field("temperature", float(data.get("temperature", 0)))
                 .field("humidity",    float(data.get("humidity", 0)))
                 .field("motion",      int(data.get("motion", 0)))
                 .field("light",       float(data.get("light", 0))))
             self.write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
         except Exception as e:
-            print(f"[Agent] InfluxDB yazma hatası: {e}")
+            print(f"[Agent] InfluxDB yazma hatası: room={room} → {e}")
 
     def _log_action(self, device, room, command, reason, context):
         try:

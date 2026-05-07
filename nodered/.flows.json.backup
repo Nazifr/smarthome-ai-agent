@@ -289,7 +289,7 @@
         "width": "12"
     },
     {
-        "id": "mqtt-sensor-in",
+        "id": "7ef3d89aa36cb7ba",
         "type": "mqtt in",
         "z": "44162578c2bd78b4",
         "name": "Sensör Verisi",
@@ -298,94 +298,94 @@
         "datatype": "json",
         "broker": "mqtt-broker-1",
         "inputs": 0,
-        "x": 110,
+        "x": 130,
         "y": 120,
         "wires": [
             [
-                "parse-sensor"
+                "82e0196178c6f3d2"
             ]
         ]
     },
     {
-        "id": "parse-sensor",
+        "id": "82e0196178c6f3d2",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Veriyi Ayrıştır",
         "func": "var data = msg.payload;\nvar room = msg.topic.split('/')[1];\nmsg.temperature = data.temperature;\nmsg.humidity = data.humidity;\nmsg.motion = data.motion;\nmsg.light = data.light;\nmsg.room = room;\nreturn msg;",
         "outputs": 1,
-        "x": 330,
+        "x": 350,
         "y": 120,
         "wires": [
             [
-                "set-temp",
-                "set-humidity",
-                "set-motion",
-                "set-light"
+                "8fcef70646a0f34a",
+                "47db518d27361861",
+                "6c7870bf20f61d2d",
+                "80454053900b1831"
             ]
         ]
     },
     {
-        "id": "set-temp",
+        "id": "8fcef70646a0f34a",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Sıcaklık",
         "func": "msg.payload = msg.temperature;\nreturn msg;",
         "outputs": 1,
-        "x": 530,
+        "x": 550,
         "y": 80,
         "wires": [
             [
-                "ui-temp-gauge"
+                "6517223afac442b4"
             ]
         ]
     },
     {
-        "id": "set-humidity",
+        "id": "47db518d27361861",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Nem",
         "func": "msg.payload = msg.humidity;\nreturn msg;",
         "outputs": 1,
-        "x": 530,
+        "x": 550,
         "y": 140,
         "wires": [
             [
-                "ui-humidity-gauge"
+                "5dfa3aadadbaee9c"
             ]
         ]
     },
     {
-        "id": "set-motion",
+        "id": "6c7870bf20f61d2d",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Hareket",
         "func": "msg.payload = msg.motion === 1 ? 'VAR ✓' : 'YOK';\nreturn msg;",
         "outputs": 1,
-        "x": 530,
+        "x": 550,
         "y": 200,
         "wires": [
             [
-                "ui-motion-text"
+                "213a7e2d4296afd1"
             ]
         ]
     },
     {
-        "id": "set-light",
+        "id": "80454053900b1831",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Işık",
         "func": "msg.payload = msg.light;\nreturn msg;",
         "outputs": 1,
-        "x": 530,
+        "x": 550,
         "y": 260,
         "wires": [
             [
-                "ui-light-gauge"
+                "cc4250eeddf58a00"
             ]
         ]
     },
     {
-        "id": "ui-temp-gauge",
+        "id": "6517223afac442b4",
         "type": "ui_gauge",
         "z": "44162578c2bd78b4",
         "name": "Sıcaklık",
@@ -406,12 +406,12 @@
         ],
         "seg1": 18,
         "seg2": 28,
-        "x": 730,
+        "x": 750,
         "y": 80,
         "wires": []
     },
     {
-        "id": "ui-humidity-gauge",
+        "id": "5dfa3aadadbaee9c",
         "type": "ui_gauge",
         "z": "44162578c2bd78b4",
         "name": "Nem",
@@ -432,12 +432,12 @@
         ],
         "seg1": 30,
         "seg2": 60,
-        "x": 730,
+        "x": 750,
         "y": 140,
         "wires": []
     },
     {
-        "id": "ui-motion-text",
+        "id": "213a7e2d4296afd1",
         "type": "ui_text",
         "z": "44162578c2bd78b4",
         "group": "ui_group_motion",
@@ -446,12 +446,12 @@
         "height": 2,
         "name": "Hareket",
         "format": "{{msg.payload}}",
-        "x": 730,
+        "x": 750,
         "y": 200,
         "wires": []
     },
     {
-        "id": "ui-light-gauge",
+        "id": "cc4250eeddf58a00",
         "type": "ui_gauge",
         "z": "44162578c2bd78b4",
         "name": "Işık",
@@ -472,12 +472,12 @@
         ],
         "seg1": 50,
         "seg2": 300,
-        "x": 730,
+        "x": 750,
         "y": 260,
         "wires": []
     },
     {
-        "id": "mqtt-agent-in",
+        "id": "0074574bfad9df1f",
         "type": "mqtt in",
         "z": "44162578c2bd78b4",
         "name": "Agent Komutları",
@@ -486,100 +486,100 @@
         "datatype": "json",
         "broker": "mqtt-broker-1",
         "inputs": 0,
-        "x": 110,
+        "x": 130,
         "y": 440,
         "wires": [
             [
-                "parse-agent-decision"
+                "cf32e3ac061e8823"
             ]
         ]
     },
     {
-        "id": "parse-agent-decision",
+        "id": "cf32e3ac061e8823",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Kararı Ayrıştır",
         "func": "var parts = msg.topic.split('/');\nvar room = parts[1];\nvar device = parts[2];\nvar data = msg.payload;\nvar time = new Date().toLocaleTimeString('tr-TR');\n\nmsg.room = room;\nmsg.device = device;\nmsg.command = data.command;\nmsg.reason = data.reason;\nmsg.method = data.method || 'heuristic';\nmsg.confidence = data.confidence || '—';\nmsg.context_label = data.context_label || '—';\nmsg.time = time;\n\nreturn [msg, msg, msg, msg];",
         "outputs": 4,
-        "x": 350,
+        "x": 370,
         "y": 440,
         "wires": [
             [
-                "set-decision-text"
+                "6ff66b30d8af4fb9"
             ],
             [
-                "set-context-text"
+                "9e42022075a6c5a5"
             ],
             [
-                "set-confidence-text"
+                "66a22080338cc35a"
             ],
             [
-                "set-reason-text"
+                "a3e9cb2dca52f031"
             ]
         ]
     },
     {
-        "id": "set-decision-text",
+        "id": "6ff66b30d8af4fb9",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Karar",
         "func": "msg.payload = msg.time + '\\n' + msg.room + ' → ' + msg.device + ': ' + msg.command;\nreturn msg;",
         "outputs": 1,
-        "x": 570,
+        "x": 590,
         "y": 400,
         "wires": [
             [
-                "ui-decision-text"
+                "cbc8c38571476af6"
             ]
         ]
     },
     {
-        "id": "set-context-text",
+        "id": "9e42022075a6c5a5",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Bağlam",
         "func": "msg.payload = msg.context_label + '\\nYöntem: ' + msg.method;\nreturn msg;",
         "outputs": 1,
-        "x": 570,
+        "x": 590,
         "y": 450,
         "wires": [
             [
-                "ui-context-text"
+                "95866571b31e4a9d"
             ]
         ]
     },
     {
-        "id": "set-confidence-text",
+        "id": "66a22080338cc35a",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Güven",
         "func": "msg.payload = msg.confidence;\nreturn msg;",
         "outputs": 1,
-        "x": 570,
+        "x": 590,
         "y": 500,
         "wires": [
             [
-                "ui-confidence-text"
+                "ebb653cc8a41aa8b"
             ]
         ]
     },
     {
-        "id": "set-reason-text",
+        "id": "a3e9cb2dca52f031",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Gerekçe",
         "func": "msg.payload = msg.time + ' | ' + msg.reason;\nreturn msg;",
         "outputs": 1,
-        "x": 570,
+        "x": 590,
         "y": 550,
         "wires": [
             [
-                "ui-reason-text"
+                "b4e4b68ab2edeb41"
             ]
         ]
     },
     {
-        "id": "ui-decision-text",
+        "id": "cbc8c38571476af6",
         "type": "ui_text",
         "z": "44162578c2bd78b4",
         "group": "ui_group_agent_decision",
@@ -588,12 +588,12 @@
         "height": 3,
         "name": "Son Karar",
         "format": "{{msg.payload}}",
-        "x": 770,
+        "x": 790,
         "y": 400,
         "wires": []
     },
     {
-        "id": "ui-context-text",
+        "id": "95866571b31e4a9d",
         "type": "ui_text",
         "z": "44162578c2bd78b4",
         "group": "ui_group_agent_meta",
@@ -602,12 +602,12 @@
         "height": 3,
         "name": "Bağlam",
         "format": "{{msg.payload}}",
-        "x": 770,
+        "x": 790,
         "y": 450,
         "wires": []
     },
     {
-        "id": "ui-confidence-text",
+        "id": "ebb653cc8a41aa8b",
         "type": "ui_text",
         "z": "44162578c2bd78b4",
         "group": "ui_group_agent_meta",
@@ -616,12 +616,12 @@
         "height": 3,
         "name": "Güven Oranı",
         "format": "{{msg.payload}}",
-        "x": 770,
+        "x": 790,
         "y": 500,
         "wires": []
     },
     {
-        "id": "ui-reason-text",
+        "id": "b4e4b68ab2edeb41",
         "type": "ui_text",
         "z": "44162578c2bd78b4",
         "group": "ui_group_agent_history",
@@ -630,12 +630,12 @@
         "height": 2,
         "name": "Gerekçe",
         "format": "{{msg.payload}}",
-        "x": 770,
+        "x": 790,
         "y": 550,
         "wires": []
     },
     {
-        "id": "mqtt-alerts-in",
+        "id": "97e9ddcba07d7a66",
         "type": "mqtt in",
         "z": "44162578c2bd78b4",
         "name": "Uyarılar",
@@ -644,31 +644,31 @@
         "datatype": "json",
         "broker": "mqtt-broker-1",
         "inputs": 0,
-        "x": 110,
+        "x": 130,
         "y": 640,
         "wires": [
             [
-                "format-alert"
+                "426a4901a34f8693"
             ]
         ]
     },
     {
-        "id": "format-alert",
+        "id": "426a4901a34f8693",
         "type": "function",
         "z": "44162578c2bd78b4",
         "name": "Uyarıyı Formatla",
         "func": "var data = msg.payload;\nvar time = new Date().toLocaleTimeString('tr-TR');\nmsg.payload = time + ' | ' + data.message;\nreturn msg;",
         "outputs": 1,
-        "x": 330,
+        "x": 350,
         "y": 640,
         "wires": [
             [
-                "ui-alert-text"
+                "acddbddbdabbf65c"
             ]
         ]
     },
     {
-        "id": "ui-alert-text",
+        "id": "acddbddbdabbf65c",
         "type": "ui_text",
         "z": "44162578c2bd78b4",
         "group": "ui_group_alerts",
@@ -677,8 +677,58 @@
         "height": 2,
         "name": "Uyarı",
         "format": "{{msg.payload}}",
-        "x": 530,
+        "x": 550,
         "y": 640,
+        "wires": []
+    },
+    {
+        "id": "bridge-tab-01",
+        "type": "tab",
+        "label": "Agent Command Bridge",
+        "disabled": false,
+        "info": "Translates agent home/room/device/command → home/room/actuator/device/state so the FastAPI backend tracks AI-driven actuator changes.",
+        "env": []
+    },
+    {
+        "id": "bridge-mqtt-in-01",
+        "type": "mqtt in",
+        "z": "bridge-tab-01",
+        "name": "Agent Commands",
+        "topic": "home/+/+/command",
+        "qos": "0",
+        "datatype": "json",
+        "broker": "mqtt-broker-config",
+        "inputs": 0,
+        "x": 150,
+        "y": 240,
+        "wires": [["bridge-func-01"]]
+    },
+    {
+        "id": "bridge-func-01",
+        "type": "function",
+        "z": "bridge-tab-01",
+        "name": "Reformat → actuator/state",
+        "func": "// Extract: home/living_room/light/command → parts\nconst parts = msg.topic.split(\"/\");\nconst room   = parts[1];  // living_room\nconst device = parts[2];  // light\n\n// Parse payload (may arrive as object or JSON string)\nlet cmd = msg.payload;\nif (typeof cmd === \"string\") {\n    try { cmd = JSON.parse(cmd); } catch(e) {}\n}\n\nconst state = (cmd && (cmd.command || cmd.state)) || \"OFF\";\n\n// Rebuild topic: home/living_room/actuator/light/state\nmsg.topic   = `home/${room}/actuator/${device}/state`;\nmsg.payload = JSON.stringify({ state: state });\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 240,
+        "wires": [["bridge-mqtt-out-01"]]
+    },
+    {
+        "id": "bridge-mqtt-out-01",
+        "type": "mqtt out",
+        "z": "bridge-tab-01",
+        "name": "Publish State",
+        "topic": "",
+        "qos": "0",
+        "retain": "",
+        "broker": "mqtt-broker-config",
+        "x": 650,
+        "y": 240,
         "wires": []
     }
 ]
