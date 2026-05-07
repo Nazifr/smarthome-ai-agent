@@ -3,6 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.rooms import router as rooms_router
 from app.routes.system import router as system_router
+from app.routes.energy import router as energy_router
 from app.services.mqtt_service import start_mqtt_listener
 
 
@@ -35,3 +36,4 @@ def health():
 
 app.include_router(rooms_router)
 app.include_router(system_router)
+app.include_router(energy_router)

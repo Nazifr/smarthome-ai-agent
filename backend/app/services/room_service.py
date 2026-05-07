@@ -1,5 +1,5 @@
 from app.schemas.room import Room
-from app.services.influx_service import query_latest_sensor, query_sensor_history
+from app.services.influx_service import query_latest_sensor, query_sensor_history, write_actuator_state
 from app.services.mqtt_service import publish, get_actuator_state
 
 ROOM_IDS = [
@@ -105,6 +105,12 @@ def set_actuator(room_id: str, device: str, state: str):
     # Echo back to state topic immediately (test mode)
     state_topic = f"home/{room_id}/actuator/{device}/state"
     publish(state_topic, {"state": state})
+
+    # Log to InfluxDB for energy tracking
+    try:
+        write_actuator_state(room_id, device, state)
+    except Exception:
+        pass
 
     return {
         "room": room_id,

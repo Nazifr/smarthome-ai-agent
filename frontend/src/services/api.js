@@ -96,3 +96,13 @@ export async function triggerDemoScenario(scenario) {
 
   return response.json()
 }
+
+export async function getEnergySummary() {
+  const response = await fetch(`${API_BASE_URL}/api/energy/summary`)
+
+  if (!response.ok) {
+    throw new Error("Failed to fetch energy summary")
+  }
+
+  return response.json()
+}

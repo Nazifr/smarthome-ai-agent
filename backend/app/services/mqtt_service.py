@@ -47,6 +47,13 @@ def _on_message(client, userdata, msg):
         print(f"[MQTT] State update: {room_id} {device} = {state}")
         print("MQTT_STATE_RECEIVED", msg.topic, msg.payload.decode(), time.time())
 
+        # Log to InfluxDB for energy tracking
+        try:
+            from app.services.influx_service import write_actuator_state
+            write_actuator_state(room_id, device, state)
+        except Exception:
+            pass  # don't crash the MQTT handler
+
     except Exception as e:
         print(f"[MQTT] Error processing message: {e}")
 

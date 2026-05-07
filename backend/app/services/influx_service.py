@@ -72,6 +72,59 @@ def query_sensor_history(room_id: str, sensor_type: str, minutes: int = 60):
         client.close()
 
 
+def write_actuator_state(room_id: str, device: str, state: str):
+    """Write actuator state (ON/OFF) to InfluxDB for energy tracking."""
+    try:
+        from influxdb_client import Point
+        from influxdb_client.client.write_api import SYNCHRONOUS
+        client = get_client()
+        write_api = client.write_api(write_options=SYNCHRONOUS)
+        point = (
+            Point("actuator_state")
+            .tag("room", room_id)
+            .tag("device", device)
+            .field("state", 1 if state == "ON" else 0)
+        )
+        write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
+        client.close()
+    except Exception as e:
+        print(f"[InfluxDB] Failed to write actuator state: {e}")
+
+
+def query_actuator_states(start: str = "-24h"):
+    """Query all actuator_state records for the given range.
+    Returns dict of (room, device) -> [{time, state}] sorted by time."""
+    client = get_client()
+    query_api = client.query_api()
+
+    query = f'''
+    from(bucket: "{INFLUX_BUCKET}")
+      |> range(start: {start})
+      |> filter(fn: (r) => r._measurement == "actuator_state")
+      |> filter(fn: (r) => r._field == "state")
+      |> sort(columns: ["_time"])
+    '''
+
+    try:
+        tables = query_api.query(query, org=INFLUX_ORG)
+        device_records = {}
+        for table in tables:
+            for record in table.records:
+                key = (record.values.get("room", ""), record.values.get("device", ""))
+                if key not in device_records:
+                    device_records[key] = []
+                device_records[key].append({
+                    "time": record.get_time(),
+                    "state": int(record.get_value()),
+                })
+        return device_records
+    except Exception as e:
+        print(f"[InfluxDB] Failed to query actuator states: {e}")
+        return {}
+    finally:
+        client.close()
+
+
 def query_recent_actions(minutes: int = 240, limit: int = 12):
     client = get_client()
     query_api = client.query_api()
