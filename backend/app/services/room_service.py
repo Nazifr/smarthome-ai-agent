@@ -134,6 +134,17 @@ def set_demo_scenario(scenario_id: str):
         return None
 
     CURRENT_DEMO = scenario_id
-    DEMO_OVERRIDES = DEMO_SCENARIOS[scenario_id]["rooms"].copy()
+    scenario_rooms = DEMO_SCENARIOS[scenario_id]["rooms"]
+
+    if scenario_id == "live":
+        # Live mode: clear everything, return to pure sensor data
+        DEMO_OVERRIDES = {}
+    else:
+        # Start with smoke=0 for ALL rooms so stale alerts from a
+        # previous scenario (e.g. kitchen_smoke) don't persist.
+        base = {rid: {"smoke": 0} for rid in ROOM_IDS}
+        for rid, overrides in scenario_rooms.items():
+            base.setdefault(rid, {}).update(overrides)
+        DEMO_OVERRIDES = base
 
     return get_demo_status()

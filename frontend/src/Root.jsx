@@ -3,17 +3,23 @@ import App from './App.jsx'
 import MobileApp from './mobile/MobileApp.jsx'
 
 function getViewMode() {
-  // ?desktop=1  → force desktop (and save)
   const params = new URLSearchParams(window.location.search)
+
+  // ?desktop=1  → force desktop (and save)
   if (params.get('desktop') === '1') {
     localStorage.setItem('viewMode', 'desktop')
     return 'desktop'
   }
-  // ?mobile=1  → force mobile (useful for testing on desktop)
+  // ?mobile=1  → force mobile and CLEAR any desktop lock
   if (params.get('mobile') === '1') {
-    localStorage.setItem('viewMode', 'mobile')
+    localStorage.removeItem('viewMode')
     return 'mobile'
   }
+  // ?reset=1  → clear override and fall through to viewport detection
+  if (params.get('reset') === '1') {
+    localStorage.removeItem('viewMode')
+  }
+
   // localStorage override
   const saved = localStorage.getItem('viewMode')
   if (saved === 'desktop') return 'desktop'

@@ -3,9 +3,11 @@ import RoomCard from '../components/RoomCard.jsx'
 import { adaptHome } from '../adapters.js'
 
 const SCENES = [
-  { id: 'evening', label: 'Evening', emoji: '🌙' },
-  { id: 'morning', label: 'Morning', emoji: '☀️' },
-  { id: 'away',    label: 'Away',    emoji: '🚗' },
+  { id: 'live',               label: 'Live',     emoji: '📡' },
+  { id: 'night_routine',      label: 'Evening',  emoji: '🌙' },
+  { id: 'empty_home',         label: 'Away',     emoji: '🚗' },
+  { id: 'kitchen_smoke',      label: 'Smoke',    emoji: '🔥' },
+  { id: 'bathroom_humidity',  label: 'Shower',   emoji: '🚿' },
 ]
 
 function dayLabel() {

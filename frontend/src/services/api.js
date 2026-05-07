@@ -1,25 +1,26 @@
 function resolveApiBaseUrl() {
   const configuredUrl = import.meta.env.VITE_API_URL
   const browserHost = window.location.hostname
+  const isLocal = browserHost === "localhost" || browserHost === "127.0.0.1"
 
-  if (!configuredUrl) {
-    return `${window.location.protocol}//${browserHost}:8000`
+  // On localhost: use configured URL or fall back to :8000
+  if (isLocal) {
+    return configuredUrl || `${window.location.protocol}//${browserHost}:8000`
   }
 
-  try {
-    const url = new URL(configuredUrl)
-    const pointsToLocalhost = url.hostname === "localhost" || url.hostname === "127.0.0.1"
-    const browserIsRemote = browserHost !== "localhost" && browserHost !== "127.0.0.1"
-
-    if (pointsToLocalhost && browserIsRemote) {
-      url.hostname = browserHost
-      return url.toString().replace(/\/$/, "")
-    }
-
-    return configuredUrl
-  } catch {
-    return configuredUrl
+  // On a remote host (ngrok, hotspot, etc.): if the configured API URL
+  // also points to localhost, use a relative base so the Vite proxy
+  // forwards /api/* to the backend container automatically.
+  if (configuredUrl) {
+    try {
+      const url = new URL(configuredUrl)
+      const apiIsLocal = url.hostname === "localhost" || url.hostname === "127.0.0.1"
+      if (!apiIsLocal) return configuredUrl  // real remote API — use as-is
+    } catch { /* fall through */ }
   }
+
+  // Relative base → Vite proxy handles it (works for ngrok, hotspot, etc.)
+  return ""
 }
 
 const API_BASE_URL = resolveApiBaseUrl()

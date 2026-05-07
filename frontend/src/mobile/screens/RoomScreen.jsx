@@ -1,8 +1,47 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import DeviceRow from '../components/DeviceRow.jsx'
 import { adaptRoom } from '../adapters.js'
+import { getRoomHistory } from '../../services/api.js'
+
+function Sparkline({ points }) {
+  if (!points || points.length < 2) return null
+  const vals = points.map(p => p.value)
+  const min = Math.min(...vals)
+  const max = Math.max(...vals)
+  const range = max - min || 1
+  const w = 200
+  const h = 40
+  const pad = 2
+  const d = vals.map((v, i) => {
+    const x = (i / (vals.length - 1)) * w
+    const y = pad + (1 - (v - min) / range) * (h - pad * 2)
+    return `${i === 0 ? 'M' : 'L'}${x.toFixed(1)},${y.toFixed(1)}`
+  }).join(' ')
+
+  return (
+    <div className="m-sparkline-card">
+      <div className="m-sparkline-header">
+        <span className="m-sparkline-label">Temperature · 1h</span>
+        <span className="m-sparkline-range">{min.toFixed(1)}° – {max.toFixed(1)}°</span>
+      </div>
+      <svg viewBox={`0 0 ${w} ${h}`} className="m-sparkline-svg" preserveAspectRatio="none">
+        <path d={d} fill="none" stroke="var(--m-accent)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+    </div>
+  )
+}
 
 export default function RoomScreen({ overview, roomId, onBack, onToggleDevice }) {
+  const [history, setHistory] = useState([])
+
+  useEffect(() => {
+    let cancelled = false
+    getRoomHistory(roomId, 'temperature', 60)
+      .then(pts => { if (!cancelled) setHistory(pts) })
+      .catch(() => {})
+    return () => { cancelled = true }
+  }, [roomId])
+
   const data = adaptRoom(overview, roomId)
 
   if (!data) {
@@ -76,6 +115,9 @@ export default function RoomScreen({ overview, roomId, onBack, onToggleDevice })
           </div>
         </div>
       )}
+
+      {/* Temperature history sparkline */}
+      <Sparkline points={history} />
 
       {/* Devices */}
       <div className="m-sec-title">

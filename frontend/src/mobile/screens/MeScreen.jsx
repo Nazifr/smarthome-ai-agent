@@ -1,4 +1,5 @@
-import React from 'react'
+import React, { useEffect, useState } from 'react'
+import { getSystemDiagnostics } from '../../services/api.js'
 
 const MODES = [
   { id: 'AI',     label: 'Auto',   desc: 'NeuroNest decides' },
@@ -7,6 +8,12 @@ const MODES = [
 ]
 
 export default function MeScreen({ mode, onSetMode, onSwitchToDesktop }) {
+  const [diag, setDiag] = useState(null)
+
+  useEffect(() => {
+    getSystemDiagnostics().then(setDiag).catch(() => {})
+  }, [mode])
+
   return (
     <>
       <div className="m-greet-eyebrow">Settings</div>
@@ -40,8 +47,35 @@ export default function MeScreen({ mode, onSetMode, onSwitchToDesktop }) {
           : 'Away mode — minimum energy use.'}
       </p>
 
+      {/* System status */}
+      <div className="m-sec-title" style={{ marginTop: '28px' }}><span>System Status</span></div>
+      <div className="m-about-card">
+        <div className="m-about-row">
+          <span>AI Engine</span>
+          <span className="m-about-val">{diag?.ai?.armed ? '🟢 Armed' : '⚪ Standby'}</span>
+        </div>
+        {diag?.ai?.recent_actions?.length > 0 && (
+          <div className="m-about-row">
+            <span>Recent actions</span>
+            <span className="m-about-val">{diag.ai.recent_actions.length}</span>
+          </div>
+        )}
+        <div className="m-about-row">
+          <span>Demo scenario</span>
+          <span className="m-about-val">{diag?.demo?.active ?? 'live'}</span>
+        </div>
+        {diag?.spotify?.playing && (
+          <div className="m-about-row">
+            <span>Now playing</span>
+            <span className="m-about-val" style={{ fontSize: '11.5px', maxWidth: '160px', textAlign: 'right' }}>
+              🎵 {diag.spotify.track}
+            </span>
+          </div>
+        )}
+      </div>
+
       {/* About */}
-      <div className="m-sec-title" style={{ marginTop: '28px' }}><span>About</span></div>
+      <div className="m-sec-title" style={{ marginTop: '20px' }}><span>About</span></div>
       <div className="m-about-card">
         <div className="m-about-row">
           <span>App</span>
