@@ -9,6 +9,8 @@ import { useNeuroNest } from './hooks/useNeuroNest'
 import IntegrationDock from './components/IntegrationDock'
 import EnergySavings from './components/EnergySavings'
 import AiTimeline from './components/AiTimeline'
+import AiExplanation from './components/AiExplanation'
+import DemoConsole from './components/DemoConsole'
 import { getSystemDiagnostics } from './services/api'
 
 function useClock() {
@@ -28,6 +30,7 @@ export default function App() {
   const [selectedRoom, setSelectedRoom] = useState('living')
   const [activeDecisionId, setActiveDecisionId] = useState(null)
   const [activeScenario, setActiveScenario] = useState('live')
+  const [scenarioLoading, setScenarioLoading] = useState(null)
   const [toast, setToast] = useState(null)
   const [theme, setTheme] = useState('graphite')
   const [centerView, setCenterView] = useState('floorplan')
@@ -52,6 +55,10 @@ export default function App() {
     return () => clearInterval(t)
   }, [])
 
+  useEffect(() => {
+    const active = diagnostics?.demo?.active
+    if (active) setActiveScenario(active)
+  }, [diagnostics])
 
   const showToast = (text, kind = 'info') => {
     setToast({ text, kind })
@@ -136,6 +143,11 @@ export default function App() {
   }
   const totalDevicesOn = Object.values(devices).flat().filter(d => d.on).length
   const energy = { kwh: 8.4 + totalDevicesOn * 0.3, savings: 3.2 }
+  const serviceList = diagnostics?.services ?? []
+  const healthyServices = serviceList.filter(service => service.ok).length
+  const serviceSummary = serviceList.length
+    ? `${healthyServices}/${serviceList.length} services`
+    : 'Checking services'
 
   const handleToggleDevice = (deviceId, roomId, deviceKey) => {
     toggleDevice(roomId, deviceKey)
@@ -149,13 +161,22 @@ export default function App() {
     setSelectedRoom(d.room)
   }
 
-  const handleScenario = (id) => {
+  const handleScenario = async (id) => {
     setActiveScenario(id)
-    runScenario(id)
-    showToast(
-      id === 'live' ? 'Live data resumed' : `Scenario: ${id.replace(/_/g, ' ')}`,
-      id === 'kitchen_smoke' ? 'alert' : 'info'
-    )
+    setScenarioLoading(id)
+    try {
+      const result = await runScenario(id)
+      setDiagnostics(await getSystemDiagnostics())
+      setActiveScenario(result?.active ?? id)
+      showToast(
+        id === 'live' ? 'Live data resumed' : `Scenario: ${id.replace(/_/g, ' ')}`,
+        id === 'kitchen_smoke' ? 'alert' : 'info'
+      )
+    } catch {
+      showToast('Scenario failed', 'alert')
+    } finally {
+      setScenarioLoading(null)
+    }
   }
 
   const handleModeChange = (m) => {
@@ -208,8 +229,11 @@ export default function App() {
 
         <div className="topbar-right">
           <div className="health-pill">
-            <span className="pulse-dot" style={Object.keys(alerts).length > 0 ? { background: 'var(--alert)' } : {}}/>
-            <span>{Object.keys(alerts).length > 0 ? `${Object.keys(alerts).length} alert(s)` : 'All systems nominal'}</span>
+            <span
+              className="pulse-dot"
+              style={Object.keys(alerts).length > 0 || (serviceList.length && healthyServices < serviceList.length) ? { background: 'var(--alert)' } : {}}
+            />
+            <span>{Object.keys(alerts).length > 0 ? `${Object.keys(alerts).length} alert(s)` : serviceSummary}</span>
           </div>
           <div className="clock">{clockStr}</div>
           {['graphite', 'midnight', 'paper'].map(t => (
@@ -266,7 +290,9 @@ export default function App() {
             </div>
           )}
           {centerView === 'integrations' && (
-            <div style={{ padding: 24, height: '100%', overflow: 'auto' }}>
+            <div className="integration-view">
+              <DemoConsole diagnostics={diagnostics} loading={scenarioLoading} onScenario={handleScenario}/>
+              <AiExplanation overview={uiData?._raw} diagnostics={diagnostics} alerts={[]}/>
               <AiTimeline overview={uiData?._raw} diagnostics={diagnostics} alerts={[]}/>
               <IntegrationDock diagnostics={diagnostics} mode={mode}/>
             </div>
@@ -287,6 +313,7 @@ export default function App() {
       {/* FOOTER */}
       <Scrubber
         activeScenario={activeScenario}
+        loadingScenario={scenarioLoading}
         onScenario={handleScenario}/>
 
       {/* Toast */}

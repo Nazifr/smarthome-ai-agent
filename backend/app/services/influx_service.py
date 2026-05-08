@@ -16,6 +16,25 @@ def get_client():
     )
 
 
+def get_influx_status():
+    client = get_client()
+    try:
+        ok = bool(client.ping())
+        return {
+            "ok": ok,
+            "label": "InfluxDB",
+            "detail": "reachable" if ok else "ping failed",
+        }
+    except Exception as e:
+        return {
+            "ok": False,
+            "label": "InfluxDB",
+            "detail": str(e),
+        }
+    finally:
+        client.close()
+
+
 def query_latest_sensor(room_id: str, sensor_type: str):
     client = get_client()
     query_api = client.query_api()

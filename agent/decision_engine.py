@@ -10,6 +10,7 @@ import os
 import json
 import joblib
 import numpy as np
+import warnings
 try:
     from spotify_controller import SpotifyController
     _spotify = SpotifyController()
@@ -30,6 +31,22 @@ MAPPING_PATH         = os.path.join(os.path.dirname(__file__), "models", "label_
 MIN_SAMPLES_FOR_ML   = int(os.getenv("MIN_SAMPLES_FOR_ML", "0"))
 CONFIDENCE_THRESHOLD = 0.60
 RETRAIN_THRESHOLD    = int(os.getenv("RETRAIN_THRESHOLD", "20"))  # kaç feedback'te yeniden eğit
+ENABLE_SPOTIFY_ACTIONS = os.getenv("ENABLE_SPOTIFY_ACTIONS", "false").lower() == "true"
+
+ROOM_DEVICE_GROUPS = {
+    "living_room": {"lights", "light", "ac", "fan"},
+    "bedroom": {"lights", "light", "ac", "fan"},
+    "kitchen": {"lights", "light", "fan"},
+    "bathroom": {"lights", "light", "fan"},
+    "hallway": {"lights", "light"},
+    "office": {"lights", "light", "ac", "fan"},
+}
+
+warnings.filterwarnings(
+    "ignore",
+    message="X does not have valid feature names",
+    category=UserWarning,
+)
 
 
 class DecisionEngine:
@@ -65,26 +82,26 @@ class DecisionEngine:
     def decide(self, context: dict, features: list) -> list:
         if context.get("smoke", 0) or context.get("humidity", 0) > 75:
             print("[DecisionEngine] Safety/ventilation heuristic takes priority")
-            return self._heuristic_decide(context)
+            return self._filter_supported_actions(context, self._heuristic_decide(context))
 
         if self.model and len(self.samples) >= MIN_SAMPLES_FOR_ML:
             ml_actions, confidence = self._ml_decide(context, features)
             if confidence >= CONFIDENCE_THRESHOLD:
-                print(f"[DecisionEngine] ML kararı (güven: {confidence:.0%})")
-                return ml_actions
+                print(f"[DecisionEngine] ML karari (guven: {confidence:.0%})")
+                return self._filter_supported_actions(context, ml_actions)
             if self.gemini and self._is_complex(context):
-                print(f"[DecisionEngine] Karmaşık bağlam, Gemini devreye giriyor...")
+                print("[DecisionEngine] Karmasik baglam, Gemini devreye giriyor...")
                 llm_actions = self._llm_decide(context, confidence)
                 if llm_actions:
-                    return llm_actions
-            return ml_actions
+                    return self._filter_supported_actions(context, llm_actions)
+            return self._filter_supported_actions(context, ml_actions)
         if self.gemini:
-            print("[DecisionEngine] ML yok, Gemini kullanılıyor...")
+            print("[DecisionEngine] ML yok, Gemini kullaniliyor...")
             llm_actions = self._llm_decide(context, confidence=None)
             if llm_actions:
-                return llm_actions
+                return self._filter_supported_actions(context, llm_actions)
         print("[DecisionEngine] Heuristic karar veriliyor...")
-        return self._heuristic_decide(context)
+        return self._filter_supported_actions(context, self._heuristic_decide(context))
 
     def _ml_decide(self, context: dict, features: list):
         try:
@@ -183,6 +200,24 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
             return True
         return False
 
+    def _filter_supported_actions(self, context: dict, actions: list) -> list:
+        room = context.get("room", "living_room")
+        supported = ROOM_DEVICE_GROUPS.get(room, {"lights", "light"})
+        filtered = []
+        for action in actions:
+            device = action.get("device", "lights")
+            if device in supported:
+                filtered.append(action)
+        if filtered:
+            return filtered
+        return [{
+            "device": "lights",
+            "command": "OFF",
+            "reason": f"No supported automation action for {room}",
+            "confidence": None,
+            "method": "heuristic",
+        }]
+
     def _heuristic_decide(self, context: dict) -> list:
         hour      = context.get("hour", 12)
         temp      = context.get("temperature", 22)
@@ -222,10 +257,8 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
         actions = []
         for device, command in commands.items():
             if device == "music":
-                if _spotify:
+                if _spotify and ENABLE_SPOTIFY_ACTIONS:
                     _spotify.play(command)
-                else:
-                     print(f"[DecisionEngine] Müzik modu: {command} (Spotify devre dışı)")
                 continue
             actions.append({
                 "device":     device,

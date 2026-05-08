@@ -9,7 +9,6 @@ export default function RightRail({ roomId, sensors, alert, devices, onToggleDev
   const s = sensors[roomId] || {}
   const tempCls = s.temp > 26 || s.temp < 18 ? 'is-warn' : ''
   const humCls = s.humidity > 65 ? 'is-warn' : ''
-  const co2Cls = s.co2 > 800 ? 'is-warn' : ''
   const smokeCls = s.smoke ? 'is-alert' : ''
 
   return (
@@ -63,10 +62,6 @@ export default function RightRail({ roomId, sensors, alert, devices, onToggleDev
           <div className="sensor-card">
             <div className="label">Light</div>
             <div className="value">{s.lux ?? '—'}<span className="unit">lux</span></div>
-          </div>
-          <div className="sensor-card">
-            <div className="label">CO₂</div>
-            <div className={`value ${co2Cls}`}>{s.co2 ?? '—'}<span className="unit">ppm</span></div>
           </div>
           {('smoke' in s) && (
             <div className="sensor-card" style={{ gridColumn: '1 / -1' }}>

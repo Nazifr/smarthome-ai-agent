@@ -6,18 +6,21 @@ const SCENARIOS = [
   { id: 'bathroom_humidity', name: 'Bathroom shower',   desc: 'High humidity scenario' },
 ]
 
-export default function Scrubber({ activeScenario, onScenario }) {
+export default function Scrubber({ activeScenario, loadingScenario, onScenario }) {
   return (
     <footer className="footer">
-      <div className="scenario-label">Demo scenarios</div>
+      <div className="scenario-label">
+        Demo: {activeScenario.replace(/_/g, ' ')}
+      </div>
 
       <div className="scrub-actions">
         {SCENARIOS.map((s) => (
           <button key={s.id}
             className={`ghost-btn ${activeScenario === s.id ? 'is-active' : ''}`}
             onClick={() => onScenario(s.id)}
+            disabled={Boolean(loadingScenario)}
             title={s.desc}>
-            {s.name}
+            {loadingScenario === s.id ? 'Running...' : s.name}
           </button>
         ))}
       </div>

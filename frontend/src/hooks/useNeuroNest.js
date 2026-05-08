@@ -80,12 +80,14 @@ export function useNeuroNest() {
 
   const runScenario = useCallback(async (scenarioId) => {
     try {
-      await triggerDemoScenario(scenarioId)
+      const result = await triggerDemoScenario(scenarioId)
       await fetchOverview()
+      return result
     } catch (err) {
       setError(err.message ?? 'Failed to run scenario')
+      throw err
     }
   }, [fetchOverview])
 
-  return { uiData, loading, error, toggleDevice, setMode, runScenario }
+  return { uiData, loading, error, fetchOverview, toggleDevice, setMode, runScenario }
 }

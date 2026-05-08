@@ -170,6 +170,11 @@ def set_demo_scenario(scenario_id: str):
 
     CURRENT_DEMO = scenario_id
     scenario_rooms = DEMO_SCENARIOS[scenario_id]["rooms"]
+    publish("home/system/demo", {
+        "active": scenario_id,
+        "label": DEMO_SCENARIOS[scenario_id]["label"],
+        "timestamp": datetime.now().isoformat(),
+    })
 
     if scenario_id == "live":
         # Live mode: clear everything, return to pure sensor data

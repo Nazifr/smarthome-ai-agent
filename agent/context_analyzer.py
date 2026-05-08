@@ -94,6 +94,7 @@ class ContextAnalyzer:
         ac_score = _ac_need_score(temp_diff, hi, solar_kw)
 
         return {
+            "room":                   sensor_data.get("room", "living_room"),
             "hour":                   hour,
             "minute":                 minute,
             "day_of_week":            day_of_week,

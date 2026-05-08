@@ -1,4 +1,4 @@
-import { BrainCircuit, ExternalLink, MessageCircle, Music2, Send } from 'lucide-react'
+import { BrainCircuit, CheckCircle2, CircleAlert, ExternalLink, MessageCircle, Music2, Send, Server } from 'lucide-react'
 
 function actionText(action) {
   if (!action) return 'No AI actions logged yet'
@@ -10,6 +10,7 @@ function actionText(action) {
 export default function IntegrationDock({ diagnostics, mode }) {
   const spotify = diagnostics?.spotify
   const ai = diagnostics?.ai
+  const services = diagnostics?.services ?? []
   const recentAiAction = ai?.recent_actions?.[0]
   const aiArmed = ai?.armed ?? (mode === 'Auto' || mode === 'AI')
   const spotifyReady = spotify?.available
@@ -38,6 +39,29 @@ export default function IntegrationDock({ diagnostics, mode }) {
           <small>{actionText(recentAiAction)}</small>
         </div>
         <span>{aiArmed ? 'Armed' : 'Paused'}</span>
+      </div>
+
+      <div className="service-health">
+        <div className="service-health__title">
+          <Server size={15} />
+          Service health
+        </div>
+        <div className="service-grid">
+          {services.map((service) => (
+            <div className={service.ok ? 'service-chip is-ok' : 'service-chip is-bad'} key={service.id || service.label}>
+              {service.ok ? <CheckCircle2 size={14} /> : <CircleAlert size={14} />}
+              <span>{service.label}</span>
+              <small>{service.detail}</small>
+            </div>
+          ))}
+          {services.length === 0 && (
+            <div className="service-chip">
+              <CircleAlert size={14} />
+              <span>Diagnostics</span>
+              <small>Waiting for backend status</small>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="integration-card integration-card--wide">

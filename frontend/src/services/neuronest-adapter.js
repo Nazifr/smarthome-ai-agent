@@ -53,7 +53,6 @@ export function mapOverviewToUiShape(overview) {
       humidity: typeof room.humidity === 'number' ? room.humidity : null,
       motion:   Number(room.motion) > 0,
       smoke:    room.room_id === 'kitchen' ? Number(room.smoke) > 0 : undefined,
-      co2:      null,
       lux:      typeof room.light === 'number' ? room.light : null,
     }
 

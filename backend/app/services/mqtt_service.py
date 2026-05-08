@@ -10,6 +10,12 @@ MQTT_USER     = os.getenv("MQTT_USER", "")
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
 
 ACTUATOR_STATES = {}
+MQTT_STATUS = {
+    "connected": False,
+    "last_connect": None,
+    "last_message": None,
+    "last_error": None,
+}
 
 
 def normalize_device(room_id: str, device: str) -> str:
@@ -41,6 +47,9 @@ def _make_client() -> mqtt.Client:
 
 def _on_connect(client, userdata, flags, rc, properties=None):
     print(f"[MQTT] Connected with result code {rc}")
+    MQTT_STATUS["connected"] = rc == 0
+    MQTT_STATUS["last_connect"] = time.time()
+    MQTT_STATUS["last_error"] = None if rc == 0 else f"connect rc={rc}"
     client.subscribe("home/+/actuator/+/state")
     client.subscribe("home/+/+/command")
 
@@ -48,6 +57,7 @@ def _on_connect(client, userdata, flags, rc, properties=None):
 def _on_message(client, userdata, msg):
     try:
         payload = json.loads(msg.payload.decode())
+        MQTT_STATUS["last_message"] = time.time()
         state = payload.get("state", "UNKNOWN")
 
         topic_parts = msg.topic.split("/")
@@ -58,7 +68,7 @@ def _on_message(client, userdata, msg):
         elif msg.topic.endswith("/command"):
             device = topic_parts[2]
             command = str(payload.get("command", "UNKNOWN")).upper()
-            state = "OFF" if command == "OFF" else "ON"
+            state = command
         else:
             return
 
@@ -74,6 +84,7 @@ def _on_message(client, userdata, msg):
             pass  # don't crash the MQTT handler
 
     except Exception as e:
+        MQTT_STATUS["last_error"] = str(e)
         print(f"[MQTT] Error processing message: {e}")
 
 
@@ -85,6 +96,15 @@ def start_mqtt_listener():
 
     thread = threading.Thread(target=client.loop_forever, daemon=True)
     thread.start()
+
+
+def get_mqtt_status():
+    return {
+        "ok": MQTT_STATUS["connected"],
+        "label": "MQTT",
+        "detail": "connected" if MQTT_STATUS["connected"] else (MQTT_STATUS["last_error"] or "not connected"),
+        "last_message": MQTT_STATUS["last_message"],
+    }
 
 
 def publish(topic: str, payload: dict):
@@ -101,4 +121,5 @@ def publish(topic: str, payload: dict):
 
 
 def get_actuator_state(room_id: str, device: str) -> str:
-    return ACTUATOR_STATES.get(room_id, {}).get(device, "UNKNOWN")
+    normalized_device = normalize_device(room_id, device)
+    return ACTUATOR_STATES.get(room_id, {}).get(normalized_device, "OFF")

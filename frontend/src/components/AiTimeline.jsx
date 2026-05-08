@@ -16,7 +16,7 @@ export default function AiTimeline({ overview, diagnostics, alerts }) {
       icon: RadioTower,
       title: 'Sensor input',
       text: room
-        ? `${formatRoomName(room.room_id)}: ${formatSensorValue('temperature', room.temperature)}, ${formatSensorValue('motion', room.motion)}`
+        ? `${formatRoomName(room.room_id)}: ${formatSensorValue('temperature', room.temperature)}, ${formatSensorValue('humidity', room.humidity)}, smoke ${room.smoke ? 'detected' : 'clear'}, ${formatSensorValue('motion', room.motion)}`
         : 'Waiting for live sensor context',
     },
     {

@@ -7,7 +7,7 @@ from app.services.system_service import (
     get_system_overview,
     set_system_mode,
 )
-from app.services.integration_service import get_ai_status, get_spotify_status
+from app.services.integration_service import get_ai_status, get_service_health, get_spotify_status
 from app.services.room_service import get_demo_status, set_demo_scenario
 
 router = APIRouter()
@@ -35,6 +35,7 @@ def system_diagnostics():
         "ai": get_ai_status(current_mode),
         "spotify": get_spotify_status(),
         "demo": get_demo_status(),
+        "services": get_service_health(current_mode),
     }
 
 

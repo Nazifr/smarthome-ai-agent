@@ -29,14 +29,25 @@ TOPIC_PREFERENCES= "home/preferences"
 TOPIC_ALERT      = "home/alerts"
 TOPIC_SENTIMENT  = "home/user/sentiment"
 TOPIC_SYSTEM_MODE= "home/system/mode"
+TOPIC_SYSTEM_DEMO= "home/system/demo"
 
 SIMULATION_MODE = os.getenv("SIMULATION_MODE", "false").lower() == "true"
+
+ROOM_ACTUATORS = {
+    "living_room": {"light", "lights", "ac", "fan"},
+    "bedroom": {"light", "lights", "ac", "fan"},
+    "kitchen": {"light", "lights", "fan"},
+    "bathroom": {"light", "lights", "fan"},
+    "hallway": {"light", "lights"},
+    "office": {"light", "lights", "ac", "fan"},
+}
 
 
 class SmartHomeAgent:
     def __init__(self):
         self._last_context = {}
         self._system_mode  = "AI"   # "AI" | "Static" | "Manual"
+        self._active_demo  = "live"
         self.analyzer = ContextAnalyzer()
         self.engine   = DecisionEngine()
         self.policy   = PolicyManager()
@@ -60,6 +71,7 @@ class SmartHomeAgent:
             client.subscribe(TOPIC_PREFERENCES)
             client.subscribe(TOPIC_SENTIMENT)
             client.subscribe(TOPIC_SYSTEM_MODE)
+            client.subscribe(TOPIC_SYSTEM_DEMO)
             print(f"[Agent] Dinleniyor: {TOPIC_SENSOR_ALL}")
         else:
             print(f"[Agent] Bağlantı hatası, kod: {rc}")
@@ -86,6 +98,8 @@ class SmartHomeAgent:
             self._handle_sentiment(payload)
         elif topic == TOPIC_SYSTEM_MODE:
             self._handle_system_mode(payload)
+        elif topic == TOPIC_SYSTEM_DEMO:
+            self._handle_system_demo(payload)
 
     def _handle_sentiment(self, payload: dict):
         sentiment = payload.get("sentiment", "nötr")
@@ -99,9 +113,17 @@ class SmartHomeAgent:
         print(f"[Agent] Sistem modu değiştirildi: {mode}")
         self._last_context = {}  # force re-evaluation on next sensor tick
 
+    def _handle_system_demo(self, payload: dict):
+        self._active_demo = payload.get("active", "live")
+        print(f"[Agent] Demo scenario: {self._active_demo}")
+        self._last_context = {}
+
     def _handle_sensor(self, topic, payload):
         parts = topic.split("/")
         room = parts[1] if len(parts) > 1 else "unknown"
+        if self._active_demo != "live" and not payload.get("demo"):
+            return
+
         payload["timestamp"] = payload.get("timestamp", datetime.now().isoformat())
         payload["room"] = room
         self._write_to_influx(payload)
@@ -147,6 +169,10 @@ class SmartHomeAgent:
         method         = action.get("method", "heuristic")
         context_label  = context.get("context_label", "bilinmiyor")
         confidence_str = f"{confidence:.0%}" if confidence else "—"
+
+        if device not in ROOM_ACTUATORS.get(room, {"light", "lights"}):
+            print(f"[Agent] Skipped unsupported command for {room}: {device} -> {command}")
+            return
 
         if SIMULATION_MODE:
             print(f"[Agent][SİMÜLASYON] Komut → {room}/{device}: {command}")

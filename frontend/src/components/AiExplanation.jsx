@@ -19,6 +19,7 @@ function buildSignals(room, alerts) {
   ]
 
   if (room.humidity) signals.push(`Humidity ${formatSensorValue('humidity', room.humidity)}`)
+  signals.push(`Smoke ${room.smoke ? 'detected' : 'clear'}`)
   if (alerts.some((alert) => alert.room === room.room_id)) signals.push('Safety alert active')
 
   return signals

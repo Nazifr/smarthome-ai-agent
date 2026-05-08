@@ -7,6 +7,8 @@ import urllib.parse
 import urllib.request
 
 from app.services.influx_service import query_recent_actions
+from app.services.influx_service import get_influx_status, query_latest_sensor
+from app.services.mqtt_service import get_mqtt_status
 
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
@@ -127,3 +129,41 @@ def get_ai_status(current_mode: str):
             else "AI autonomy is paused because the system is not in AI mode"
         ),
     }
+
+
+def get_service_health(current_mode: str):
+    try:
+        actions = query_recent_actions(minutes=240, limit=1)
+    except Exception:
+        actions = []
+    try:
+        simulator_has_data = query_latest_sensor("living_room", "temperature") is not None
+    except Exception:
+        simulator_has_data = False
+
+    return [
+        {
+            "id": "backend",
+            "label": "Backend",
+            "ok": True,
+            "detail": "API responding",
+        },
+        get_mqtt_status(),
+        get_influx_status(),
+        {
+            "id": "simulator",
+            "label": "Simulator",
+            "ok": simulator_has_data,
+            "detail": "sensor stream active" if simulator_has_data else "waiting for sensor data",
+        },
+        {
+            "id": "agent",
+            "label": "AI Agent",
+            "ok": current_mode == "AI",
+            "detail": (
+                f"{len(actions)} recent action(s), armed"
+                if current_mode == "AI"
+                else "paused by mode"
+            ),
+        },
+    ]
