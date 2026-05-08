@@ -1,24 +1,9 @@
 import { I } from './Icons'
 import { sparkPath, sparkArea } from '../config/floorplan'
 
-export default function LeftRail({ presence, climate, energy, decisions, activeDecisionId, onSelectDecision, climateSpark }) {
+export default function LeftRail({ climate, energy, decisions, activeDecisionId, onSelectDecision, climateSpark }) {
   return (
     <aside className="left">
-      <div className="rail-section">
-        <h3 className="rail-title">Presence</h3>
-        <div className="presence-stack">
-          {presence.map((p) => (
-            <div key={p.id} className="presence-row">
-              <div className="avatar is-home" style={{ background: p.color }}>{p.initials}</div>
-              <div className="presence-info">
-                <strong>{p.name}</strong>
-                <span>{p.status}</span>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       <div className="rail-section">
         <h3 className="rail-title">Indoor climate</h3>
         <div className="climate-stack">

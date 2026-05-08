@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { X } from 'lucide-react'
 import {
   CartesianGrid,
@@ -15,7 +14,7 @@ import {
   formatSensorValue,
   ROOM_CONFIG,
   SENSOR_LABELS,
-} from '../App'
+} from '../utils/format'
 import ActuatorToggle from './ActuatorToggle'
 
 export default function RoomPanel({

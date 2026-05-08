@@ -39,6 +39,7 @@ class ContextAnalyzer:
         temperature = float(sensor_data.get("temperature", 22.0))
         humidity    = float(sensor_data.get("humidity", 50.0))
         motion      = int(sensor_data.get("motion", 0))
+        smoke       = int(sensor_data.get("smoke", 0))
         light       = float(sensor_data.get("light", 0.0))
 
         # ── Zaman Dilimi ──────────────────────────────────────────────
@@ -100,6 +101,7 @@ class ContextAnalyzer:
             "temperature":            temperature,
             "humidity":               humidity,
             "motion":                 motion,
+            "smoke":                  smoke,
             "light":                  light,
             "temp_hour_interaction":  temp_hour_interaction,
             "use_kw_rolling":         use_kw_rolling,

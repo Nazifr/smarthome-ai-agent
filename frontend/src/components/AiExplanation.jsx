@@ -1,5 +1,5 @@
 import { BrainCircuit, CheckCircle2, CircleAlert, Route } from 'lucide-react'
-import { formatDeviceName, formatRoomName, formatSensorValue } from '../App'
+import { formatDeviceName, formatRoomName, formatSensorValue } from '../utils/format'
 
 function getLatestAction(diagnostics) {
   return diagnostics?.ai?.recent_actions?.[0] ?? null

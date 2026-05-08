@@ -12,7 +12,7 @@ MQTT_USER    = os.getenv("MQTT_USER", "")
 MQTT_PASSWORD= os.getenv("MQTT_PASSWORD", "")
 INTERVAL     = float(os.getenv("PUBLISH_INTERVAL", 30))
 
-ROOMS = ["living_room", "bedroom", "kitchen", "bathroom"]
+ROOMS = ["living_room", "bedroom", "kitchen", "bathroom", "hallway", "office"]
 
 def realistic_temperature(hour):
     base = 22.0
@@ -37,6 +37,7 @@ def generate_sensor_data(room):
         "temperature": realistic_temperature(now.hour),
         "humidity":    round(random.gauss(55, 8), 1),
         "motion":      realistic_motion(now.hour),
+        "smoke":       0,
         "light":       realistic_light(now.hour),
         "timestamp":   now.isoformat(),
         "room":        room,

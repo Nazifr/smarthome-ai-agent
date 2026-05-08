@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Activity, Flame, Home, Sparkles, Zap } from 'lucide-react'
 
 const MODES = ['Manual', 'Static', 'AI']

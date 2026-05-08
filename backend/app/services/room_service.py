@@ -1,6 +1,7 @@
 from app.schemas.room import Room
 from app.services.influx_service import query_latest_sensor, query_sensor_history, write_actuator_state
-from app.services.mqtt_service import publish, get_actuator_state
+from app.services.mqtt_service import publish, get_actuator_state, normalize_device, remember_actuator_state
+from datetime import datetime
 
 ROOM_IDS = [
     "living_room",
@@ -8,7 +9,27 @@ ROOM_IDS = [
     "kitchen",
     "bathroom",
     "hallway",
+    "office",
 ]
+
+ROOM_ACTUATORS = {
+    "living_room": ["light", "ac", "fan"],
+    "bedroom": ["light", "ac", "fan"],
+    "kitchen": ["light", "exhaust_fan"],
+    "bathroom": ["light", "ventilation_fan"],
+    "hallway": ["light"],
+    "office": ["light", "ac", "fan"],
+}
+
+DEMO_AUTOMATIONS = {
+    "kitchen_smoke": [("kitchen", "exhaust_fan", "ON")],
+    "bathroom_humidity": [("bathroom", "ventilation_fan", "ON")],
+    "empty_home": [
+        (room_id, device, "OFF")
+        for room_id, devices in ROOM_ACTUATORS.items()
+        for device in devices
+    ],
+}
 
 DEMO_OVERRIDES = {}
 CURRENT_DEMO = "live"
@@ -52,6 +73,7 @@ DEMO_SCENARIOS = {
             "kitchen": {"motion": 0, "smoke": 0},
             "bathroom": {"motion": 0, "smoke": 0},
             "hallway": {"motion": 0, "smoke": 0},
+            "office": {"motion": 0, "smoke": 0},
         },
     },
 }
@@ -62,6 +84,7 @@ def build_room(room_id: str) -> Room:
     humidity = query_latest_sensor(room_id, "humidity")
     motion = query_latest_sensor(room_id, "motion")
     smoke = query_latest_sensor(room_id, "smoke")
+    light = query_latest_sensor(room_id, "light")
     override = DEMO_OVERRIDES.get(room_id, {})
 
     return Room(
@@ -70,12 +93,10 @@ def build_room(room_id: str) -> Room:
         humidity=int(override.get("humidity", humidity if humidity is not None else 0)),
         motion=int(override.get("motion", motion if motion is not None else 0)),
         smoke=int(override.get("smoke", smoke if smoke is not None else 0)),
+        light=float(override.get("light", light if light is not None else 0.0)),
         actuators={
-            "light": get_actuator_state(room_id, "light"),
-            "fan": get_actuator_state(room_id, "fan"),
-            "ac": get_actuator_state(room_id, "ac"),
-            "exhaust_fan": get_actuator_state(room_id, "exhaust_fan"),
-            "ventilation_fan": get_actuator_state(room_id, "ventilation_fan"),
+            device: get_actuator_state(room_id, device)
+            for device in ROOM_ACTUATORS.get(room_id, ["light"])
         }
     )
 
@@ -99,6 +120,14 @@ def get_room_history(room_id: str, sensor_type: str, minutes: int = 60):
 
 
 def set_actuator(room_id: str, device: str, state: str):
+    if room_id not in ROOM_IDS:
+        return None
+
+    normalized_device = normalize_device(room_id, device)
+    if normalized_device not in ROOM_ACTUATORS.get(room_id, []):
+        return None
+
+    remember_actuator_state(room_id, device, state)
     topic = f"home/{room_id}/actuator/{device}/set"
     publish(topic, {"state": state})
 
@@ -114,7 +143,7 @@ def set_actuator(room_id: str, device: str, state: str):
 
     return {
         "room": room_id,
-        "device": device,
+        "device": normalized_device,
         "state": state
     }
 
@@ -152,5 +181,23 @@ def set_demo_scenario(scenario_id: str):
         for rid, overrides in scenario_rooms.items():
             base.setdefault(rid, {}).update(overrides)
         DEMO_OVERRIDES = base
+        for room_id, sensor_payload in scenario_rooms.items():
+            publish_demo_sensor(room_id, sensor_payload)
+        for room_id, device, state in DEMO_AUTOMATIONS.get(scenario_id, []):
+            set_actuator(room_id, device, state)
 
     return get_demo_status()
+
+
+def publish_demo_sensor(room_id: str, payload: dict):
+    sensor_payload = {
+        "temperature": payload.get("temperature", query_latest_sensor(room_id, "temperature") or 22.0),
+        "humidity": payload.get("humidity", query_latest_sensor(room_id, "humidity") or 50),
+        "motion": payload.get("motion", query_latest_sensor(room_id, "motion") or 0),
+        "smoke": payload.get("smoke", 0),
+        "light": payload.get("light", query_latest_sensor(room_id, "light") or 120),
+        "timestamp": datetime.now().isoformat(),
+        "room": room_id,
+        "demo": True,
+    }
+    publish(f"home/{room_id}/sensor/all", sensor_payload)

@@ -62,7 +62,7 @@ export function useNeuroNest() {
 
     try {
       await controlActuator(backendRoomId, deviceKey, newState)
-    } catch (err) {
+    } catch {
       // revert on error
       fetchOverview()
     }

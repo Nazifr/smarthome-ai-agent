@@ -63,6 +63,10 @@ class DecisionEngine:
             print(f"[DecisionEngine] Gemini bağlantı hatası: {e}")
 
     def decide(self, context: dict, features: list) -> list:
+        if context.get("smoke", 0) or context.get("humidity", 0) > 75:
+            print("[DecisionEngine] Safety/ventilation heuristic takes priority")
+            return self._heuristic_decide(context)
+
         if self.model and len(self.samples) >= MIN_SAMPLES_FOR_ML:
             ml_actions, confidence = self._ml_decide(context, features)
             if confidence >= CONFIDENCE_THRESHOLD:
@@ -182,9 +186,16 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
     def _heuristic_decide(self, context: dict) -> list:
         hour      = context.get("hour", 12)
         temp      = context.get("temperature", 22)
+        humidity  = context.get("humidity", 50)
+        smoke     = context.get("smoke", 0)
         occupancy = context.get("occupancy", "unknown")
         actions   = []
-        if occupancy == "bos_ev":
+        if smoke:
+            actions.append({"device": "fan", "command": "ON", "reason": "Smoke detected - exhaust fan enabled", "confidence": None, "method": "heuristic", "safety": True})
+            actions.append({"device": "lights", "command": "ON", "reason": "Smoke detected - room lights enabled for safety", "confidence": None, "method": "heuristic", "safety": True})
+        elif humidity > 75:
+            actions.append({"device": "fan", "command": "ON", "reason": f"High humidity ({humidity}%) - ventilation enabled", "confidence": None, "method": "heuristic"})
+        elif occupancy == "bos_ev":
             actions.append({"device": "ac",     "command": "OFF",      "reason": "Ev boş — klima kapatılıyor",   "confidence": None, "method": "heuristic"})
             actions.append({"device": "lights",  "command": "OFF",      "reason": "Ev boş — ışıklar kapatılıyor", "confidence": None, "method": "heuristic"})
             actions.append({"device": "fan",     "command": "OFF",      "reason": "Ev boş — fan kapatılıyor",     "confidence": None, "method": "heuristic"})

@@ -11,6 +11,7 @@ export default function IntegrationDock({ diagnostics, mode }) {
   const spotify = diagnostics?.spotify
   const ai = diagnostics?.ai
   const recentAiAction = ai?.recent_actions?.[0]
+  const aiArmed = ai?.armed ?? (mode === 'Auto' || mode === 'AI')
   const spotifyReady = spotify?.available
   const spotifyTitle = spotify?.track || 'Spotify ambience'
   const spotifyDetail = spotifyReady
@@ -36,7 +37,7 @@ export default function IntegrationDock({ diagnostics, mode }) {
           <p>{ai?.message || 'Waiting for diagnostics from the backend.'}</p>
           <small>{actionText(recentAiAction)}</small>
         </div>
-        <span>{mode === 'AI' ? 'Armed' : 'Paused'}</span>
+        <span>{aiArmed ? 'Armed' : 'Paused'}</span>
       </div>
 
       <div className="integration-card integration-card--wide">

@@ -10,6 +10,7 @@ const ROOM_NAMES = {
   kitchen:     'Kitchen',
   bathroom:    'Bathroom',
   hallway:     'Hallway',
+  office:      'Office',
 }
 
 const DEVICE_ICONS = {

@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 export const I = {
   Logo: (p) => (
     <svg viewBox="0 0 24 24" width="16" height="16" fill="none" {...p}>

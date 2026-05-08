@@ -7,9 +7,9 @@ import time
 import urllib.request
 import json
 
-# Default: Tampere, Finland (adjust to your location)
-LATITUDE = 61.4978
-LONGITUDE = 23.7610
+# Default: Izmir, Turkey 
+LATITUDE = 38.3692
+LONGITUDE = 27.2096
 
 _cache = {"data": None, "expires": 0}
 CACHE_TTL = 600  # 10 minutes

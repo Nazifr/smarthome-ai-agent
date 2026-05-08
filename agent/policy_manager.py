@@ -44,6 +44,7 @@ class PolicyManager:
         device_key = f"{action.get('room', 'general')}_{action.get('device', 'unknown')}"
         hour = context.get("hour", 12)
         command = action.get("command", "")
+        safety_action = action.get("safety", False)
 
         # ── Kural 1: Manuel Override Kontrolü ────────────────────────
         if device_key in self.manual_overrides:
@@ -58,7 +59,7 @@ class PolicyManager:
         quiet_end = self.preferences["quiet_hours_end"]
         in_quiet_hours = hour >= quiet_start or hour < quiet_end
 
-        if in_quiet_hours and command == "ON" and action.get("device") in ["fan", "vacuum"]:
+        if in_quiet_hours and command == "ON" and action.get("device") in ["fan", "vacuum"] and not safety_action:
             return {
                 "approved": False,
                 "action": action,

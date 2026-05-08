@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import {
   Droplets,
   Fan,
@@ -9,7 +8,7 @@ import {
   Thermometer,
   Waves,
 } from 'lucide-react'
-import { formatRoomName, formatSensorValue, ROOM_CONFIG } from '../App'
+import { formatRoomName, formatSensorValue, ROOM_CONFIG } from '../utils/format'
 
 const SENSOR_ICONS = {
   temperature: Thermometer,

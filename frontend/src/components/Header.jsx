@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { BrainCircuit, RadioTower, ShieldCheck } from 'lucide-react'
 
 export default function Header({ overview, alerts, health }) {

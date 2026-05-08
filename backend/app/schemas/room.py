@@ -8,4 +8,5 @@ class Room(BaseModel):
     humidity: int
     motion: int
     smoke: int
+    light: float = 0.0
     actuators: Dict[str, str]

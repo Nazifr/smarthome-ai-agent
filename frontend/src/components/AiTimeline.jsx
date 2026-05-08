@@ -1,5 +1,5 @@
 import { Activity, BrainCircuit, Cpu, RadioTower, Zap } from 'lucide-react'
-import { formatDeviceName, formatRoomName, formatSensorValue } from '../App'
+import { formatDeviceName, formatRoomName, formatSensorValue } from '../utils/format'
 
 function latestAction(diagnostics) {
   return diagnostics?.ai?.recent_actions?.[0] ?? null

@@ -3,7 +3,7 @@ from app.schemas.overview import SystemOverview
 from app.services.room_service import get_all_rooms
 from app.services.mqtt_service import publish
 
-CURRENT_MODE = "Manual"
+CURRENT_MODE = "AI"
 
 
 def get_system_mode() -> SystemMode:
@@ -23,6 +23,6 @@ def get_system_overview() -> SystemOverview:
     return SystemOverview(
         mode=CURRENT_MODE,
         total_rooms=len(rooms),
-        active_alerts=0,
+        active_alerts=sum(1 for room in rooms if room.smoke > 0),
         rooms=rooms
     )

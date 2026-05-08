@@ -196,6 +196,7 @@ class SmartHomeAgent:
                 .field("temperature", float(data.get("temperature", 0)))
                 .field("humidity",    float(data.get("humidity", 0)))
                 .field("motion",      int(data.get("motion", 0)))
+                .field("smoke",       int(data.get("smoke", 0)))
                 .field("light",       float(data.get("light", 0))))
             self.write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
         except Exception as e:

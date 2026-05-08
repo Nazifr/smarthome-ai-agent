@@ -54,7 +54,7 @@ export function mapOverviewToUiShape(overview) {
       motion:   Number(room.motion) > 0,
       smoke:    room.room_id === 'kitchen' ? Number(room.smoke) > 0 : undefined,
       co2:      null,
-      lux:      null,
+      lux:      typeof room.light === 'number' ? room.light : null,
     }
 
     devices[uiId] = Object.entries(room.actuators ?? {}).map(([key, state]) => ({
@@ -69,6 +69,7 @@ export function mapOverviewToUiShape(overview) {
   }
 
   return {
+    _raw: overview,
     sensors,
     devices,
     mode: MODE_MAP[overview.mode] ?? overview.mode,

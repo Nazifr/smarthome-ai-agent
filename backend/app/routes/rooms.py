@@ -49,4 +49,7 @@ def control_actuator(
     state: Literal["ON", "OFF"] = Query(...)
 ):
     print("API_RECEIVED", room_id, device, state, time.time())
-    return set_actuator(room_id, device, state)
+    result = set_actuator(room_id, device, state)
+    if result is None:
+        raise HTTPException(status_code=404, detail="Room not found")
+    return result

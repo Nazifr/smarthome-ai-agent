@@ -1,27 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
 
-// Re-exported for legacy components that import from '../App'
-export const ROOM_CONFIG = {
-  living_room: { zone: 'West Wing',       sensors: ['temperature'], controls: [{ key: 'light', label: 'Light' }, { key: 'ac', label: 'AC' }, { key: 'fan', label: 'Fan' }] },
-  bedroom:     { zone: 'Private Zone',    sensors: ['temperature'], controls: [{ key: 'light', label: 'Light' }, { key: 'ac', label: 'AC' }, { key: 'fan', label: 'Fan' }] },
-  kitchen:     { zone: 'Safety Critical', sensors: ['temperature', 'motion', 'smoke'], controls: [{ key: 'light', label: 'Light' }, { key: 'exhaust_fan', label: 'Exhaust Fan' }] },
-  bathroom:    { zone: 'Humidity Watch',  sensors: ['temperature', 'humidity', 'motion'], controls: [{ key: 'light', label: 'Light' }, { key: 'ventilation_fan', label: 'Ventilation Fan' }] },
-  hallway:     { zone: 'Transit',         sensors: ['motion'], controls: [{ key: 'light', label: 'Light' }] },
-}
-export function formatRoomName(roomId = '') {
-  return roomId.replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
-export function formatDeviceName(device = '') {
-  return device.replaceAll('_', ' ').replace(/\b\w/g, (c) => c.toUpperCase())
-}
-export function formatSensorValue(sensor, value) {
-  if (value === undefined || value === null || value === '') return 'N/A'
-  if (sensor === 'temperature') return `${Number(value).toFixed(1)} C`
-  if (sensor === 'humidity') return `${Number(value).toFixed(0)}%`
-  if (sensor === 'motion') return Number(value) > 0 ? 'Detected' : 'Clear'
-  if (sensor === 'smoke') return Number(value) > 0 ? 'Alert' : 'Clear'
-  return String(value)
-}
 import { I } from './components/Icons'
 import LeftRail from './components/LeftRail'
 import RightRail from './components/RightRail'
@@ -32,12 +10,6 @@ import IntegrationDock from './components/IntegrationDock'
 import EnergySavings from './components/EnergySavings'
 import AiTimeline from './components/AiTimeline'
 import { getSystemDiagnostics } from './services/api'
-
-const PRESENCE = [
-  { id: 'p1', name: 'Mira',  initials: 'M', color: 'oklch(78% 0.10 70)',  status: 'Living Room · since 18:42' },
-  { id: 'p2', name: 'Theo',  initials: 'T', color: 'oklch(76% 0.10 280)', status: 'Office · focus mode' },
-  { id: 'p3', name: 'Yuki',  initials: 'Y', color: 'oklch(76% 0.10 200)', status: 'Away · ETA 22 min' },
-]
 
 function useClock() {
   const [clock, setClock] = useState(new Date())
@@ -51,30 +23,17 @@ function useClock() {
 function pad(n) { return String(n).padStart(2, '0') }
 
 export default function App() {
-  const { uiData, loading, error, toggleDevice, setMode, runScenario } = useNeuroNest()
+  const { uiData, loading, toggleDevice, setMode, runScenario } = useNeuroNest()
 
   const [selectedRoom, setSelectedRoom] = useState('living')
   const [activeDecisionId, setActiveDecisionId] = useState(null)
-  const [alerts, setAlerts] = useState({})
   const [activeScenario, setActiveScenario] = useState('live')
-  const [time, setTime] = useState(1)
-  const [playing, setPlaying] = useState(false)
   const [toast, setToast] = useState(null)
   const [theme, setTheme] = useState('graphite')
   const [centerView, setCenterView] = useState('floorplan')
   const [diagnostics, setDiagnostics] = useState(null)
 
   const clock = useClock()
-
-  // Sync alerts from live smoke sensor
-  useEffect(() => {
-    if (!uiData) return
-    const newAlerts = {}
-    for (const [roomId, s] of Object.entries(uiData.sensors)) {
-      if (s.smoke) newAlerts[roomId] = { type: 'smoke', message: 'Smoke detected' }
-    }
-    setAlerts(newAlerts)
-  }, [uiData])
 
   // Apply theme to root
   useEffect(() => {
@@ -84,33 +43,31 @@ export default function App() {
   // Diagnostics polling
   useEffect(() => {
     async function load() {
-      try { setDiagnostics(await getSystemDiagnostics()) } catch {}
+      try { setDiagnostics(await getSystemDiagnostics()) } catch {
+        // Diagnostics are non-critical; keep the last known values.
+      }
     }
     load()
     const t = setInterval(load, 5000)
     return () => clearInterval(t)
   }, [])
 
-  // Replay scrubber
-  useEffect(() => {
-    if (!playing) return
-    const t = setInterval(() => {
-      setTime(prev => {
-        if (prev >= 1) { setPlaying(false); return 1 }
-        return Math.min(1, prev + 0.01)
-      })
-    }, 120)
-    return () => clearInterval(t)
-  }, [playing])
 
   const showToast = (text, kind = 'info') => {
     setToast({ text, kind })
     setTimeout(() => setToast(null), 2400)
   }
 
-  const sensors = uiData?.sensors ?? {}
-  const devices = uiData?.devices ?? {}
+  const sensors = useMemo(() => uiData?.sensors ?? {}, [uiData])
+  const devices = useMemo(() => uiData?.devices ?? {}, [uiData])
   const mode = uiData?.mode ?? 'Auto'
+  const alerts = useMemo(() => {
+    const nextAlerts = {}
+    for (const [roomId, s] of Object.entries(sensors)) {
+      if (s.smoke) nextAlerts[roomId] = { type: 'smoke', message: 'Smoke detected' }
+    }
+    return nextAlerts
+  }, [sensors])
 
   // Synthetic decisions based on live actuator state
   const decisions = useMemo(() => {
@@ -153,7 +110,7 @@ export default function App() {
       })
     }
     return result.slice(0, 10)
-  }, [uiData, alerts])
+  }, [uiData, devices, alerts])
 
   const climateSpark = useMemo(() => Array.from({ length: 60 }, (_, i) =>
     21.2 + Math.sin(i / 9) * 0.8 + Math.cos(i / 5) * 0.4
@@ -170,7 +127,7 @@ export default function App() {
       }
     }
     return data
-  }, [selectedRoom]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [sensors])
 
   const climate = {
     temp:     sensors.living?.temp ?? 21.4,
@@ -194,12 +151,11 @@ export default function App() {
 
   const handleScenario = (id) => {
     setActiveScenario(id)
-    if (id !== 'live') {
-      runScenario(id)
-      showToast(`Scenario: ${id.replace(/_/g, ' ')}`, id === 'kitchen_smoke' ? 'alert' : 'info')
-    } else {
-      showToast('Live data resumed')
-    }
+    runScenario(id)
+    showToast(
+      id === 'live' ? 'Live data resumed' : `Scenario: ${id.replace(/_/g, ' ')}`,
+      id === 'kitchen_smoke' ? 'alert' : 'info'
+    )
   }
 
   const handleModeChange = (m) => {
@@ -270,7 +226,6 @@ export default function App() {
 
       {/* LEFT */}
       <LeftRail
-        presence={PRESENCE}
         climate={climate}
         energy={energy}
         decisions={decisions}
@@ -300,7 +255,6 @@ export default function App() {
           {centerView === 'floorplan' && (
             <FloorPlanV2
               sensors={sensors}
-              devices={devices}
               selectedRoom={selectedRoom}
               onSelectRoom={setSelectedRoom}
               alerts={alerts}
@@ -332,10 +286,6 @@ export default function App() {
 
       {/* FOOTER */}
       <Scrubber
-        time={time}
-        onSeek={setTime}
-        playing={playing}
-        onTogglePlay={() => setPlaying(p => !p)}
         activeScenario={activeScenario}
         onScenario={handleScenario}/>
 

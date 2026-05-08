@@ -1,4 +1,3 @@
-import { motion } from 'framer-motion'
 import { Power } from 'lucide-react'
 
 export default function ActuatorToggle({

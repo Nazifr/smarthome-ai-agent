@@ -1,5 +1,4 @@
-import { motion } from 'framer-motion'
-import { formatRoomName, formatSensorValue, ROOM_CONFIG } from '../App'
+import { formatRoomName, formatSensorValue, ROOM_CONFIG } from '../utils/format'
 
 const ROOM_AREAS = {
   living_room: 'floor-living',

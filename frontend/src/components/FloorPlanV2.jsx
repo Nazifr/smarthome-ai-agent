@@ -1,4 +1,4 @@
-import { ROOMS, sparkPath, sparkArea } from '../config/floorplan'
+import { ROOMS } from '../config/floorplan'
 
 const doors = [
   { x: 360, y: 130, w: 0, h: 24 },
@@ -8,7 +8,7 @@ const doors = [
   { x: 560, y: 130, w: 0, h: 24 },
 ]
 
-export default function FloorPlanV2({ sensors, devices, selectedRoom, onSelectRoom, alerts, showFurniture = true }) {
+export default function FloorPlanV2({ sensors, selectedRoom, onSelectRoom, alerts, showFurniture = true }) {
   const roomList = Object.values(ROOMS)
 
   return (

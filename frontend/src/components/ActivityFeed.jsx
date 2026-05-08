@@ -1,6 +1,5 @@
-import { motion } from 'framer-motion'
 import { CircleAlert, Clock3, History, Radio } from 'lucide-react'
-import { formatDeviceName, formatRoomName } from '../App'
+import { formatDeviceName, formatRoomName } from '../utils/format'
 
 function fallbackEvents(alerts, rooms) {
   const generated = []
