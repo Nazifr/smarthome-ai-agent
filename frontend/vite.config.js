@@ -7,10 +7,12 @@ export default defineConfig({
     allowedHosts: true,
   },
   server: {
+    host: true,          // listen on 0.0.0.0 — makes LAN access possible
     allowedHosts: true,
     proxy: {
       '/api': {
-        target: 'http://backend:8000',
+        // 'backend' resolves inside Docker; fall back to localhost for direct dev
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:8000',
         changeOrigin: true,
       },
     },

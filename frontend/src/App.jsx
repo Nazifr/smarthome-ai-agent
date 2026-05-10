@@ -11,7 +11,8 @@ import EnergySavings from './components/EnergySavings'
 import AiTimeline from './components/AiTimeline'
 import AiExplanation from './components/AiExplanation'
 import DemoConsole from './components/DemoConsole'
-import { getSystemDiagnostics } from './services/api'
+import { getSystemDiagnostics, getWeather } from './services/api'
+import { formatRoomName } from './utils/format'
 
 function useClock() {
   const [clock, setClock] = useState(new Date())
@@ -35,6 +36,8 @@ export default function App() {
   const [theme, setTheme] = useState('graphite')
   const [centerView, setCenterView] = useState('floorplan')
   const [diagnostics, setDiagnostics] = useState(null)
+  const [weather, setWeather] = useState(null)
+  const [showAlerts, setShowAlerts] = useState(false)
 
   const clock = useClock()
 
@@ -59,6 +62,24 @@ export default function App() {
     const active = diagnostics?.demo?.active
     if (active) setActiveScenario(active)
   }, [diagnostics])
+
+  // Weather polling — Open-Meteo via backend
+  useEffect(() => {
+    async function load() {
+      try { setWeather(await getWeather()) } catch {}
+    }
+    load()
+    const t = setInterval(load, 5 * 60 * 1000)
+    return () => clearInterval(t)
+  }, [])
+
+  // Close alert panel on outside click
+  useEffect(() => {
+    if (!showAlerts) return
+    const close = (e) => { if (!e.target.closest('.health-pill, .alert-panel')) setShowAlerts(false) }
+    document.addEventListener('mousedown', close)
+    return () => document.removeEventListener('mousedown', close)
+  }, [showAlerts])
 
   const showToast = (text, kind = 'info') => {
     setToast({ text, kind })
@@ -139,7 +160,7 @@ export default function App() {
   const climate = {
     temp:     sensors.living?.temp ?? 21.4,
     humidity: sensors.living?.humidity ?? 42,
-    outside:  14,
+    outside:  weather?.temperature != null ? Math.round(weather.temperature) : '–',
   }
   const totalDevicesOn = Object.values(devices).flat().filter(d => d.on).length
   const energy = { kwh: 8.4 + totalDevicesOn * 0.3, savings: 3.2 }
@@ -228,23 +249,52 @@ export default function App() {
         </div>
 
         <div className="topbar-right">
-          <div className="health-pill">
-            <span
-              className="pulse-dot"
-              style={Object.keys(alerts).length > 0 || (serviceList.length && healthyServices < serviceList.length) ? { background: 'var(--alert)' } : {}}
-            />
-            <span>{Object.keys(alerts).length > 0 ? `${Object.keys(alerts).length} alert(s)` : serviceSummary}</span>
+          <div style={{ position: 'relative' }}>
+            <button
+              className={`health-pill ${Object.keys(alerts).length > 0 ? 'is-alert' : ''}`}
+              onClick={() => setShowAlerts(s => !s)}
+              aria-label="Show alerts">
+              <span
+                className="pulse-dot"
+                style={Object.keys(alerts).length > 0 || (serviceList.length && healthyServices < serviceList.length) ? { background: 'var(--alert)' } : {}}
+              />
+              <span>{Object.keys(alerts).length > 0 ? `${Object.keys(alerts).length} alert${Object.keys(alerts).length > 1 ? 's' : ''}` : serviceSummary}</span>
+            </button>
+            {showAlerts && (
+              <div className="alert-panel" role="dialog" aria-label="Active alerts">
+                <div className="alert-panel-head">
+                  {Object.keys(alerts).length > 0 ? 'Active Alerts' : 'No active alerts'}
+                </div>
+                {Object.entries(alerts).map(([roomId, alert]) => (
+                  <button key={roomId} className="alert-item" onClick={() => { setSelectedRoom(roomId); setShowAlerts(false) }}>
+                    <span className="alert-item-icon"><I.AlertTriangle/></span>
+                    <div>
+                      <strong>{formatRoomName(roomId)}</strong>
+                      <span>{alert.message}</span>
+                    </div>
+                  </button>
+                ))}
+                {Object.keys(alerts).length === 0 && serviceList.length > 0 && serviceList.filter(s => !s.ok).map(svc => (
+                  <div key={svc.name} className="alert-item alert-item--warn">
+                    <span className="alert-item-icon"><I.Shield/></span>
+                    <div>
+                      <strong>{svc.name}</strong>
+                      <span>Service unavailable</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           <div className="clock">{clockStr}</div>
-          {['graphite', 'midnight', 'paper'].map(t => (
-            <button key={t} className="icon-btn" title={t} onClick={() => setTheme(t)}
-              style={theme === t ? { borderColor: 'var(--accent)', color: 'var(--accent)' } : {}}>
-              {t === 'graphite' && <I.Moon/>}
-              {t === 'midnight' && <I.Shield/>}
-              {t === 'paper' && <I.Sun/>}
-            </button>
-          ))}
-          <button className="icon-btn" aria-label="Notifications"><I.Bell/></button>
+          <button className="icon-btn" title="Light mode" onClick={() => setTheme('graphite')}
+            style={theme === 'graphite' ? { borderColor: 'var(--accent)', color: 'var(--accent)' } : {}}>
+            <I.Sun/>
+          </button>
+          <button className="icon-btn" title="Dark mode" onClick={() => setTheme('midnight')}
+            style={theme === 'midnight' ? { borderColor: 'var(--accent)', color: 'var(--accent)' } : {}}>
+            <I.Moon/>
+          </button>
         </div>
       </header>
 
@@ -315,6 +365,20 @@ export default function App() {
         activeScenario={activeScenario}
         loadingScenario={scenarioLoading}
         onScenario={handleScenario}/>
+
+      {/* Smoke alert banner */}
+      {Object.keys(alerts).length > 0 && (
+        <div className="smoke-banner" role="alert">
+          <I.AlertTriangle width={16} height={16}/>
+          <strong>SMOKE DETECTED</strong>
+          {Object.keys(alerts).map(roomId => (
+            <button key={roomId} className="smoke-banner-room" onClick={() => setSelectedRoom(roomId)}>
+              {formatRoomName(roomId)}
+            </button>
+          ))}
+          <span className="smoke-banner-sub">AI has triggered exhaust override · Check the room</span>
+        </div>
+      )}
 
       {/* Toast */}
       {toast && (

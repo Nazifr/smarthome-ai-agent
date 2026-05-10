@@ -88,6 +88,12 @@ export const I = {
       <path d="M12 3l1.5 4.5L18 9l-4.5 1.5L12 15l-1.5-4.5L6 9l4.5-1.5L12 3zM19 14l.7 2.3L22 17l-2.3.7L19 20l-.7-2.3L16 17l2.3-.7L19 14z" stroke="currentColor" strokeWidth="1.2" strokeLinejoin="round" fill="none"/>
     </svg>
   ),
+  AlertTriangle: (p) => (
+    <svg viewBox="0 0 24 24" width="14" height="14" fill="none" {...p}>
+      <path d="M10.3 3.4L2 19h20L13.7 3.4a2 2 0 0 0-3.4 0z" stroke="currentColor" strokeWidth="1.5" strokeLinejoin="round"/>
+      <path d="M12 10v4m0 3v.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
+    </svg>
+  ),
   Smoke: (p) => (
     <svg viewBox="0 0 24 24" width="14" height="14" fill="none" {...p}>
       <path d="M5 13c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M3 17c2 0 2-2 4-2s2 2 4 2 2-2 4-2 2 2 4 2M7 9c2 0 2-2 4-2s2 2 4 2 2-2 4-2" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round"/>
