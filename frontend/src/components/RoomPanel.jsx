@@ -17,6 +17,10 @@ import {
 } from '../utils/format'
 import ActuatorToggle from './ActuatorToggle'
 
+function useCssVar(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(name).trim()
+}
+
 export default function RoomPanel({
   room,
   history,
@@ -28,6 +32,14 @@ export default function RoomPanel({
   onClose,
   onActuator,
 }) {
+  const accent      = useCssVar('--accent')
+  const panelBg     = useCssVar('--panel')
+  const mutedColor  = useCssVar('--muted')
+  const lineColor   = useCssVar('--line-2')
+  const textColor   = useCssVar('--text')
+  const accentLine  = useCssVar('--accent-line')
+  const warnColor   = useCssVar('--warn')
+
   const config = ROOM_CONFIG[room.room_id] ?? {
     sensors: ['temperature', 'humidity', 'motion', 'smoke'],
     controls: Object.keys(room.actuators ?? {}).map((key) => ({ key, label: formatDeviceName(key) })),
@@ -120,25 +132,25 @@ export default function RoomPanel({
             ) : (
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={history}>
-                  <CartesianGrid stroke="rgba(255,255,255,0.08)" vertical={false} />
-                  <XAxis dataKey="time" tick={{ fill: '#9da6a3', fontSize: 12 }} />
-                  <YAxis tick={{ fill: '#9da6a3', fontSize: 12 }} domain={['auto', 'auto']} />
+                  <CartesianGrid stroke={lineColor} vertical={false} />
+                  <XAxis dataKey="time" tick={{ fill: mutedColor, fontSize: 12 }} />
+                  <YAxis tick={{ fill: mutedColor, fontSize: 12 }} domain={['auto', 'auto']} />
                   <Tooltip
                     contentStyle={{
-                      background: '#111613',
-                      border: '1px solid rgba(109, 255, 194, 0.25)',
+                      background: panelBg,
+                      border: `1px solid ${accentLine}`,
                       borderRadius: 8,
-                      color: '#f3f8f5',
+                      color: textColor,
                     }}
-                    labelStyle={{ color: '#f3f8f5' }}
+                    labelStyle={{ color: textColor }}
                   />
                   <Line
                     type="monotone"
                     dataKey="value"
-                    stroke="#6dffc2"
+                    stroke={accent}
                     strokeWidth={3}
                     dot={false}
-                    activeDot={{ r: 5, fill: '#ffcf5a', stroke: '#101411' }}
+                    activeDot={{ r: 5, fill: warnColor, stroke: panelBg }}
                   />
                 </LineChart>
               </ResponsiveContainer>
