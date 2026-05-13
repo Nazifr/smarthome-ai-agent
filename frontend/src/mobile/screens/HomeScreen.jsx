@@ -1,13 +1,13 @@
 import React from 'react'
-import RoomCard from '../components/RoomCard.jsx'
+import FloorGrid from '../components/FloorGrid.jsx'
 import { adaptHome } from '../adapters.js'
 
 const SCENES = [
-  { id: 'live',               label: 'Live',     emoji: '📡' },
-  { id: 'night_routine',      label: 'Evening',  emoji: '🌙' },
-  { id: 'empty_home',         label: 'Away',     emoji: '🚗' },
-  { id: 'kitchen_smoke',      label: 'Smoke',    emoji: '🔥' },
-  { id: 'bathroom_humidity',  label: 'Shower',   emoji: '🚿' },
+  { id: 'live',               label: 'Live',    icon: '📡' },
+  { id: 'night_routine',      label: 'Evening', icon: '🌙' },
+  { id: 'empty_home',         label: 'Away',    icon: '🚗' },
+  { id: 'kitchen_smoke',      label: 'Smoke',   icon: '🔥' },
+  { id: 'bathroom_humidity',  label: 'Shower',  icon: '🚿' },
 ]
 
 function dayLabel() {
@@ -51,15 +51,15 @@ export default function HomeScreen({ overview, weather, onRoomClick, onSceneClic
           <div className="m-stat-v">
             {data.temp != null ? data.temp.toFixed(1) : '—'}<sup>°</sup>
           </div>
-          <div className="m-stat-meta">{data.humidity != null ? `${data.humidity}% humidity` : 'No data'}</div>
+          <div className="m-stat-meta">
+            {data.humidity != null ? `${data.humidity}% humidity` : 'No data'}
+          </div>
         </div>
         <div className="m-stat">
           <div className="m-stat-label">Outside</div>
           {weather?.available ? (
             <>
-              <div className="m-stat-v">
-                {Math.round(weather.temperature)}<sup>°</sup>
-              </div>
+              <div className="m-stat-v">{Math.round(weather.temperature)}<sup>°</sup></div>
               <div className="m-stat-meta">{weather.condition}</div>
             </>
           ) : (
@@ -83,7 +83,9 @@ export default function HomeScreen({ overview, weather, onRoomClick, onSceneClic
             {data.totalDevicesOn}<sup style={{ fontSize: '11px' }}>/{data.totalDevices}</sup>
           </div>
           <div className="m-stat-meta">
-            {data.activeAlerts > 0 ? `${data.activeAlerts} alert${data.activeAlerts > 1 ? 's' : ''}` : 'All normal'}
+            {data.activeAlerts > 0
+              ? `${data.activeAlerts} alert${data.activeAlerts > 1 ? 's' : ''}`
+              : 'All normal'}
           </div>
         </div>
       </div>
@@ -97,24 +99,23 @@ export default function HomeScreen({ overview, weather, onRoomClick, onSceneClic
             className={`m-scene-pill${activeScene === s.id ? ' is-active' : ''}`}
             onClick={() => onSceneClick(s.id)}
           >
-            <span role="img" aria-hidden="true">{s.emoji}</span>
+            <span role="img" aria-hidden="true">{s.icon}</span>
             {s.label}
           </button>
         ))}
       </div>
 
-      {/* Rooms */}
+      {/* Floor grid — tap a room to open the sheet */}
       <div className="m-sec-title">
         <span>Rooms</span>
-        <span style={{ fontSize: '11px', color: 'var(--m-accent)', fontFamily: 'Inter,sans-serif', textTransform: 'none', letterSpacing: '0.04em' }}>
-          {data.rooms.length} total
+        <span style={{
+          fontSize: '11px', color: 'var(--m-accent)',
+          fontFamily: 'Inter,sans-serif', textTransform: 'none', letterSpacing: '0.04em',
+        }}>
+          {data.rooms.length} rooms
         </span>
       </div>
-      <div className="m-rooms-grid">
-        {data.rooms.map(room => (
-          <RoomCard key={room.id} room={room} onClick={onRoomClick} />
-        ))}
-      </div>
+      <FloorGrid rooms={data.rooms} onRoomClick={onRoomClick} />
     </>
   )
 }

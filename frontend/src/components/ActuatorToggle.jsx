@@ -8,7 +8,7 @@ export default function ActuatorToggle({
   loading,
   label,
 }) {
-  const isOn = state === 'ON'
+  const isOn = state !== 'OFF'
   const isLoadingOn = loading === `${roomId}-${device}-ON`
   const isLoadingOff = loading === `${roomId}-${device}-OFF`
 

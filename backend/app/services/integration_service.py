@@ -141,6 +141,9 @@ def get_service_health(current_mode: str):
     except Exception:
         simulator_has_data = False
 
+    # Check Telegram token availability
+    telegram_configured = bool(os.getenv("TELEGRAM_TOKEN", ""))
+
     return [
         {
             "id": "backend",
@@ -165,5 +168,11 @@ def get_service_health(current_mode: str):
                 if current_mode == "AI"
                 else "paused by mode"
             ),
+        },
+        {
+            "id": "telegram",
+            "label": "Telegram Bot",
+            "ok": telegram_configured,
+            "detail": "alert notifications active" if telegram_configured else "not configured",
         },
     ]

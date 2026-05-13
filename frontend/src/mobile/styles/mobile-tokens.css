@@ -1,22 +1,85 @@
-/* NeuroNest Mobile — design tokens (warm terracotta theme) */
-/* Import ONLY in MobileApp.jsx — does not affect desktop */
+/* NeuroNest Mobile — design tokens */
+/* Import ONLY in MobileApp.jsx */
+
 .m-root {
-  --m-bg: #F7F4F0;
-  --m-bg-card: #FFFFFF;
-  --m-bg-soft: #F2EDE8;
-  --m-line: rgba(26,23,20,0.09);
-  --m-line-2: rgba(26,23,20,0.16);
-  --m-text: #1A1714;
-  --m-muted: #8C8279;
-  --m-dim: #B5ADA6;
-  --m-accent: oklch(61% 0.148 37);
-  --m-accent-soft: oklch(61% 0.148 37 / 0.13);
-  --m-accent-line: oklch(61% 0.148 37 / 0.32);
-  --m-warn: oklch(62% 0.14 60);
-  --m-warn-soft: oklch(62% 0.14 60 / 0.14);
-  --m-alert: oklch(55% 0.18 22);
-  --m-alert-soft: oklch(55% 0.18 22 / 0.14);
-  --m-gold: oklch(68% 0.13 75);
+  /* Surfaces */
+  --m-bg:          oklch(95.5% 0.006 75);
+  --m-bg-card:     oklch(99.2% 0.003 80);
+  --m-bg-soft:     oklch(92%   0.008 72);
+  --m-bg-mid:      oklch(93%   0.007 73);
+  --m-wall:        oklch(79%   0.013 68);
+
+  /* Text */
+  --m-text:        oklch(17%   0.010 50);
+  --m-muted:       oklch(48%   0.009 55);
+  --m-dim:         oklch(66%   0.007 62);
+
+  /* Borders */
+  --m-line:        oklch(87%   0.009 72 / 0.6);
+  --m-line-2:      oklch(79%   0.011 70 / 0.7);
+
+  /* Brand — terracotta */
+  --m-accent:      oklch(61%   0.148 37);
+  --m-accent-soft: oklch(61%   0.148 37 / 0.11);
+  --m-accent-mid:  oklch(61%   0.148 37 / 0.22);
+  --m-accent-line: oklch(61%   0.148 37 / 0.32);
+  --m-accent-glow: oklch(61%   0.148 37 / 0.28);
+
+  /* Alert */
+  --m-alert:       oklch(57%   0.200 24);
+  --m-alert-soft:  oklch(57%   0.200 24 / 0.11);
+  --m-alert-mid:   oklch(57%   0.200 24 / 0.22);
+
+  /* Cool (AC / blue) */
+  --m-cool:        oklch(60%   0.112 248);
+  --m-cool-soft:   oklch(60%   0.112 248 / 0.11);
+
+  /* Green (fan / ok) */
+  --m-green:       oklch(58%   0.130 155);
+  --m-green-soft:  oklch(58%   0.130 155 / 0.11);
+
+  /* Misc */
+  --m-warn:        oklch(62%   0.14 60);
+  --m-warn-soft:   oklch(62%   0.14 60 / 0.14);
+  --m-gold:        oklch(68%   0.13 75);
+  --m-nav-bg:      oklch(97%   0.004 78 / 0.94);
+  --m-toggle-off:  oklch(80%   0.008 68);
+
   --m-radius-card: 18px;
-  --m-radius-sm: 10px;
+  --m-radius-sm:   10px;
+}
+
+[data-theme="dark"] .m-root {
+  --m-bg:          oklch(13%   0.008 52);
+  --m-bg-card:     oklch(19%   0.010 50);
+  --m-bg-soft:     oklch(22%   0.011 49);
+  --m-bg-mid:      oklch(25%   0.012 48);
+  --m-wall:        oklch(9%    0.006 50);
+
+  --m-text:        oklch(93%   0.006 78);
+  --m-muted:       oklch(56%   0.008 60);
+  --m-dim:         oklch(38%   0.006 55);
+
+  --m-line:        oklch(29%   0.010 50 / 0.9);
+  --m-line-2:      oklch(37%   0.012 50 / 0.8);
+
+  --m-accent:      oklch(70%   0.132 37);
+  --m-accent-soft: oklch(70%   0.132 37 / 0.13);
+  --m-accent-mid:  oklch(70%   0.132 37 / 0.24);
+  --m-accent-line: oklch(70%   0.132 37 / 0.34);
+  --m-accent-glow: oklch(70%   0.132 37 / 0.32);
+
+  --m-alert:       oklch(63%   0.188 24);
+  --m-alert-soft:  oklch(63%   0.188 24 / 0.13);
+  --m-alert-mid:   oklch(63%   0.188 24 / 0.26);
+
+  --m-cool:        oklch(66%   0.108 248);
+  --m-cool-soft:   oklch(66%   0.108 248 / 0.13);
+
+  --m-green:       oklch(64%   0.125 155);
+  --m-green-soft:  oklch(64%   0.125 155 / 0.13);
+
+  --m-gold:        oklch(72%   0.12 75);
+  --m-nav-bg:      oklch(16%   0.009 50 / 0.96);
+  --m-toggle-off:  oklch(33%   0.008 50);
 }

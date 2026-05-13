@@ -34,7 +34,7 @@ export default function RoomCard({ room, index, selected, localStates, onClick }
   const hasAlert = Number(room.smoke) > 0
   const activeDevices = Object.entries(room.actuators ?? {}).filter(([device, state]) => {
     const localState = localStates?.[`${room.room_id}-${device}`]
-    return (localState ?? state) === 'ON'
+    return (localState ?? state) !== 'OFF'
   })
 
   return (
@@ -81,7 +81,7 @@ export default function RoomCard({ room, index, selected, localStates, onClick }
         {Object.entries(room.actuators ?? {}).map(([device, state]) => {
           const Icon = DEVICE_ICONS[device] ?? Lightbulb
           const localState = localStates?.[`${room.room_id}-${device}`]
-          const active = (localState ?? state) === 'ON'
+          const active = (localState ?? state) !== 'OFF'
 
           return (
             <span className={active ? 'device-dot is-on' : 'device-dot'} key={device}>

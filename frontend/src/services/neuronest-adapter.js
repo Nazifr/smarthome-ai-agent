@@ -62,8 +62,8 @@ export function mapOverviewToUiShape(overview) {
       deviceKey: key,
       name:      deviceLabel(key),
       icon:      deviceIcon(key),
-      on:        state === 'ON',
-      meta:      state === 'ON' ? 'On' : 'Off',
+      on:        state !== 'OFF',
+      meta:      state === 'OFF' ? 'Off' : state,
     }))
   }
 

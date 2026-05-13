@@ -39,7 +39,17 @@ const defaultIcon = (
   </svg>
 )
 
+const STATE_LABELS = {
+  ON: 'On', OFF: 'Off', DIM: 'Dimmed', COOL_LOW: 'Cool (low)',
+  COOL_HIGH: 'Cool (high)', HEAT: 'Heating',
+}
+
 export default function DeviceRow({ device, onToggle }) {
+  // device.key holds the raw actuator state from the backend after adaptRoom
+  // Resolve a display label from the raw state coming through
+  const rawState = device.rawState
+  const stateLabel = STATE_LABELS[rawState] || (device.on ? 'On' : 'Off')
+
   return (
     <div className={`m-device-row${device.on ? ' is-on' : ''}`}>
       <div className="m-device-icn">
@@ -47,7 +57,7 @@ export default function DeviceRow({ device, onToggle }) {
       </div>
       <div className="m-device-info">
         <div className="m-device-nm">{device.name}</div>
-        <div className="m-device-st">{device.on ? 'On' : 'Off'}</div>
+        <div className="m-device-st">{stateLabel}</div>
       </div>
       <button
         className={`m-switch${device.on ? ' is-on' : ''}`}

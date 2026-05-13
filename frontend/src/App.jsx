@@ -11,7 +11,7 @@ import EnergySavings from './components/EnergySavings'
 import AiTimeline from './components/AiTimeline'
 import AiExplanation from './components/AiExplanation'
 import DemoConsole from './components/DemoConsole'
-import { getSystemDiagnostics, getWeather } from './services/api'
+import { getSystemDiagnostics, getWeather, controlActuator } from './services/api'
 import { formatRoomName } from './utils/format'
 
 function useClock() {
@@ -26,7 +26,7 @@ function useClock() {
 function pad(n) { return String(n).padStart(2, '0') }
 
 export default function App() {
-  const { uiData, loading, toggleDevice, setMode, runScenario } = useNeuroNest()
+  const { uiData, loading, toggleDevice, setMode, runScenario, fetchOverview } = useNeuroNest()
 
   const [selectedRoom, setSelectedRoom] = useState('living')
   const [activeDecisionId, setActiveDecisionId] = useState(null)
@@ -158,8 +158,8 @@ export default function App() {
   }, [sensors])
 
   const climate = {
-    temp:     sensors.living?.temp ?? 21.4,
-    humidity: sensors.living?.humidity ?? 42,
+    temp:     sensors[selectedRoom]?.temp ?? sensors.living?.temp ?? 21.4,
+    humidity: sensors[selectedRoom]?.humidity ?? sensors.living?.humidity ?? 42,
     outside:  weather?.temperature != null ? Math.round(weather.temperature) : '–',
   }
   const totalDevicesOn = Object.values(devices).flat().filter(d => d.on).length
@@ -200,9 +200,21 @@ export default function App() {
     }
   }
 
-  const handleModeChange = (m) => {
+  const ROOM_ID_REVERSE = { living: 'living_room', bedroom: 'bedroom', kitchen: 'kitchen', bathroom: 'bathroom', hallway: 'hallway', office: 'office' }
+
+  const handleModeChange = async (m) => {
     setMode(m)
     showToast(`Mode → ${m}`)
+    if (m === 'Away') {
+      const offs = []
+      for (const [uiId, devList] of Object.entries(devices)) {
+        for (const d of devList) {
+          if (d.on) offs.push(controlActuator(ROOM_ID_REVERSE[uiId] ?? uiId, d.deviceKey, 'OFF').catch(() => {}))
+        }
+      }
+      await Promise.allSettled(offs)
+      fetchOverview()
+    }
   }
 
   const clockStr = `${pad(clock.getHours())}:${pad(clock.getMinutes())}:${pad(clock.getSeconds())}`
@@ -224,7 +236,7 @@ export default function App() {
   }
 
   return (
-    <div className="app">
+    <div className={`app${Object.keys(alerts).length > 0 ? ' has-alert-banner' : ''}`}>
       {/* TOPBAR */}
       <header className="topbar">
         <div className="brand">
@@ -329,6 +341,7 @@ export default function App() {
           {centerView === 'floorplan' && (
             <FloorPlanV2
               sensors={sensors}
+              devices={devices}
               selectedRoom={selectedRoom}
               onSelectRoom={setSelectedRoom}
               alerts={alerts}

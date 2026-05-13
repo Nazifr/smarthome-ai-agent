@@ -46,6 +46,7 @@ export default function RoomCard({ room, onClick }) {
   return (
     <button
       className={`m-room-card${isActive ? ' is-on' : ''}${hasAlert ? ' is-alert' : ''}`}
+      data-room={room.id}
       onClick={() => onClick(room.id)}
     >
       <div className="m-room-icn">

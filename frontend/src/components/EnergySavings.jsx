@@ -6,7 +6,7 @@ function estimateSavings(overview, diagnostics) {
   const offActions = actions.filter((action) => String(action.command).toUpperCase() === 'OFF').length
   const dimActions = actions.filter((action) => String(action.command).toUpperCase() === 'DIM').length
   const activeDevices = rooms.reduce(
-    (count, room) => count + Object.values(room.actuators ?? {}).filter((state) => state === 'ON').length,
+    (count, room) => count + Object.values(room.actuators ?? {}).filter((state) => state !== 'OFF').length,
     0
   )
   const estimatedKwh = Math.max(0.2, offActions * 0.18 + dimActions * 0.08 + Math.max(0, 5 - activeDevices) * 0.04)

@@ -8,7 +8,7 @@ const doors = [
   { x: 560, y: 130, w: 0, h: 24 },
 ]
 
-export default function FloorPlanV2({ sensors, selectedRoom, onSelectRoom, alerts, showFurniture = true }) {
+export default function FloorPlanV2({ sensors, devices = {}, selectedRoom, onSelectRoom, alerts, showFurniture = true }) {
   const roomList = Object.values(ROOMS)
 
   return (
@@ -28,16 +28,25 @@ export default function FloorPlanV2({ sensors, selectedRoom, onSelectRoom, alert
         const occupied = Boolean(s.motion)
         const alert = alerts[r.id]
         const selected = selectedRoom === r.id
+        const roomDevices = devices[r.id] ?? []
+        const lightsOn = roomDevices.some(d => d.on && (d.icon === 'Lightbulb' || d.icon === 'Sun'))
+        const fanOn    = roomDevices.some(d => d.on && d.icon === 'Fan')
         const cls = [
           'room-shape',
           occupied ? 'is-occupied' : '',
           alert ? 'is-alert' : '',
           selected ? 'is-selected' : '',
+          lightsOn ? 'is-lit' : '',
         ].filter(Boolean).join(' ')
 
         return (
-          <g key={r.id} onClick={() => onSelectRoom(r.id)}>
+          <g key={r.id} className={lightsOn ? 'room-group is-lit' : 'room-group'} onClick={() => onSelectRoom(r.id)}>
             <rect className={cls} x={r.x} y={r.y} width={r.w} height={r.h} rx="6" ry="6"/>
+            {/* warm glow overlay when light is on */}
+            {lightsOn && !alert && (
+              <rect x={r.x + 2} y={r.y + 2} width={r.w - 4} height={r.h - 4} rx="5" ry="5"
+                fill="rgba(255, 200, 100, 0.10)" pointerEvents="none"/>
+            )}
 
             {showFurniture && r.furniture.map((f, i) =>
               f.type === 'rect' ? (
@@ -60,6 +69,16 @@ export default function FloorPlanV2({ sensors, selectedRoom, onSelectRoom, alert
               </>
             )}
 
+            {/* fan indicator badge */}
+            {fanOn && !alert && (
+              <g transform={`translate(${r.x + r.w - 14}, ${r.y + r.h - 14})`} opacity="0.8" pointerEvents="none">
+                <circle r="8" fill="var(--accent-soft)" stroke="var(--accent-line)" strokeWidth="1"/>
+                <line x1="-4" y1="0" x2="4" y2="0" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round"/>
+                <line x1="0" y1="-4" x2="0" y2="4" stroke="var(--accent)" strokeWidth="1.4" strokeLinecap="round"/>
+                <line x1="-3" y1="-3" x2="3" y2="3" stroke="var(--accent)" strokeWidth="1" strokeLinecap="round"/>
+                <line x1="3" y1="-3" x2="-3" y2="3" stroke="var(--accent)" strokeWidth="1" strokeLinecap="round"/>
+              </g>
+            )}
             <text className="room-label-name" x={r.label.x} y={r.label.y}>{r.name}</text>
             <text className="room-label-temp" x={r.label.x} y={r.label.y + 16}>
               {s.temp != null ? s.temp.toFixed(1) : '—'}°  ·  {s.humidity ?? '—'}% rh

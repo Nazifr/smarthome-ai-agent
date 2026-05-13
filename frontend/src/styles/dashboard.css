@@ -21,7 +21,7 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
     radial-gradient(ellipse 1200px 600px at 60% -10%, var(--accent-soft), transparent 60%),
     var(--bg);
 }
-.topbar { grid-area: topbar; }
+.topbar { grid-area: topbar; position: relative; z-index: 60; }
 .left   { grid-area: left;   border-right: 1px solid var(--line); min-height: 0; overflow: hidden; }
 .center { grid-area: center; min-height: 0; overflow: hidden; }
 .right  { grid-area: right;  border-left: 1px solid var(--line); min-height: 0; overflow: hidden; }
@@ -492,11 +492,10 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
   transition: 200ms ease;
   cursor: pointer;
 }
-.room-shape.is-occupied { fill: var(--accent-soft); }
 .room-shape.is-alert { fill: var(--alert-soft); stroke: var(--alert); }
 .room-shape.is-selected { stroke: var(--accent); stroke-width: 2; }
+.room-shape.is-lit { fill: oklch(88% 0.06 65 / 0.55); }
 .room-shape:hover { fill: var(--panel-2); }
-.room-shape.is-occupied:hover { fill: var(--accent-soft); filter: brightness(1.15); }
 
 .room-label-name {
   font-family: 'Inter', sans-serif;
@@ -510,6 +509,9 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
   fill: var(--muted);
   pointer-events: none;
 }
+/* When light is on the room glows warm — ensure labels stay readable in dark mode */
+.room-group.is-lit .room-label-name { fill: oklch(22% 0.04 60); }
+.room-group.is-lit .room-label-temp { fill: oklch(38% 0.05 60); }
 .room-icon { fill: var(--muted); pointer-events: none; }
 .room-icon.is-on { fill: var(--accent); }
 .room-icon.is-alert { fill: var(--alert); }
@@ -539,6 +541,13 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
   animation: nn-dash 2s linear infinite;
 }
 @keyframes nn-dash { to { stroke-dashoffset: -16; } }
+
+/* When smoke banner is active, shift column content down so it isn't obscured */
+.has-alert-banner .left,
+.has-alert-banner .center,
+.has-alert-banner .right {
+  padding-top: 40px;
+}
 
 /* Smoke alert banner */
 .smoke-banner {

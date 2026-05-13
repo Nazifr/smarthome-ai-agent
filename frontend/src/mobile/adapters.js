@@ -37,6 +37,13 @@ function deviceLabel(key) {
   return key.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
 }
 
+function deviceTypeOf(key) {
+  const k = key.toLowerCase()
+  if (k.includes('ac')) return 'ac'
+  if (k.includes('fan')) return 'fan'
+  return 'light'
+}
+
 function roomStatus(room, devicesOn) {
   if (Number(room.smoke) > 0) return { text: 'Smoke detected', alert: true }
   if (devicesOn > 0) return { text: `${devicesOn} device${devicesOn > 1 ? 's' : ''} on`, active: true }
@@ -47,9 +54,14 @@ function roomStatus(room, devicesOn) {
 export function adaptHome(overview) {
   if (!overview) return null
   const rooms = (overview.rooms ?? []).map(r => {
-    const devicesOn = Object.values(r.actuators ?? {}).filter(s => s === 'ON').length
+    const devicesOn = Object.values(r.actuators ?? {}).filter(s => s !== 'OFF').length
     const totalDevices = Object.keys(r.actuators ?? {}).length
     const status = roomStatus(r, devicesOn)
+    // Unique device type categories that are currently ON (for floor grid dots)
+    const deviceTypes = Object.entries(r.actuators ?? {})
+      .filter(([, state]) => state !== 'OFF')
+      .map(([key]) => deviceTypeOf(key))
+      .filter((v, i, a) => a.indexOf(v) === i)
     return {
       id:           r.room_id,
       name:         ROOM_NAMES[r.room_id] ?? r.room_id,
@@ -59,6 +71,7 @@ export function adaptHome(overview) {
       smoke:        Number(r.smoke) > 0,
       devicesOn,
       totalDevices,
+      deviceTypes,
       status,
     }
   })
@@ -88,7 +101,8 @@ export function adaptRoom(overview, roomId) {
     key,
     name:   deviceLabel(key),
     icon:   deviceIcon(key),
-    on:     state === 'ON',
+    on:     state !== 'OFF',
+    rawState: state,
   }))
 
   const devicesOn = devices.filter(d => d.on).length
@@ -108,7 +122,7 @@ export function adaptRoom(overview, roomId) {
 export function adaptEnergy(overview) {
   if (!overview) return null
   const totalDevicesOn = (overview.rooms ?? []).reduce((s, r) =>
-    s + Object.values(r.actuators ?? {}).filter(v => v === 'ON').length, 0)
+    s + Object.values(r.actuators ?? {}).filter(v => v !== 'OFF').length, 0)
 
   // Estimated from device count — no real energy API exists yet
   const estimatedKwh = +(8.4 + totalDevicesOn * 0.3).toFixed(1)

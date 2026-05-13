@@ -129,6 +129,7 @@ services:
       - INFLUX_TOKEN=${DOCKER_INFLUXDB_INIT_ADMIN_TOKEN}
       - INFLUX_ORG=smarthome
       - INFLUX_BUCKET=sensor_data
+      - TELEGRAM_TOKEN=${TELEGRAM_TOKEN}
       - TZ=Europe/Istanbul
     depends_on:
       - mosquitto
@@ -145,7 +146,7 @@ services:
     ports:
       - "5173:5173"
     environment:
-      - VITE_API_URL=http://localhost:8000
+      - VITE_BACKEND_URL=http://backend:8000
     depends_on:
       - backend
     restart: unless-stopped

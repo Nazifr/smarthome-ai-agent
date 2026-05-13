@@ -4,7 +4,7 @@ const MODES = ['Manual', 'Static', 'AI']
 
 function countActiveDevices(rooms = []) {
   return rooms.reduce((total, room) => {
-    const active = Object.values(room.actuators ?? {}).filter((state) => state === 'ON')
+    const active = Object.values(room.actuators ?? {}).filter((state) => state !== 'OFF')
     return total + active.length
   }, 0)
 }

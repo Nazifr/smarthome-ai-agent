@@ -22,8 +22,28 @@ ROOM_ACTUATORS = {
 }
 
 DEMO_AUTOMATIONS = {
-    "kitchen_smoke": [("kitchen", "exhaust_fan", "ON")],
-    "bathroom_humidity": [("bathroom", "ventilation_fan", "ON")],
+    "kitchen_smoke": [
+        ("kitchen", "exhaust_fan", "ON"),
+        ("kitchen", "light", "ON"),
+    ],
+    "bathroom_humidity": [
+        ("bathroom", "ventilation_fan", "ON"),
+        ("bathroom", "light", "ON"),
+    ],
+    "night_routine": [
+        ("bedroom", "light", "DIM"),
+        ("bedroom", "ac", "COOL_LOW"),
+        ("bedroom", "fan", "OFF"),
+        ("living_room", "light", "OFF"),
+        ("living_room", "ac", "OFF"),
+        ("living_room", "fan", "OFF"),
+        ("kitchen", "light", "OFF"),
+        ("kitchen", "exhaust_fan", "OFF"),
+        ("hallway", "light", "DIM"),
+        ("office", "light", "OFF"),
+        ("office", "ac", "OFF"),
+        ("office", "fan", "OFF"),
+    ],
     "empty_home": [
         (room_id, device, "OFF")
         for room_id, devices in ROOM_ACTUATORS.items()

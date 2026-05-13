@@ -14,6 +14,14 @@ def set_system_mode(mode: str) -> SystemMode:
     global CURRENT_MODE
     CURRENT_MODE = mode
     publish("home/system/mode", {"mode": mode})
+
+    # Away (Static) mode: automatically turn off all devices for energy saving
+    if mode == "Static":
+        from app.services.room_service import ROOM_ACTUATORS, set_actuator
+        for room_id, devices in ROOM_ACTUATORS.items():
+            for device in devices:
+                set_actuator(room_id, device, "OFF")
+
     return SystemMode(mode=CURRENT_MODE)
 
 

@@ -2,24 +2,35 @@ import React, { useEffect, useRef, useState, useCallback } from 'react'
 import './styles/mobile-tokens.css'
 import './styles/mobile.css'
 
-import TabBar from './components/TabBar.jsx'
-import HomeScreen from './screens/HomeScreen.jsx'
-import RoomScreen from './screens/RoomScreen.jsx'
-import EnergyScreen from './screens/EnergyScreen.jsx'
-import MeScreen from './screens/MeScreen.jsx'
+import TabBar        from './components/TabBar.jsx'
+import RoomSheet     from './components/RoomSheet.jsx'
+import HomeScreen    from './screens/HomeScreen.jsx'
+import ActivityScreen from './screens/ActivityScreen.jsx'
+import AiScreen      from './screens/AiScreen.jsx'
+import EnergyScreen  from './screens/EnergyScreen.jsx'
+import MeScreen      from './screens/MeScreen.jsx'
 
-import { getSystemOverview, controlActuator, setSystemMode, triggerDemoScenario, getWeather } from '../services/api.js'
+import {
+  getSystemOverview,
+  getSystemDiagnostics,
+  controlActuator,
+  setSystemMode,
+  triggerDemoScenario,
+  getWeather,
+} from '../services/api.js'
 
 export default function MobileApp() {
-  const [tab, setTab]             = useState('home')
-  const [roomId, setRoomId]       = useState(null)
-  const [overview, setOverview]   = useState(null)
-  const [loading, setLoading]     = useState(true)
-  const [toast, setToast]         = useState(null)
+  const [tab, setTab]               = useState('home')
+  const [sheetRoomId, setSheetRoomId] = useState(null)
+  const [overview, setOverview]     = useState(null)
+  const [diag, setDiag]             = useState(null)
+  const [loading, setLoading]       = useState(true)
+  const [toast, setToast]           = useState(null)
   const [activeScene, setActiveScene] = useState(null)
   const [weather, setWeather]       = useState(null)
-  const intervalRef = useRef(null)
-  const toastTimer  = useRef(null)
+  const intervalRef  = useRef(null)
+  const diagInterval = useRef(null)
+  const toastTimer   = useRef(null)
 
   // ── data fetching ──────────────────────────────────────────────
   const fetchOverview = useCallback(async () => {
@@ -33,16 +44,33 @@ export default function MobileApp() {
     }
   }, [])
 
+  const fetchDiag = useCallback(async () => {
+    try {
+      const data = await getSystemDiagnostics()
+      setDiag(data)
+    } catch {
+      // keep stale
+    }
+  }, [])
+
   useEffect(() => {
     fetchOverview()
+    fetchDiag()
     getWeather().then(setWeather).catch(() => {})
-    intervalRef.current = setInterval(fetchOverview, 3000)
-    // Refresh weather every 10 min
+
+    intervalRef.current  = setInterval(fetchOverview, 3000)
+    diagInterval.current = setInterval(fetchDiag, 5000)
+
     const weatherInterval = setInterval(() => {
       getWeather().then(setWeather).catch(() => {})
     }, 600000)
-    return () => { clearInterval(intervalRef.current); clearInterval(weatherInterval) }
-  }, [fetchOverview])
+
+    return () => {
+      clearInterval(intervalRef.current)
+      clearInterval(diagInterval.current)
+      clearInterval(weatherInterval)
+    }
+  }, [fetchOverview, fetchDiag])
 
   // ── toast helper ───────────────────────────────────────────────
   const showToast = useCallback((msg) => {
@@ -57,9 +85,8 @@ export default function MobileApp() {
     const room = (overview.rooms ?? []).find(r => r.room_id === backendRoomId)
     if (!room) return
     const currentState = room.actuators?.[deviceKey]
-    const newState = currentState === 'ON' ? 'OFF' : 'ON'
+    const newState = currentState !== 'OFF' ? 'OFF' : 'ON'
 
-    // optimistic update
     setOverview(prev => {
       if (!prev) return prev
       return {
@@ -87,10 +114,20 @@ export default function MobileApp() {
       setOverview(prev => prev ? { ...prev, mode: apiMode } : prev)
       const labels = { AI: 'Auto', Manual: 'Manual', Static: 'Away' }
       showToast(`Mode: ${labels[apiMode] ?? apiMode}`)
+      if (apiMode === 'Static' && overview) {
+        const offs = []
+        for (const room of overview.rooms ?? []) {
+          for (const [key, state] of Object.entries(room.actuators ?? {})) {
+            if (state !== 'OFF') offs.push(controlActuator(room.room_id, key, 'OFF').catch(() => {}))
+          }
+        }
+        await Promise.allSettled(offs)
+        fetchOverview()
+      }
     } catch {
       showToast('Could not change mode')
     }
-  }, [showToast])
+  }, [showToast, overview, fetchOverview])
 
   // ── scene ──────────────────────────────────────────────────────
   const handleSceneClick = useCallback(async (scenarioId) => {
@@ -98,33 +135,26 @@ export default function MobileApp() {
     try {
       await triggerDemoScenario(scenarioId)
       await fetchOverview()
+      await fetchDiag()
       showToast('Scene activated')
     } catch {
       setActiveScene(null)
       showToast('Could not activate scene')
     }
-  }, [fetchOverview, showToast])
+  }, [fetchOverview, fetchDiag, showToast])
 
-  // ── desktop override ───────────────────────────────────────────
-  const handleSwitchToDesktop = useCallback(() => {
-    localStorage.setItem('viewMode', 'desktop')
-    window.location.href = '/'
-  }, [])
-
-  // ── navigation ─────────────────────────────────────────────────
+  // ── room sheet ─────────────────────────────────────────────────
   const handleRoomClick = useCallback((id) => {
-    setRoomId(id)
-    setTab('room')
+    setSheetRoomId(id)
   }, [])
 
-  const handleBack = useCallback(() => {
-    setRoomId(null)
-    setTab('home')
+  const handleSheetClose = useCallback(() => {
+    setSheetRoomId(null)
   }, [])
 
+  // ── tab change ─────────────────────────────────────────────────
   const handleTabChange = useCallback((newTab) => {
     setTab(newTab)
-    if (newTab !== 'room') setRoomId(null)
   }, [])
 
   // ── loading splash ─────────────────────────────────────────────
@@ -139,43 +169,35 @@ export default function MobileApp() {
     )
   }
 
-  const currentMode  = overview?.mode ?? 'AI'
-  const isRoomView   = tab === 'room' && roomId
+  const currentMode = overview?.mode ?? 'AI'
 
-  // ── render ────────────────────────────────────────────────────
+  // ── render ─────────────────────────────────────────────────────
   return (
     <div className="m-root">
-      {/* Status bar */}
+      {/* Cosmetic status bar */}
       <div className="m-statusbar">
         <span className="m-statusbar-time">
           {new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
         </span>
         <div className="m-status-icons">
           <svg width="16" height="11" viewBox="0 0 16 11" fill="currentColor">
-            <rect x="0" y="7" width="3" height="4" rx="0.4" opacity="0.4"/>
-            <rect x="4.5" y="5" width="3" height="6" rx="0.4" opacity="0.6"/>
-            <rect x="9" y="3" width="3" height="8" rx="0.4" opacity="0.8"/>
-            <rect x="13.5" y="0" width="2.5" height="11" rx="0.4"/>
+            <rect x="0"    y="7"  width="3"   height="4"  rx="0.4" opacity="0.4"/>
+            <rect x="4.5"  y="5"  width="3"   height="6"  rx="0.4" opacity="0.6"/>
+            <rect x="9"    y="3"  width="3"   height="8"  rx="0.4" opacity="0.8"/>
+            <rect x="13.5" y="0"  width="2.5" height="11" rx="0.4"/>
           </svg>
           <svg width="22" height="11" viewBox="0 0 22 11" fill="none">
             <rect x="0.5" y="0.5" width="18" height="10" rx="2" stroke="currentColor" opacity="0.5"/>
-            <rect x="20" y="3" width="1.5" height="5" rx="0.5" fill="currentColor" opacity="0.5"/>
-            <rect x="2" y="2" width="14" height="7" rx="1" fill="currentColor"/>
+            <rect x="20"  y="3"   width="1.5" height="5" rx="0.5" fill="currentColor" opacity="0.5"/>
+            <rect x="2"   y="2"   width="14"  height="7" rx="1" fill="currentColor"/>
           </svg>
         </div>
       </div>
 
-      {/* Scrollable screen content */}
+      {/* Screen content */}
       <div className="m-shell">
         <div className="m-screen">
-          {isRoomView ? (
-            <RoomScreen
-              overview={overview}
-              roomId={roomId}
-              onBack={handleBack}
-              onToggleDevice={handleToggleDevice}
-            />
-          ) : tab === 'home' || tab === 'rooms' ? (
+          {tab === 'home' && (
             <HomeScreen
               overview={overview}
               weather={weather}
@@ -183,25 +205,40 @@ export default function MobileApp() {
               onSceneClick={handleSceneClick}
               activeScene={activeScene}
             />
-          ) : tab === 'energy' ? (
-            <EnergyScreen overview={overview} />
-          ) : tab === 'me' ? (
-            <MeScreen
+          )}
+          {tab === 'activity' && (
+            <ActivityScreen
+              diag={diag}
+              overview={overview}
+            />
+          )}
+          {tab === 'ai' && (
+            <AiScreen
+              diag={diag}
               mode={currentMode}
               onSetMode={handleSetMode}
-              onSwitchToDesktop={handleSwitchToDesktop}
             />
-          ) : null}
+          )}
+          {tab === 'energy' && (
+            <EnergyScreen overview={overview} />
+          )}
+          {tab === 'me' && (
+            <MeScreen diag={diag} />
+          )}
         </div>
 
-        {/* Tab bar — absolute inside m-shell */}
-        <TabBar
-          activeTab={isRoomView ? 'rooms' : tab}
-          onTabChange={handleTabChange}
-        />
+        <TabBar activeTab={tab} onTabChange={handleTabChange} />
       </div>
 
-      {/* Toast — always rendered, toggled via class */}
+      {/* Room sheet — rendered outside m-shell to overlay tab bar */}
+      <RoomSheet
+        overview={overview}
+        roomId={sheetRoomId}
+        onClose={handleSheetClose}
+        onToggleDevice={handleToggleDevice}
+      />
+
+      {/* Toast */}
       <div className={`m-toast${toast ? ' show' : ''}`} aria-live="polite">
         {toast || ''}
       </div>
