@@ -28,6 +28,8 @@ export default function MobileApp() {
   const [toast, setToast]           = useState(null)
   const [activeScene, setActiveScene] = useState(null)
   const [weather, setWeather]       = useState(null)
+  // Local activity log — tracks manual toggles and mode changes (last 20)
+  const [activityLog, setActivityLog] = useState([])
   const intervalRef  = useRef(null)
   const diagInterval = useRef(null)
   const toastTimer   = useRef(null)
@@ -101,6 +103,15 @@ export default function MobileApp() {
 
     try {
       await controlActuator(backendRoomId, deviceKey, newState)
+      // Log manual action to activity feed
+      setActivityLog(prev => [{
+        type:    'manual',
+        time:    new Date().toISOString(),
+        room:    backendRoomId,
+        device:  deviceKey,
+        command: newState,
+        reason:  'Manual override',
+      }, ...prev].slice(0, 20))
     } catch {
       fetchOverview()
       showToast('Could not update device')
@@ -109,20 +120,49 @@ export default function MobileApp() {
 
   // ── mode change ────────────────────────────────────────────────
   const handleSetMode = useCallback(async (apiMode) => {
+    const labels = { AI: 'Auto', Manual: 'Manual', Static: 'Away' }
     try {
+      // Count ON devices before switching — used for toast + log
+      const onDevices = (overview?.rooms ?? []).flatMap(r =>
+        Object.entries(r.actuators ?? {})
+          .filter(([, state]) => state !== 'OFF')
+          .map(([key]) => ({ room: r.room_id, device: key }))
+      )
+
       await setSystemMode(apiMode)
       setOverview(prev => prev ? { ...prev, mode: apiMode } : prev)
-      const labels = { AI: 'Auto', Manual: 'Manual', Static: 'Away' }
-      showToast(`Mode: ${labels[apiMode] ?? apiMode}`)
-      if (apiMode === 'Static' && overview) {
-        const offs = []
-        for (const room of overview.rooms ?? []) {
-          for (const [key, state] of Object.entries(room.actuators ?? {})) {
-            if (state !== 'OFF') offs.push(controlActuator(room.room_id, key, 'OFF').catch(() => {}))
+
+      // Log the mode change
+      setActivityLog(prev => [{
+        type:    'mode',
+        time:    new Date().toISOString(),
+        room:    null,
+        device:  'System',
+        command: apiMode,
+        reason:  apiMode === 'Static'
+          ? `Away mode — ${onDevices.length} device${onDevices.length !== 1 ? 's' : ''} turned off`
+          : `Switched to ${labels[apiMode] ?? apiMode} mode`,
+      }, ...prev].slice(0, 20))
+
+      if (apiMode === 'Static') {
+        // Backend already turns off all devices; also optimistically update UI
+        setOverview(prev => {
+          if (!prev) return prev
+          return {
+            ...prev,
+            mode: 'Static',
+            rooms: prev.rooms.map(r => ({
+              ...r,
+              actuators: Object.fromEntries(
+                Object.keys(r.actuators ?? {}).map(k => [k, 'OFF'])
+              ),
+            })),
           }
-        }
-        await Promise.allSettled(offs)
+        })
+        showToast(`Away — ${onDevices.length} device${onDevices.length !== 1 ? 's' : ''} off`)
         fetchOverview()
+      } else {
+        showToast(`Mode: ${labels[apiMode] ?? apiMode}`)
       }
     } catch {
       showToast('Could not change mode')
@@ -210,6 +250,7 @@ export default function MobileApp() {
             <ActivityScreen
               diag={diag}
               overview={overview}
+              activityLog={activityLog}
             />
           )}
           {tab === 'ai' && (

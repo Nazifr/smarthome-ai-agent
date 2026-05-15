@@ -9,7 +9,6 @@ const ROOM_NAMES = {
   office:      'Office',
 }
 
-// Per-room accent hues (oklch) — same palette as desktop room cards
 const ROOM_HUE = {
   living_room: { bg: 'oklch(88% 0.07 65)',  fg: 'oklch(44% 0.14 55)'  },
   bedroom:     { bg: 'oklch(88% 0.06 290)', fg: 'oklch(44% 0.12 285)' },
@@ -19,36 +18,108 @@ const ROOM_HUE = {
   office:      { bg: 'oklch(88% 0.07 300)', fg: 'oklch(44% 0.13 300)' },
 }
 
+const MODE_LABELS = { AI: 'Auto', Manual: 'Manual', Static: 'Away' }
+
 function formatTime(ts) {
   if (!ts) return ''
-  try {
-    return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  } catch { return '' }
+  try { return new Date(ts).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) }
+  catch { return '' }
 }
 
-function pipClass(action) {
-  const cmd = (action.command ?? '').toUpperCase()
-  const dev = (action.device ?? '').toLowerCase()
-  if (dev.includes('smoke') || dev.includes('alert')) return 'alert'
+function formatReason(reason) {
+  if (!reason) return ''
+  return reason
+    .replace('ML kararı: is_modu',   'ML decision: work mode')
+    .replace('ML kararı: ev_bos',    'ML decision: home empty')
+    .replace('ML kararı: gece_modu', 'ML decision: night mode')
+    .replace('ML kararı: aktif_ev',  'ML decision: active home')
+    .replace('ML kararı:', 'ML decision:')
+}
+
+function pipClassForDevice(device, command) {
+  const dev = (device ?? '').toLowerCase()
+  const cmd = (command ?? '').toUpperCase()
   if (cmd === 'OFF') return 'dim'
   if (dev.includes('ac') || dev.includes('thermo')) return 'cool'
   if (dev.includes('fan')) return 'green'
   return 'terra'
 }
 
-function formatReason(reason) {
-  if (!reason) return ''
-  // Translate common Turkish ML context labels
-  return reason
-    .replace('ML kararı: is_modu', 'ML decision: work mode')
-    .replace('ML kararı: ev_bos', 'ML decision: home empty')
-    .replace('ML kararı: gece_modu', 'ML decision: night mode')
-    .replace('ML kararı: aktif_ev', 'ML decision: active home')
-    .replace('ML kararı:', 'ML decision:')
+// Merge + sort all event sources, newest first, max 20
+function buildFeed(diagActions, activityLog) {
+  const aiEvents = (diagActions ?? []).map(a => ({ ...a, type: 'ai' }))
+  const localEvents = (activityLog ?? [])   // already have type set
+  const all = [...aiEvents, ...localEvents]
+  all.sort((a, b) => new Date(b.time) - new Date(a.time))
+  return all.slice(0, 20)
 }
 
-export default function ActivityScreen({ diag, overview }) {
-  const actions = diag?.ai?.recent_actions ?? []
+// ── Mode change row ────────────────────────────────────────────────
+function ModeRow({ event }) {
+  const label = MODE_LABELS[event.command] ?? event.command
+  const icon = event.command === 'AI'
+    ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l2.4 7.4L22 12l-7.6 2.6L12 22l-2.4-7.4L2 12l7.6-2.6L12 2z"/></svg>
+    : event.command === 'Static'
+    ? <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+    : <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="2.5" fill="currentColor" stroke="none"/><line x1="12" y1="3" x2="12" y2="9.5"/></svg>
+
+  return (
+    <div className="m-activity-mode-row">
+      <div className="m-activity-mode-icon">{icon}</div>
+      <div className="m-activity-body">
+        <div className="m-activity-mode-label">
+          Mode → <strong>{label}</strong>
+        </div>
+        {event.reason && (
+          <div className="m-activity-reason">{event.reason}</div>
+        )}
+      </div>
+      <span className="m-activity-time">{formatTime(event.time)}</span>
+    </div>
+  )
+}
+
+// ── Device event row ───────────────────────────────────────────────
+function DeviceRow({ event }) {
+  const roomKey  = event.room ?? ''
+  const roomName = ROOM_NAMES[roomKey] ?? roomKey ?? 'Unknown'
+  const hue      = ROOM_HUE[roomKey]
+  const device   = (event.device ?? '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  const isOn     = (event.command ?? '').toUpperCase() !== 'OFF'
+  const pip      = event.type === 'manual' ? 'manual' : pipClassForDevice(event.device, event.command)
+
+  return (
+    <div className="m-activity-row">
+      <span className={`m-activity-pip ${pip}`} />
+      <div className="m-activity-body">
+        <div className="m-activity-title-row">
+          {hue
+            ? <span className="m-activity-room-chip" style={{ background: hue.bg, color: hue.fg }}>{roomName}</span>
+            : <span className="m-activity-title">{roomName}</span>
+          }
+          <span className="m-activity-device">{device}</span>
+          {event.type === 'manual' && (
+            <span className="m-activity-source">manual</span>
+          )}
+        </div>
+        <div className="m-activity-cmd-row">
+          <span className={`m-activity-cmd${isOn ? ' is-on' : ' is-off'}`}>{event.command}</span>
+          {event.context && (
+            <span className="m-activity-ctx">{event.context.replace(/_/g, ' ')}</span>
+          )}
+          <span className="m-activity-time">{formatTime(event.time)}</span>
+        </div>
+        {event.reason && event.type !== 'manual' && (
+          <div className="m-activity-reason">{formatReason(event.reason)}</div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ── Main screen ────────────────────────────────────────────────────
+export default function ActivityScreen({ diag, overview, activityLog }) {
+  const feed = buildFeed(diag?.ai?.recent_actions, activityLog)
   const hasAlerts = (overview?.rooms ?? []).some(r => Number(r.smoke) > 0)
 
   return (
@@ -58,9 +129,9 @@ export default function ActivityScreen({ diag, overview }) {
         What's been <em>happening</em>
       </h2>
       <p className="m-greet-sub" style={{ marginBottom: '0' }}>
-        {actions.length > 0
-          ? `${actions.length} AI decision${actions.length !== 1 ? 's' : ''} in this session.`
-          : 'No activity yet. Trigger a demo scene to see AI decisions.'}
+        {feed.length > 0
+          ? `${feed.length} event${feed.length !== 1 ? 's' : ''} — AI decisions, manual overrides, mode changes.`
+          : 'No activity yet. Trigger a demo scene or toggle a device.'}
       </p>
 
       {/* Live pill */}
@@ -69,7 +140,7 @@ export default function ActivityScreen({ diag, overview }) {
         <span>Updating live</span>
       </div>
 
-      {/* Smoke alert banner */}
+      {/* Smoke alert */}
       {hasAlerts && (
         <div className="m-alert-banner" style={{ marginTop: '12px' }}>
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none"
@@ -82,7 +153,7 @@ export default function ActivityScreen({ diag, overview }) {
         </div>
       )}
 
-      {/* AI status badges */}
+      {/* Status badges */}
       {diag && (
         <div className="m-activity-status-row">
           <div className={`m-activity-status-badge${diag.ai?.armed ? ' armed' : ''}`}>
@@ -97,63 +168,26 @@ export default function ActivityScreen({ diag, overview }) {
         </div>
       )}
 
-      {/* Feed */}
+      {/* Feed legend */}
       <div className="m-sec-title" style={{ marginTop: '18px' }}>
-        <span>AI Decisions</span>
-        {actions.length > 0 && (
-          <span style={{
-            fontSize: '11px', color: 'var(--m-muted)',
-            fontFamily: 'Inter,sans-serif', textTransform: 'none', letterSpacing: '0.04em',
-          }}>
-            {actions.length} total
-          </span>
-        )}
+        <span>All Events</span>
+        <div className="m-activity-legend">
+          <span><span className="m-activity-pip terra" style={{ display:'inline-block' }} /> AI</span>
+          <span><span className="m-activity-pip manual" style={{ display:'inline-block' }} /> Manual</span>
+        </div>
       </div>
 
-      {actions.length === 0 ? (
+      {feed.length === 0 ? (
         <div className="m-empty-msg">
-          No decisions yet.<br />Trigger a scene to watch the AI respond.
+          No events yet.<br />Trigger a scene or toggle a device.
         </div>
       ) : (
         <div className="m-activity-feed">
-          {[...actions].reverse().map((action, i) => {
-            const roomKey = action.room ?? ''
-            const roomName = ROOM_NAMES[roomKey] ?? roomKey ?? 'Unknown'
-            const hue = ROOM_HUE[roomKey]
-            const device = (action.device ?? '').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
-            const isOn = (action.command ?? '').toUpperCase() !== 'OFF'
-
-            return (
-              <div key={i} className="m-activity-row">
-                <span className={`m-activity-pip ${pipClass(action)}`} />
-                <div className="m-activity-body">
-                  <div className="m-activity-title-row">
-                    {hue && (
-                      <span className="m-activity-room-chip" style={{ background: hue.bg, color: hue.fg }}>
-                        {roomName}
-                      </span>
-                    )}
-                    {!hue && <span className="m-activity-title">{roomName}</span>}
-                    <span className="m-activity-device">{device}</span>
-                  </div>
-                  <div className="m-activity-cmd-row">
-                    <span className={`m-activity-cmd${isOn ? ' is-on' : ' is-off'}`}>
-                      {action.command ?? ''}
-                    </span>
-                    {action.context && (
-                      <span className="m-activity-ctx">{action.context.replace(/_/g, ' ')}</span>
-                    )}
-                    {action.time && (
-                      <span className="m-activity-time">{formatTime(action.time)}</span>
-                    )}
-                  </div>
-                  {action.reason && (
-                    <div className="m-activity-reason">{formatReason(action.reason)}</div>
-                  )}
-                </div>
-              </div>
-            )
-          })}
+          {feed.map((event, i) =>
+            event.type === 'mode'
+              ? <ModeRow key={i} event={event} />
+              : <DeviceRow key={i} event={event} />
+          )}
         </div>
       )}
     </>

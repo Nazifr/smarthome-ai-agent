@@ -14,10 +14,22 @@ INTERVAL     = float(os.getenv("PUBLISH_INTERVAL", 30))
 
 ROOMS = ["living_room", "bedroom", "kitchen", "bathroom", "hallway", "office"]
 
-def realistic_temperature(hour):
-    base = 22.0
-    daily_variation = -3 * math.cos(2 * math.pi * (hour - 14) / 24)
-    return round(base + daily_variation + random.gauss(0, 0.5), 1)
+# Each room has its own base temperature and humidity profile
+ROOM_PROFILES = {
+    "living_room": {"temp_base": 21.5, "temp_noise": 0.6, "humidity_mean": 52, "humidity_std": 7},
+    "bedroom":     {"temp_base": 20.0, "temp_noise": 0.5, "humidity_mean": 48, "humidity_std": 6},
+    "kitchen":     {"temp_base": 23.5, "temp_noise": 1.2, "humidity_mean": 58, "humidity_std": 9},
+    "bathroom":    {"temp_base": 24.0, "temp_noise": 0.8, "humidity_mean": 75, "humidity_std": 10},
+    "hallway":     {"temp_base": 19.5, "temp_noise": 0.4, "humidity_mean": 45, "humidity_std": 6},
+    "office":      {"temp_base": 22.0, "temp_noise": 0.6, "humidity_mean": 50, "humidity_std": 7},
+}
+
+def realistic_temperature(hour, room):
+    profile = ROOM_PROFILES.get(room, {"temp_base": 22.0, "temp_noise": 0.5})
+    base = profile["temp_base"]
+    # Daytime warming peaks at 14:00, cools overnight — amplitude varies by room
+    daily_variation = -2.5 * math.cos(2 * math.pi * (hour - 14) / 24)
+    return round(base + daily_variation + random.gauss(0, profile["temp_noise"]), 1)
 
 def realistic_motion(hour):
     if 0 <= hour < 6:    return 1 if random.random() < 0.05 else 0
@@ -33,9 +45,10 @@ def realistic_light(hour):
 
 def generate_sensor_data(room):
     now = datetime.now()
+    profile = ROOM_PROFILES.get(room, {"humidity_mean": 55, "humidity_std": 8})
     return {
-        "temperature": realistic_temperature(now.hour),
-        "humidity":    round(random.gauss(55, 8), 1),
+        "temperature": realistic_temperature(now.hour, room),
+        "humidity":    round(max(20, min(100, random.gauss(profile["humidity_mean"], profile["humidity_std"]))), 1),
         "motion":      realistic_motion(now.hour),
         "smoke":       0,
         "light":       realistic_light(now.hour),

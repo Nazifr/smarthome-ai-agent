@@ -461,7 +461,9 @@
   background: var(--m-bg-soft);
   border-radius: 4px 4px 0 0;
 }
-.m-energy-bar.is-today { background: var(--m-accent); }
+.m-energy-bar.is-today    { background: var(--m-accent); }
+.m-energy-bar.is-selected { outline: 2px solid var(--m-accent); outline-offset: 2px; }
+.m-energy-bar:not(.is-today).is-selected { background: var(--m-accent-mid); }
 .m-energy-axis {
   display: flex;
   justify-content: space-between;
@@ -1078,6 +1080,7 @@
 .m-activity-pip.green  { background: var(--m-green); }
 .m-activity-pip.dim    { background: var(--m-dim); }
 .m-activity-pip.alert  { background: var(--m-alert); }
+.m-activity-pip.manual { background: var(--m-text); }
 
 .m-activity-body { flex: 1; min-width: 0; }
 
@@ -1148,6 +1151,65 @@
   font-family: 'JetBrains Mono', monospace;
   font-size: 9.5px;
   color: var(--m-dim);
+}
+
+.m-activity-source {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 8.5px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--m-dim);
+  padding: 1px 6px;
+  border-radius: 999px;
+  border: 1px solid var(--m-line);
+}
+
+/* Mode change row */
+.m-activity-mode-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 13px;
+  border-radius: 13px;
+  background: var(--m-bg-mid);
+  border: 1px solid var(--m-line-2);
+}
+
+.m-activity-mode-icon {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: var(--m-bg-soft);
+  display: grid;
+  place-items: center;
+  color: var(--m-muted);
+  flex-shrink: 0;
+}
+
+.m-activity-mode-label {
+  font-size: 13px;
+  color: var(--m-muted);
+  flex: 1;
+}
+.m-activity-mode-label strong { color: var(--m-text); font-weight: 600; }
+
+/* Legend */
+.m-activity-legend {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  font-size: 10px;
+  color: var(--m-dim);
+  font-family: 'JetBrains Mono', monospace;
+  letter-spacing: 0.05em;
+}
+.m-activity-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.m-activity-legend .m-activity-pip {
+  width: 6px; height: 6px;
+  margin-top: 0;
 }
 
 /* ══════════════════════════════════════════════

@@ -3,49 +3,61 @@ import { getEnergySummary } from '../../services/api.js'
 import { adaptEnergy } from '../adapters.js'
 
 export default function EnergyScreen({ overview }) {
-  const [energy, setEnergy] = useState(null)
+  const [energy, setEnergy]         = useState(null)
+  const [selectedIdx, setSelectedIdx] = useState(null) // null = show today
   const fallback = adaptEnergy(overview)
 
   useEffect(() => {
     let cancelled = false
-    getEnergySummary()
-      .then(data => { if (!cancelled) setEnergy(data) })
-      .catch(() => {})
-    const interval = setInterval(() => {
+    const load = () =>
       getEnergySummary()
         .then(data => { if (!cancelled) setEnergy(data) })
         .catch(() => {})
-    }, 15000)
+    load()
+    const interval = setInterval(load, 15000)
     return () => { cancelled = true; clearInterval(interval) }
   }, [])
 
-  // Use real data if available, otherwise fall back to estimate
-  const hasReal = energy && energy.daily && energy.daily.some(d => d.kwh > 0)
-  const todayKwh = hasReal ? energy.today_kwh : (fallback?.estimatedKwh ?? 0)
-  const deltaPct = hasReal ? energy.delta_pct : null
-  const dailyBars = hasReal
+  const hasReal     = energy && energy.daily && energy.daily.some(d => d.kwh > 0)
+  const todayKwh    = hasReal ? energy.today_kwh   : (fallback?.estimatedKwh ?? 0)
+  const deltaPct    = hasReal ? energy.delta_pct   : null
+  const dailyBars   = hasReal
     ? energy.daily.map(d => d.kwh)
     : (fallback?.syntheticBars ?? [])
-  const dayLabels = hasReal
+  const dayLabels   = hasReal
     ? energy.daily.map(d => d.day)
     : (fallback?.dayLabels ?? [])
-  const breakdown = energy?.breakdown ?? []
+  const breakdown   = (hasReal
+    ? (energy.daily[displayIdx]?.breakdown ?? energy?.breakdown)
+    : energy?.breakdown) ?? []
   const totalDevicesOn = fallback?.totalDevicesOn ?? 0
 
   const maxBar = Math.max(...dailyBars, 0.01)
+
+  // What the chart header shows (today or selected day)
+  const displayIdx  = selectedIdx ?? (dailyBars.length - 1)
+  const displayKwh  = hasReal
+    ? (energy.daily[displayIdx]?.kwh ?? todayKwh)
+    : (displayIdx === dailyBars.length - 1 ? todayKwh : null)
+  const displayDay  = dayLabels[displayIdx] ?? 'Today'
+  const isToday     = displayIdx === dailyBars.length - 1
 
   return (
     <>
       {/* Hero */}
       <div className="m-energy-hero">
         <div className="m-energy-eyebrow">
-          {hasReal ? "Today's Usage" : "Today's Estimate"}
+          {isToday
+            ? (hasReal ? "Today's Usage" : "Today's Estimate")
+            : `${displayDay}'s Usage`}
         </div>
         <div className="m-energy-big">
-          {todayKwh}
+          {displayKwh != null ? displayKwh : '—'}
           <span className="m-energy-unit">kWh</span>
         </div>
-        {deltaPct != null && deltaPct !== 0 && (
+
+        {/* Delta only for today */}
+        {isToday && deltaPct != null && deltaPct !== 0 && (
           <div className="m-energy-saving">
             {deltaPct < 0 ? (
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -58,27 +70,39 @@ export default function EnergyScreen({ overview }) {
                 <polyline points="17 6 23 6 23 12"/>
               </svg>
             )}
-            {deltaPct > 0 ? '+' : ''}{deltaPct}% vs avg
+            {deltaPct > 0 ? '+' : ''}{deltaPct}% vs 7-day avg
           </div>
         )}
 
-        {/* 7-day bar chart */}
+        {/* 7-day bar chart — bars are clickable */}
         <div className="m-energy-chart">
           {dailyBars.map((val, i) => {
-            const isToday = i === dailyBars.length - 1
-            const heightPct = Math.round((val / maxBar) * 100)
+            const isTodayBar  = i === dailyBars.length - 1
+            const isSelected  = i === displayIdx
+            const heightPct   = Math.round((val / maxBar) * 100)
             return (
-              <div
+              <button
                 key={i}
-                className={`m-energy-bar${isToday ? ' is-today' : ''}`}
-                style={{ height: `${Math.max(heightPct, 2)}%` }}
+                className={[
+                  'm-energy-bar',
+                  isTodayBar  ? 'is-today'    : '',
+                  isSelected  ? 'is-selected' : '',
+                ].filter(Boolean).join(' ')}
+                style={{ height: `${Math.max(heightPct, 3)}%` }}
+                onClick={() => setSelectedIdx(i === displayIdx && !isToday ? null : i)}
+                aria-label={`${dayLabels[i]}: ${hasReal ? (energy.daily[i]?.kwh ?? 0) + ' kWh' : 'relative usage'}`}
               />
             )
           })}
         </div>
         <div className="m-energy-axis">
           {dayLabels.map((label, i) => (
-            <span key={i}>{label}</span>
+            <span
+              key={i}
+              style={{ color: i === displayIdx ? 'var(--m-accent)' : undefined, fontWeight: i === displayIdx ? 600 : undefined }}
+            >
+              {label}
+            </span>
           ))}
         </div>
       </div>
@@ -86,7 +110,7 @@ export default function EnergyScreen({ overview }) {
       {/* Device breakdown */}
       {breakdown.length > 0 && (
         <>
-          <div className="m-sec-title"><span>Top Consumers</span></div>
+          <div className="m-sec-title"><span>Top Consumers{!isToday ? ` — ${displayDay}` : ''}</span></div>
           <div className="m-savings-card">
             {breakdown.slice(0, 6).map((item, i) => (
               <div className="m-savings-row" key={i}>
@@ -113,7 +137,7 @@ export default function EnergyScreen({ overview }) {
           <span className="m-savings-v">{totalDevicesOn} active</span>
         </div>
         <div className="m-savings-row">
-          <span className="m-savings-nm">Today</span>
+          <span className="m-savings-nm">Today so far</span>
           <span className="m-savings-v">{todayKwh} kWh</span>
         </div>
         {hasReal && energy.avg_7d_kwh > 0 && (
@@ -131,7 +155,7 @@ export default function EnergyScreen({ overview }) {
           <line x1="12" y1="16" x2="12.01" y2="16"/>
         </svg>
         {hasReal
-          ? 'Calculated from device ON/OFF durations and estimated wattage per device.'
+          ? "kWh accumulates throughout the day as devices run — it won't jump when you toggle a device, it grows as devices stay on."
           : 'No tracking data yet — values estimated from device count. Toggle some devices to start collecting real data.'}
       </div>
     </>

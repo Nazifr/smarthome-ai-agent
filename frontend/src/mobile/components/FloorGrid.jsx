@@ -1,5 +1,23 @@
 import React from 'react'
 
+// Per-room identity hues (oklch) — subtle wall tint for inactive, stronger when active
+const ROOM_TINTS = {
+  living_room: { h: 30,  c: 0.018 },   // warm amber
+  bedroom:     { h: 260, c: 0.016 },   // soft violet
+  kitchen:     { h: 140, c: 0.016 },   // sage green
+  bathroom:    { h: 200, c: 0.018 },   // cool aqua
+  hallway:     { h: 55,  c: 0.014 },   // neutral gold
+  office:      { h: 220, c: 0.016 },   // slate blue
+}
+
+function roomTintStyle(roomId, isActive) {
+  const t = ROOM_TINTS[roomId]
+  if (!t) return {}
+  const l = isActive ? 0.22 : 0.18
+  const c = isActive ? t.c * 1.6 : t.c
+  return { background: `oklch(${l} ${c} ${t.h})` }
+}
+
 function glowClass(room) {
   if (room.smoke) return 'alert'
   if (room.deviceTypes.includes('ac')) return 'ac'
@@ -19,10 +37,13 @@ export default function FloorGrid({ rooms, onRoomClick }) {
           room.smoke ? 'is-alert' : isActive ? 'is-active' : '',
         ].filter(Boolean).join(' ')
 
+        const tintStyle = room.smoke ? {} : roomTintStyle(room.id, isActive)
+
         return (
           <button
             key={room.id}
             className={cls}
+            style={tintStyle}
             onClick={() => onRoomClick(room.id)}
             aria-label={`Open ${room.name}`}
           >
@@ -40,7 +61,7 @@ export default function FloorGrid({ rooms, onRoomClick }) {
 
             <div className="m-cell-bottom">
               <span className="m-cell-temp">
-                {room.temp != null ? room.temp.toFixed(0) : '—'}
+                {room.temp != null ? room.temp.toFixed(1) : '—'}
                 <span className="m-cell-deg">°</span>
               </span>
               <span className="m-cell-humidity">

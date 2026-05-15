@@ -77,11 +77,11 @@ def get_energy_summary():
             day_end = now
 
         day_label = day_start.strftime("%a")
-        day_date = day_start.strftime("%Y-%m-%d")
+        day_date  = day_start.strftime("%Y-%m-%d")
         day_total_wh = 0.0
+        day_breakdown = []
 
         for (room, device), all_records in device_records.items():
-            # Filter records to this day (include last record before day_start for state)
             day_records = []
             last_before = None
             for rec in all_records:
@@ -90,7 +90,6 @@ def get_energy_summary():
                 elif rec["time"] <= day_end:
                     day_records.append(rec)
 
-            # If there was a state before this day, prepend it at day_start
             if last_before is not None:
                 day_records.insert(0, {"time": day_start, "state": last_before["state"]})
 
@@ -101,10 +100,21 @@ def get_energy_summary():
             watts = _watts_for(device)
             day_total_wh += on_hours * watts
 
+            if on_hours > 0:
+                day_breakdown.append({
+                    "room":     room,
+                    "device":   device,
+                    "on_hours": round(on_hours, 2),
+                    "kwh":      round(on_hours * watts / 1000, 3),
+                    "watts":    watts,
+                })
+
+        day_breakdown.sort(key=lambda x: x["kwh"], reverse=True)
         daily_kwh[day_offset] = {
-            "day": day_label,
-            "date": day_date,
-            "kwh": round(day_total_wh / 1000, 2),
+            "day":       day_label,
+            "date":      day_date,
+            "kwh":       round(day_total_wh / 1000, 2),
+            "breakdown": day_breakdown,
         }
 
     daily = [daily_kwh[i] for i in range(7)]
@@ -112,7 +122,6 @@ def get_energy_summary():
     prev_days = [d["kwh"] for d in daily[:-1] if d["kwh"] > 0]
     avg_kwh = round(sum(prev_days) / len(prev_days), 2) if prev_days else 0
 
-    # If no real data yet, fall back to estimate
     if today_kwh == 0 and all(d["kwh"] == 0 for d in daily):
         fallback = _active_device_estimate()
         today_kwh = fallback
@@ -122,36 +131,10 @@ def get_energy_summary():
         (today_kwh - avg_kwh) / avg_kwh * 100, 1
     ) if avg_kwh > 0 else 0
 
-    # Per-device breakdown for today
-    breakdown = []
-    today_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-    for (room, device), all_records in device_records.items():
-        day_records = [r for r in all_records if r["time"] >= today_start]
-        last_before = None
-        for rec in all_records:
-            if rec["time"] < today_start:
-                last_before = rec
-        if last_before:
-            day_records.insert(0, {"time": today_start, "state": last_before["state"]})
-        if not day_records:
-            continue
-        on_h = _calculate_on_hours(day_records, now)
-        if on_h > 0:
-            watts = _watts_for(device)
-            breakdown.append({
-                "room": room,
-                "device": device,
-                "on_hours": round(on_h, 2),
-                "kwh": round(on_h * watts / 1000, 3),
-                "watts": watts,
-            })
-
-    breakdown.sort(key=lambda x: x["kwh"], reverse=True)
-
     return {
-        "today_kwh": today_kwh,
-        "avg_7d_kwh": avg_kwh,
-        "delta_pct": delta_pct,
-        "daily": daily,
-        "breakdown": breakdown,
+        "today_kwh":   today_kwh,
+        "avg_7d_kwh":  avg_kwh,
+        "delta_pct":   delta_pct,
+        "daily":       daily,
+        "breakdown":   daily[-1]["breakdown"],  # today's breakdown for backward compat
     }
