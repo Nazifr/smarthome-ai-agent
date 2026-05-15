@@ -8,6 +8,7 @@ const SCENES = [
   { id: 'empty_home',         label: 'Away',    icon: '🚗' },
   { id: 'kitchen_smoke',      label: 'Smoke',   icon: '🔥' },
   { id: 'bathroom_humidity',  label: 'Shower',  icon: '🚿' },
+  { id: 'fair_arriving',      label: 'Arrive',  icon: '🏠' },
 ]
 
 function dayLabel() {
@@ -60,7 +61,14 @@ export default function HomeScreen({ overview, weather, onRoomClick, onSceneClic
           {weather?.available ? (
             <>
               <div className="m-stat-v">{Math.round(weather.temperature)}<sup>°</sup></div>
-              <div className="m-stat-meta">{weather.condition}</div>
+              <div className="m-stat-meta">
+                {weather.condition}
+                {weather.rain > 0 ? ` · ${weather.rain}mm` : ''}
+                {weather.wind_speed > 20 ? ` · ${Math.round(weather.wind_speed)}km/h` : ''}
+              </div>
+              <div className="m-stat-meta" style={{ fontSize: '10px', marginTop: '2px', opacity: 0.7 }}>
+                {weather.window_safe ? 'Window: safe to open' : 'Window: keep closed'}
+              </div>
             </>
           ) : (
             <>

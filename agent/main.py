@@ -44,12 +44,59 @@ ROOM_ACTUATORS = {
     "office": {"light", "lights", "ac", "fan"},
 }
 
+# ── Mood-based home configuration ─────────────────────────────────────────────
+# Maps user sentiment (from Telegram /mood) to per-room device states.
+# Used only in the "fair_arriving" demo scenario.
+MOOD_ROOM_CONFIGS: dict[str, dict[str, dict[str, str]]] = {
+    "notr": {                            # 😊 Feeling good — cosy evening
+        "living_room": {"lights": "ON",  "ac": "COOL_LOW", "fan": "OFF"},
+        "bedroom":     {"lights": "DIM", "ac": "COOL_LOW", "fan": "OFF"},
+        "kitchen":     {"lights": "ON"},
+        "hallway":     {"lights": "ON"},
+        "office":      {"lights": "OFF", "ac": "OFF",      "fan": "OFF"},
+        "bathroom":    {"lights": "OFF"},
+    },
+    "yorgun": {                          # 😴 Tired — relaxation mode
+        "living_room": {"lights": "DIM", "ac": "COOL_LOW", "fan": "OFF"},
+        "bedroom":     {"lights": "DIM", "ac": "COOL_LOW", "fan": "OFF"},
+        "kitchen":     {"lights": "DIM"},
+        "hallway":     {"lights": "DIM"},
+        "office":      {"lights": "OFF", "ac": "OFF",      "fan": "OFF"},
+        "bathroom":    {"lights": "OFF"},
+    },
+    "aktif": {                           # 🏃 Active — energy mode
+        "living_room": {"lights": "ON",  "ac": "COOL_HIGH", "fan": "ON"},
+        "bedroom":     {"lights": "ON",  "ac": "COOL_LOW",  "fan": "OFF"},
+        "kitchen":     {"lights": "ON"},
+        "hallway":     {"lights": "ON"},
+        "office":      {"lights": "ON",  "ac": "COOL_LOW",  "fan": "ON"},
+        "bathroom":    {"lights": "ON"},
+    },
+    "stresli": {                         # 😤 Stressed — calm-down mode
+        "living_room": {"lights": "DIM", "ac": "COOL_LOW", "fan": "OFF"},
+        "bedroom":     {"lights": "DIM", "ac": "COOL_LOW", "fan": "OFF"},
+        "kitchen":     {"lights": "DIM"},
+        "hallway":     {"lights": "DIM"},
+        "office":      {"lights": "OFF", "ac": "OFF",      "fan": "OFF"},
+        "bathroom":    {"lights": "OFF"},
+    },
+}
+
+MOOD_MESSAGES: dict[str, str] = {
+    "notr":    "😊 Welcome home! Setting up a cosy evening — lights on, AC running.",
+    "yorgun":  "😴 Welcome home! Dimming the lights and setting a comfortable temperature. Rest well.",
+    "aktif":   "🏃 Welcome home! Energising the house for an active evening!",
+    "stresli": "😤 Welcome home. Creating a calm environment to help you unwind.",
+}
+
 
 class SmartHomeAgent:
     def __init__(self):
         self._last_context = {}
         self._system_mode  = "AI"   # "AI" | "Static" | "Manual"
         self._active_demo  = "live"
+        self._last_sentiment_time = 0.0
+        self._mood_applied        = False
         self.analyzer = ContextAnalyzer()
         self.engine   = DecisionEngine()
         self.policy   = PolicyManager()
@@ -108,8 +155,13 @@ class SmartHomeAgent:
     def _handle_sentiment(self, payload: dict):
         sentiment = payload.get("sentiment", "nötr")
         self.enricher.update_sentiment(sentiment)
+        self._last_sentiment_time = time.time()
         print(f"[Agent] Kullanıcı duygu durumu güncellendi: {sentiment}")
         self._last_context = {}
+
+        # In the "Arriving Home" demo, immediately personalise the house
+        if self._active_demo == "fair_arriving":
+            self._prepare_home_for_mood(sentiment)
 
     def _handle_system_mode(self, payload: dict):
         mode = payload.get("mode", "AI")
@@ -119,8 +171,67 @@ class SmartHomeAgent:
 
     def _handle_system_demo(self, payload: dict):
         self._active_demo = payload.get("active", "live")
+        self._mood_applied = False
         print(f"[Agent] Demo scenario: {self._active_demo}")
         self._last_context = {}
+
+        # Prompt the visitor to pick a mood via Telegram
+        if self._active_demo == "fair_arriving":
+            # If mood was selected within the last 5 minutes, apply it now
+            recent_mood = (time.time() - self._last_sentiment_time) < 300
+            if recent_mood:
+                sentiment = self.enricher._sentiment_str
+                print(f"[Agent] fair_arriving: recent mood '{sentiment}' found, applying now")
+                self._prepare_home_for_mood(sentiment)
+            else:
+                self.mqtt_client.publish(TOPIC_ALERT, json.dumps({
+                    "message": (
+                        "🏠 You've arrived home!\n"
+                        "Open the Telegram bot and tap /mood to personalise your space."
+                    ),
+                    "room": "home",
+                    "timestamp": datetime.now().isoformat(),
+                    "severity": "normal",
+                }))
+                print("[Agent] fair_arriving: Telegram prompt sent")
+
+    def _prepare_home_for_mood(self, sentiment: str):
+        """
+        Immediately publish actuator commands to all rooms based on the
+        user's selected mood. Called only during the 'fair_arriving' demo.
+        """
+        config = MOOD_ROOM_CONFIGS.get(sentiment, MOOD_ROOM_CONFIGS["notr"])
+        print(f"[Agent] 🏠 Preparing home for mood: {sentiment}")
+
+        for room, devices in config.items():
+            for device, command in devices.items():
+                if device not in ROOM_ACTUATORS.get(room, set()):
+                    continue
+                topic = f"{TOPIC_CMD_PREFIX}/{room}/{device}/command"
+                self.mqtt_client.publish(topic, json.dumps({
+                    "command":       command,
+                    "reason":        f"Mood-based setup: {sentiment}",
+                    "method":        "mood",
+                    "confidence":    "100%",
+                    "context_label": f"arriving_{sentiment}",
+                    "timestamp":     datetime.now().isoformat(),
+                }))
+                print(f"[Agent] ✓ Mood setup → {topic}: {command}")
+
+        # Notify the user via Telegram
+        message = MOOD_MESSAGES.get(sentiment, f"Welcome home! Mood: {sentiment}")
+        self.mqtt_client.publish(TOPIC_ALERT, json.dumps({
+            "message":   message,
+            "room":      "home",
+            "timestamp": datetime.now().isoformat(),
+            "severity":  "normal",
+        }))
+
+        # Play mood-matching playlist
+        self.engine.play_for_mood(sentiment)
+
+        self._mood_applied = True
+        print(f"[Agent] 🏠 Home ready — autonomous decisions paused for this demo")
 
     def _handle_sensor(self, topic, payload):
         parts = topic.split("/")
@@ -143,6 +254,10 @@ class SmartHomeAgent:
 
         # Respect system mode — only make autonomous decisions in AI mode
         if self._system_mode != "AI":
+            return
+
+        # After mood-based setup, don't let autonomous decisions override it
+        if self._mood_applied:
             return
 
         current_label  = context.get("context_label")
@@ -207,16 +322,20 @@ class SmartHomeAgent:
 
     def _check_alerts(self, context: dict, room: str):
         alerts = []
-        if context["temperature"] > 35:
-            alerts.append(f"⚠️ {room} odasında sıcaklık kritik: {context['temperature']}°C")
-        if context["temperature"] < 10:
-            alerts.append(f"⚠️ {room} odasında düşük sıcaklık: {context['temperature']}°C")
-        for alert in alerts:
+
+        if context.get("smoke"):
+            alerts.append(("🔥 Smoke detected in " + room.replace("_", " ").title() + "! Exhaust fan activated.", "high"))
+        if context.get("temperature", 0) > 35:
+            alerts.append((f"🌡️ Critical temperature in {room.replace('_', ' ').title()}: {context['temperature']}°C", "high"))
+        if context.get("temperature", 0) < 10:
+            alerts.append((f"🥶 Low temperature in {room.replace('_', ' ').title()}: {context['temperature']}°C", "warning"))
+
+        for message, severity in alerts:
             self.mqtt_client.publish(TOPIC_ALERT, json.dumps({
-                "message": alert, "room": room,
-                "timestamp": datetime.now().isoformat(), "severity": "high",
+                "message": message, "room": room,
+                "timestamp": datetime.now().isoformat(), "severity": severity,
             }))
-            print(f"[Agent] ALERT: {alert}")
+            print(f"[Agent] ALERT ({severity}): {message}")
 
     def _write_to_influx(self, data: dict):
         room = data.get("room", "unknown")

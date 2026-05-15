@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 
 import { I } from './components/Icons'
 import LeftRail from './components/LeftRail'
@@ -25,8 +25,13 @@ function useClock() {
 
 function pad(n) { return String(n).padStart(2, '0') }
 
+const SPARK_MAX = 40  // ~80 seconds of history at 2s poll
+
 export default function App() {
   const { uiData, loading, toggleDevice, setMode, runScenario, fetchOverview } = useNeuroNest()
+
+  // Rolling real sensor history — keyed by roomId → { temp: number[], humidity: number[] }
+  const sensorHistoryRef = useRef({})
 
   const [selectedRoom, setSelectedRoom] = useState('living')
   const [activeDecisionId, setActiveDecisionId] = useState(null)
@@ -140,27 +145,27 @@ export default function App() {
     return result.slice(0, 10)
   }, [uiData, devices, alerts])
 
-  const climateSpark = useMemo(() => Array.from({ length: 60 }, (_, i) =>
-    21.2 + Math.sin(i / 9) * 0.8 + Math.cos(i / 5) * 0.4
-  ), [])
-
-  const sparkData = useMemo(() => {
-    const data = {}
-    for (const [k, s] of Object.entries(sensors)) {
-      const t = s.temp ?? 21
-      const h = s.humidity ?? 45
-      data[k] = {
-        temp:     Array.from({ length: 24 }, (_, i) => t + Math.sin(i / 3) * 0.6 + Math.cos(i / 7) * 0.3),
-        humidity: Array.from({ length: 24 }, (_, i) => h + Math.sin(i / 4) * 2 + Math.cos(i / 6) * 1.5),
-      }
+  // Append live readings to rolling history on every sensor update
+  const [sparkData, setSparkData] = useState({})
+  useEffect(() => {
+    if (!sensors || Object.keys(sensors).length === 0) return
+    const hist = sensorHistoryRef.current
+    for (const [roomId, s] of Object.entries(sensors)) {
+      if (!hist[roomId]) hist[roomId] = { temp: [], humidity: [] }
+      if (s.temp != null)     { hist[roomId].temp.push(s.temp);     if (hist[roomId].temp.length     > SPARK_MAX) hist[roomId].temp.shift() }
+      if (s.humidity != null) { hist[roomId].humidity.push(s.humidity); if (hist[roomId].humidity.length > SPARK_MAX) hist[roomId].humidity.shift() }
     }
-    return data
+    // Shallow-copy so React sees a new object and re-renders
+    setSparkData({ ...hist })
   }, [sensors])
+
+  const climateSpark = sparkData['living']?.temp ?? []
 
   const climate = {
     temp:     sensors[selectedRoom]?.temp ?? sensors.living?.temp ?? 21.4,
     humidity: sensors[selectedRoom]?.humidity ?? sensors.living?.humidity ?? 42,
     outside:  weather?.temperature != null ? Math.round(weather.temperature) : '–',
+    windowSafe: weather?.window_safe ?? null,
   }
   const totalDevicesOn = Object.values(devices).flat().filter(d => d.on).length
   const energy = { kwh: 8.4 + totalDevicesOn * 0.3, savings: 3.2 }

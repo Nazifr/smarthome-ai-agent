@@ -16,24 +16,47 @@ MQTT_CA_CERT   = os.getenv("MQTT_CA_CERT", "/etc/smarthome/certs/ca.crt")
 TELEGRAM_TOKEN = os.getenv("TELEGRAM_TOKEN", "")
 
 # ── Whitelist ─────────────────────────────────────────────────────────────────
-# Set ALLOWED_CHAT_IDS=123456789,987654321 in env to restrict access.
-# Leave empty to allow anyone who /start's the bot (open mode).
 _raw_ids = os.getenv("ALLOWED_CHAT_IDS", "").strip()
 ALLOWED_CHAT_IDS: set[int] = {
     int(x.strip()) for x in _raw_ids.split(",")
     if x.strip().lstrip("-").isdigit()
 } if _raw_ids else set()
 
+# ── Smoke dedup ────────────────────────────────────────────────────────────────
+# Default 60s - Set SMOKE_COOLDOWN=600 in env for production.
+SMOKE_COOLDOWN = int(os.getenv("SMOKE_COOLDOWN", "60"))
+
+# ── Persistent chat registry ──────────────────────────────────────────────────
+# Saved to disk so users survive container restarts without needing /start again
+CHATS_FILE = "/app/registered_chats.json"
+
+
+def _load_chats() -> set[int]:
+    try:
+        with open(CHATS_FILE) as f:
+            return set(json.load(f))
+    except (FileNotFoundError, json.JSONDecodeError):
+        return set()
+
+
+def _save_chats(chats: set) -> None:
+    try:
+        with open(CHATS_FILE, "w") as f:
+            json.dump(list(chats), f)
+    except Exception as e:
+        print(f"[TelegramBot] Could not save chats: {e}")
+
+
+registered_chats: set[int] = _load_chats()
+
 if ALLOWED_CHAT_IDS:
     print(f"[TelegramBot] Whitelist active — {len(ALLOWED_CHAT_IDS)} allowed chat ID(s)")
 else:
     print("[TelegramBot] Whitelist not set — open mode (anyone can register)")
+print(f"[TelegramBot] Smoke alert cooldown: {SMOKE_COOLDOWN}s")
+print(f"[TelegramBot] Loaded {len(registered_chats)} registered chat(s) from disk")
 
-# ── Smoke dedup ────────────────────────────────────────────────────────────────
-SMOKE_COOLDOWN = 600  # seconds — suppress repeat smoke alerts within this window
-_last_smoke_alert: dict[str, float] = {}  # room -> unix timestamp of last sent alert
-
-registered_chats: set = set()
+_last_smoke_alert: dict[str, float] = {}
 telegram_app = None
 mqtt_client_global = None
 
@@ -57,30 +80,31 @@ def on_message(client, userdata, msg):
         severity = payload.get("severity", "normal")
         room     = payload.get("room", "")
 
-        # Smoke dedup: only fire once per SMOKE_COOLDOWN window per room
         if severity == "high":
             now  = time.time()
             last = _last_smoke_alert.get(room, 0.0)
             if now - last < SMOKE_COOLDOWN:
-                mins_left = int((SMOKE_COOLDOWN - (now - last)) / 60) + 1
-                print(f"[TelegramBot] Smoke alert suppressed for '{room}' "
-                      f"({mins_left} min remaining in cooldown)")
+                secs_left = int(SMOKE_COOLDOWN - (now - last))
+                print(f"[TelegramBot] Alert suppressed for '{room}' ({secs_left}s remaining)")
                 return
             _last_smoke_alert[room] = now
 
         emoji = "🚨" if severity == "high" else "⚠️"
         text  = f"{emoji} *UYARI*\n{message}\n📍 Oda: {room}"
+        print(f"[TelegramBot] Broadcasting alert to {len(registered_chats)} chat(s): {message}")
         asyncio.run_coroutine_threadsafe(broadcast(text), loop)
 
 
 async def broadcast(text: str):
     if not registered_chats or not telegram_app:
+        print(f"[TelegramBot] broadcast skipped — chats={len(registered_chats)} app={'ok' if telegram_app else 'None'}")
         return
-    for chat_id in registered_chats:
+    for chat_id in list(registered_chats):
         try:
             await telegram_app.bot.send_message(
                 chat_id=chat_id, text=text, parse_mode="Markdown"
             )
+            print(f"[TelegramBot] Sent to {chat_id}")
         except Exception as e:
             print(f"[TelegramBot] Mesaj gönderilemedi {chat_id}: {e}")
 
@@ -88,7 +112,6 @@ async def broadcast(text: str):
 async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     chat_id = update.effective_chat.id
 
-    # Whitelist gate
     if ALLOWED_CHAT_IDS and chat_id not in ALLOWED_CHAT_IDS:
         await update.message.reply_text(
             "❌ Yetkisiz erişim. Sistem yöneticisiyle iletişime geçin.\n"
@@ -99,6 +122,7 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         return
 
     registered_chats.add(chat_id)
+    _save_chats(registered_chats)
     await update.message.reply_text(
         "✅ Kayıt olundu! Akıllı ev bildirimleri bu sohbete gelecek.\n\n"
         "Komutlar:\n/start — kayıt ol\n/mood  — günlük duygu durumunu bildir\n"
@@ -134,6 +158,7 @@ async def cmd_status(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def cmd_stop(update: Update, context: ContextTypes.DEFAULT_TYPE):
     registered_chats.discard(update.effective_chat.id)
+    _save_chats(registered_chats)
     await update.message.reply_text("🔕 Bildirimler durduruldu.")
 
 
@@ -172,6 +197,25 @@ def run_mqtt():
     client.loop_forever()
 
 
+async def _on_error(update: object, context: ContextTypes.DEFAULT_TYPE) -> None:
+    from telegram.error import Conflict, NetworkError, TimedOut
+    if isinstance(context.error, (Conflict, NetworkError, TimedOut)):
+        # Transient — another instance is competing or network blip.
+        # PTB will retry automatically; just log it.
+        print(f"[TelegramBot] Transient error (retrying): {type(context.error).__name__}")
+        return
+    print(f"[TelegramBot] Unhandled error: {context.error}")
+
+
+async def _post_init(app: Application) -> None:
+    """Delete any stale webhook / active long-poll session before we start."""
+    try:
+        await app.bot.delete_webhook(drop_pending_updates=True)
+        print("[TelegramBot] Stale session cleared — ready to poll")
+    except Exception as e:
+        print(f"[TelegramBot] delete_webhook warning: {e}")
+
+
 def main():
     global telegram_app
     if not TELEGRAM_TOKEN or TELEGRAM_TOKEN == "YOUR_BOT_TOKEN_HERE":
@@ -184,14 +228,20 @@ def main():
 
     threading.Thread(target=run_mqtt, daemon=True).start()
     asyncio.set_event_loop(loop)
-    telegram_app = Application.builder().token(TELEGRAM_TOKEN).build()
+    telegram_app = (
+        Application.builder()
+        .token(TELEGRAM_TOKEN)
+        .post_init(_post_init)
+        .build()
+    )
     telegram_app.add_handler(CommandHandler("start",  cmd_start))
     telegram_app.add_handler(CommandHandler("mood",   cmd_mood))
     telegram_app.add_handler(CommandHandler("status", cmd_status))
     telegram_app.add_handler(CommandHandler("stop",   cmd_stop))
     telegram_app.add_handler(CallbackQueryHandler(handle_mood_callback))
+    telegram_app.add_error_handler(_on_error)
     print("[TelegramBot] Bot başlatıldı, /start komutu bekleniyor...")
-    telegram_app.run_polling()
+    telegram_app.run_polling(drop_pending_updates=True)
 
 
 if __name__ == "__main__":

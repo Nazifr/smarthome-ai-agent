@@ -2,21 +2,27 @@ import React, { useEffect, useState } from 'react'
 import App from './App.jsx'
 import MobileApp from './mobile/MobileApp.jsx'
 
+// Touch device (phone/tablet) OR narrow viewport
+const MOBILE_QUERY = '(pointer: coarse), (max-width: 1080px)'
+
 function getViewMode() {
-  // Clear any stale desktop lock that may have been saved previously
-  localStorage.removeItem('viewMode')
-  // viewport detection — no user-agent sniffing
-  return window.matchMedia('(max-width: 820px)').matches ? 'mobile' : 'desktop'
+  return window.matchMedia(MOBILE_QUERY).matches ? 'mobile' : 'desktop'
 }
 
 export default function Root() {
   const [view, setView] = useState(() => getViewMode())
 
   useEffect(() => {
-    const mq = window.matchMedia('(max-width: 820px)')
-    const handler = (e) => setView(e.matches ? 'mobile' : 'desktop')
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
+    // Listen to both conditions
+    const mqPointer = window.matchMedia('(pointer: coarse)')
+    const mqWidth   = window.matchMedia('(max-width: 1080px)')
+    const handler = () => setView(getViewMode())
+    mqPointer.addEventListener('change', handler)
+    mqWidth.addEventListener('change', handler)
+    return () => {
+      mqPointer.removeEventListener('change', handler)
+      mqWidth.removeEventListener('change', handler)
+    }
   }, [])
 
   if (view === 'mobile') return <MobileApp />

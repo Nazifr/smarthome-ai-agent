@@ -40,20 +40,27 @@ def realistic_motion(hour):
     elif 17 <= hour < 23:return 1 if random.random() < 0.75 else 0
     else:                return 1 if random.random() < 0.1  else 0
 
-def realistic_light(hour):
+def realistic_light(hour, has_motion=False):
     natural    = (200 + 300 * math.sin(math.pi * (hour - 7) / 12)) if 7 <= hour < 19 else 0.0
-    artificial = 150 if 17 <= hour < 23 else 0
+    # Indoor lighting: evening always lit, nighttime lit if someone is present
+    if 17 <= hour < 23:
+        artificial = 150
+    elif has_motion:
+        artificial = 80
+    else:
+        artificial = 0
     return round(max(0, natural + artificial + random.gauss(0, 20)), 1)
 
 def generate_sensor_data(room):
     now = datetime.now()
     profile = ROOM_PROFILES.get(room, {"humidity_mean": 55, "humidity_std": 8})
+    motion = realistic_motion(now.hour)
     return {
         "temperature": realistic_temperature(now.hour, room),
         "humidity":    round(max(20, min(100, random.gauss(profile["humidity_mean"], profile["humidity_std"]))), 1),
-        "motion":      realistic_motion(now.hour),
+        "motion":      motion,
         "smoke":       0,
-        "light":       realistic_light(now.hour),
+        "light":       realistic_light(now.hour, has_motion=bool(motion)),
         "timestamp":   now.isoformat(),
         "room":        room,
     }

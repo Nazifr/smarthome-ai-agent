@@ -13,8 +13,8 @@ const ROOM_TINTS = {
 function roomTintStyle(roomId, isActive) {
   const t = ROOM_TINTS[roomId]
   if (!t) return {}
-  const l = isActive ? 0.22 : 0.18
-  const c = isActive ? t.c * 1.6 : t.c
+  const l = isActive ? 0.93 : 0.97
+  const c = isActive ? t.c * 2.2 : t.c * 0.8
   return { background: `oklch(${l} ${c} ${t.h})` }
 }
 
@@ -60,13 +60,15 @@ export default function FloorGrid({ rooms, onRoomClick }) {
             </div>
 
             <div className="m-cell-bottom">
-              <span className="m-cell-temp">
-                {room.temp != null ? room.temp.toFixed(1) : '—'}
-                <span className="m-cell-deg">°</span>
-              </span>
-              <span className="m-cell-humidity">
-                {room.humidity != null ? `${Math.round(room.humidity)}%` : ''}
-              </span>
+              <div className="m-cell-temp-wrap">
+                <span className="m-cell-temp">
+                  {room.temp != null ? room.temp.toFixed(1) : '—'}
+                  <span className="m-cell-deg">°</span>
+                </span>
+                <span className="m-cell-humidity">
+                  {room.humidity != null ? `${Math.round(room.humidity)}% RH` : ''}
+                </span>
+              </div>
               <div className="m-cell-indicators">
                 {room.smoke  && <span className="m-cell-dot alert" />}
                 {room.motion && !room.smoke && <span className="m-cell-dot occ" />}

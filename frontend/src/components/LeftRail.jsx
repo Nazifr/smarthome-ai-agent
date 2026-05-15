@@ -12,6 +12,14 @@ export default function LeftRail({ climate, energy, decisions, activeDecisionId,
             <span>{climate.humidity}% humidity</span>
             <span className="dot"/>
             <span>Outside {climate.outside}°</span>
+            {climate.windowSafe != null && (
+              <>
+                <span className="dot"/>
+                <span style={{ color: climate.windowSafe ? 'var(--green, #6a9)' : 'var(--orange, #d84)' }}>
+                  {climate.windowSafe ? 'Window OK' : 'Keep closed'}
+                </span>
+              </>
+            )}
           </div>
           <div className="climate-spark">
             <svg className="spark" viewBox="0 0 200 28" preserveAspectRatio="none">

@@ -49,12 +49,16 @@ warnings.filterwarnings(
 )
 
 
+LLM_COOLDOWN = 120  # seconds — re-use cached Gemini response per room
+
 class DecisionEngine:
     def __init__(self):
         self.model   = None
         self.encoder = None
         self.samples = []       # feedback örnekleri
         self.gemini  = None
+        self._llm_cache: dict[str, tuple[float, list]] = {}
+        self._llm_backoff_until = 0.0
         self._load_model()
         self._init_gemini()
 
@@ -86,20 +90,26 @@ class DecisionEngine:
 
         if self.model and len(self.samples) >= MIN_SAMPLES_FOR_ML:
             ml_actions, confidence = self._ml_decide(context, features)
+            is_complex = self.gemini and self._is_complex(context)
             if confidence >= CONFIDENCE_THRESHOLD:
+                if is_complex:
+                    print(f"[DecisionEngine] ML güven {confidence:.0%} ama bağlam karmaşık — Gemini devreye giriyor...")
+                    llm_actions = self._llm_decide(context, confidence)
+                    if llm_actions:
+                        return self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions))
                 print(f"[DecisionEngine] ML karari (guven: {confidence:.0%})")
-                return self._filter_supported_actions(context, ml_actions)
-            if self.gemini and self._is_complex(context):
+                return self._apply_lighting_override(context, self._filter_supported_actions(context, ml_actions))
+            if is_complex:
                 print("[DecisionEngine] Karmasik baglam, Gemini devreye giriyor...")
                 llm_actions = self._llm_decide(context, confidence)
                 if llm_actions:
-                    return self._filter_supported_actions(context, llm_actions)
-            return self._filter_supported_actions(context, ml_actions)
+                    return self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions))
+            return self._apply_lighting_override(context, self._filter_supported_actions(context, ml_actions))
         if self.gemini:
             print("[DecisionEngine] ML yok, Gemini kullaniliyor...")
             llm_actions = self._llm_decide(context, confidence=None)
             if llm_actions:
-                return self._filter_supported_actions(context, llm_actions)
+                return self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions))
         print("[DecisionEngine] Heuristic karar veriliyor...")
         return self._filter_supported_actions(context, self._heuristic_decide(context))
 
@@ -117,6 +127,15 @@ class DecisionEngine:
             return self._heuristic_decide(context), 0.0
 
     def _llm_decide(self, context: dict, confidence) -> list:
+        import time as _time
+        now = _time.time()
+        if now < self._llm_backoff_until:
+            return []
+        room = context.get("room", "unknown")
+        cached = self._llm_cache.get(room)
+        if cached and now - cached[0] < LLM_COOLDOWN:
+            print(f"[DecisionEngine] Gemini cache hit for {room}")
+            return cached[1]
         try:
             prompt   = self._build_prompt(context, confidence)
             response = self.gemini.models.generate_content(
@@ -140,9 +159,15 @@ class DecisionEngine:
                     "confidence": None,
                     "method":     "llm"
                 })
+            self._llm_cache[room] = (_time.time(), actions)
             return actions
         except Exception as e:
-            print(f"[DecisionEngine] Gemini hatası: {e}")
+            err = f"{type(e).__name__}: {e}"
+            if "429" in err or "RESOURCE_EXHAUSTED" in err or "quota" in err.lower():
+                self._llm_backoff_until = _time.time() + 60
+                print("[DecisionEngine] Gemini rate limited — backing off 60s")
+            else:
+                print(f"[DecisionEngine] Gemini hatası: {err}")
             return []
 
     def _build_prompt(self, context: dict, confidence) -> str:
@@ -152,6 +177,9 @@ class DecisionEngine:
         occupancy     = context.get("occupancy", "unknown")
         context_label = context.get("context_label", "genel")
         weather       = context.get("weather_str", "bilinmiyor")
+        rain          = context.get("rain_mm", 0)
+        wind          = context.get("wind_kmh", 0)
+        window_safe   = context.get("is_window_safe", True)
         sentiment     = context.get("sentiment_str", "nötr")
         day_type      = context.get("day_type", 0)
         energy_mode   = context.get("energy_mode", "normal")
@@ -169,6 +197,7 @@ MEVCUT DURUM:
 - Ev durumu: {occupancy}
 - Bağlam: {context_label}
 - Hava durumu: {weather}
+- Yağış: {rain} mm  |  Rüzgar: {wind} km/h  |  Pencere açma güvenli: {"evet" if window_safe else "hayır"}
 - Kullanıcı duygu durumu: {sentiment}
 - Gün tipi: {day_str}
 - Enerji modu: {energy_mode}
@@ -177,8 +206,9 @@ MEVCUT DURUM:
 KURALLAR:
 - Ev boşsa gereksiz cihazları kapat
 - Kullanıcı yorgunsa ışıkları kıs, sıcaklığı rahat tut
-- Yağmurlu havada iç ışıkları artır
+- Yağmurlu/rüzgarlı havada pencere açma (fan=sadece iç hava sirkülasyonu)
 - Enerji modu tasarrufsa AC kullanımını minimize et
+- Akşam 17:00-23:00 arası ev doluysa ışıklar açık olmalı
 - Gece 23:00-07:00 arası sessiz mod
 
 Yanıtını SADECE aşağıdaki JSON formatında ver, başka hiçbir şey yazma:
@@ -197,6 +227,15 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
             return True
         hour = context.get("hour", 12)
         if context.get("day_type") == 1 and 9 <= hour <= 12:
+            return True
+        # Weather-driven complexity: outdoor conditions affect indoor decisions
+        if not context.get("is_window_safe", True):
+            return True
+        temp = context.get("temperature", 22)
+        outdoor = context.get("outdoor_temp", 20)
+        if abs(temp - outdoor) > 8:
+            return True
+        if context.get("rain_mm", 0) > 0 or context.get("wind_kmh", 0) > 25:
             return True
         return False
 
@@ -218,6 +257,24 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
             "method": "heuristic",
         }]
 
+    def _apply_lighting_override(self, context: dict, actions: list) -> list:
+        """Post-ML correction: ensure lights match time-of-day when occupied."""
+        hour      = context.get("hour", 12)
+        occupancy = context.get("occupancy", "unknown")
+        if occupancy == "bos_ev":
+            return actions
+
+        is_evening = 17 <= hour < 23
+
+        if is_evening:
+            for a in actions:
+                if a["device"] in ("lights", "light") and a["command"] == "OFF":
+                    a["command"] = "ON"
+                    a["reason"] += " (akşam override)"
+                    print(f"[DecisionEngine] Lighting override: OFF → ON (evening, occupied)")
+
+        return actions
+
     def _heuristic_decide(self, context: dict) -> list:
         hour      = context.get("hour", 12)
         temp      = context.get("temperature", 22)
@@ -225,25 +282,54 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
         smoke     = context.get("smoke", 0)
         occupancy = context.get("occupancy", "unknown")
         actions   = []
+
+        # ── Safety: smoke overrides everything ────────────────────────
         if smoke:
-            actions.append({"device": "fan", "command": "ON", "reason": "Smoke detected - exhaust fan enabled", "confidence": None, "method": "heuristic", "safety": True})
-            actions.append({"device": "lights", "command": "ON", "reason": "Smoke detected - room lights enabled for safety", "confidence": None, "method": "heuristic", "safety": True})
-        elif humidity > 75:
-            actions.append({"device": "fan", "command": "ON", "reason": f"High humidity ({humidity}%) - ventilation enabled", "confidence": None, "method": "heuristic"})
-        elif occupancy == "bos_ev":
-            actions.append({"device": "ac",     "command": "OFF",      "reason": "Ev boş — klima kapatılıyor",   "confidence": None, "method": "heuristic"})
-            actions.append({"device": "lights",  "command": "OFF",      "reason": "Ev boş — ışıklar kapatılıyor", "confidence": None, "method": "heuristic"})
-            actions.append({"device": "fan",     "command": "OFF",      "reason": "Ev boş — fan kapatılıyor",     "confidence": None, "method": "heuristic"})
-        elif temp > 28:
-            actions.append({"device": "ac",     "command": "COOL_HIGH", "reason": f"Sıcaklık yüksek ({temp}°C)", "confidence": None, "method": "heuristic"})
+            actions.append({"device": "fan",    "command": "ON", "reason": "Smoke detected - exhaust fan enabled",            "confidence": None, "method": "heuristic", "safety": True})
+            actions.append({"device": "lights", "command": "ON", "reason": "Smoke detected - room lights enabled for safety",  "confidence": None, "method": "heuristic", "safety": True})
+            return actions
+
+        # ── High humidity: ventilation (fall through to lights/temp) ──
+        if humidity > 75:
+            is_window_safe = context.get("is_window_safe", True)
+            rain   = context.get("rain_mm", 0)
+            wind   = context.get("wind_kmh", 0)
+            if is_window_safe:
+                actions.append({"device": "fan", "command": "ON", "reason": f"High humidity ({humidity}%) - ventilation enabled", "confidence": None, "method": "heuristic"})
+            else:
+                actions.append({"device": "fan", "command": "ON", "reason": f"High humidity ({humidity}%) - indoor fan only (rain={rain}mm, wind={wind}km/h)", "confidence": None, "method": "heuristic"})
+
+        # ── Empty home: all off ────────────────────────────────────────
+        if occupancy == "bos_ev":
+            actions.append({"device": "ac",     "command": "OFF", "reason": "Ev boş — klima kapatılıyor",   "confidence": None, "method": "heuristic"})
+            actions.append({"device": "lights",  "command": "OFF", "reason": "Ev boş — ışıklar kapatılıyor", "confidence": None, "method": "heuristic"})
+            actions.append({"device": "fan",     "command": "OFF", "reason": "Ev boş — fan kapatılıyor",     "confidence": None, "method": "heuristic"})
+            return actions
+
+        # ── Temperature control (independent of lighting) ─────────────
+        if temp > 28:
+            actions.append({"device": "ac",     "command": "COOL_HIGH", "reason": f"Sıcaklık yüksek ({temp}°C)",        "confidence": None, "method": "heuristic"})
         elif temp > 24:
             actions.append({"device": "ac",     "command": "COOL_LOW",  "reason": f"Sıcaklık biraz yüksek ({temp}°C)", "confidence": None, "method": "heuristic"})
         elif temp < 16:
-            actions.append({"device": "heater", "command": "ON",        "reason": f"Sıcaklık düşük ({temp}°C)",  "confidence": None, "method": "heuristic"})
-        elif 23 <= hour or hour < 7:
-            actions.append({"device": "lights", "command": "OFF",       "reason": "Gece modu",                   "confidence": None, "method": "heuristic"})
-        else:
-            actions.append({"device": "lights", "command": "ON",        "reason": "Normal mod",                  "confidence": None, "method": "heuristic"})
+            actions.append({"device": "heater", "command": "ON",        "reason": f"Sıcaklık düşük ({temp}°C)",        "confidence": None, "method": "heuristic"})
+
+        # ── Lighting (independent of temperature) ─────────────────────
+        # Night   23:00–06:59 → lights off (sleep mode)
+        # Evening 17:00–22:59 → lights on  (natural light fading)
+        # Daytime 07:00–16:59 → no automatic lights (natural light)
+        is_night   = 23 <= hour or hour < 7
+        is_evening = 17 <= hour < 23
+
+        if is_night:
+            actions.append({"device": "lights", "command": "OFF", "reason": "Gece modu",                "confidence": None, "method": "heuristic"})
+        elif is_evening:
+            actions.append({"device": "lights", "command": "ON",  "reason": "Akşam modu — ışıklar açık", "confidence": None, "method": "heuristic"})
+        # Daytime: skip — natural light is sufficient
+
+        if not actions:
+            actions.append({"device": "lights", "command": "ON", "reason": "Normal mod", "confidence": None, "method": "heuristic"})
+
         return actions
 
     def _label_to_actions(self, label: str, context: dict, confidence: float, method: str) -> list:
@@ -269,6 +355,13 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
                 "scenario":   label,
             })
         return actions
+
+    def play_for_mood(self, sentiment: str):
+        """User-initiated mood playback — bypasses ENABLE_SPOTIFY_ACTIONS gate."""
+        if _spotify:
+            _spotify.play_for_mood(sentiment)
+        else:
+            print(f"[DecisionEngine] Spotify bağlı değil — mood playlist atlandı ({sentiment})")
 
     # ── Feedback Öğrenme ──────────────────────────────────────────────
 

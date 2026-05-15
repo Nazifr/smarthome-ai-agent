@@ -21,6 +21,24 @@ WEATHER_LAT       = float(os.getenv("WEATHER_LAT", "38.4"))
 WEATHER_LON       = float(os.getenv("WEATHER_LON", "27.1"))
 WEATHER_CACHE_SEC = 1800  # 30 dakika cache
 
+# Open-Meteo WMO weather codes → simplified categories
+def _wmo_to_int(code: int) -> int:
+    if code <= 3:   return 0   # clear / partly cloudy
+    if code <= 48:  return 1   # fog
+    if code <= 67:  return 2   # drizzle / rain
+    if code <= 77:  return 2   # snow
+    if code <= 82:  return 2   # rain showers
+    if code <= 86:  return 2   # snow showers
+    return 2                   # thunderstorm
+
+def _wmo_to_str(code: int) -> str:
+    if code <= 3:   return "güneşli"
+    if code <= 48:  return "bulutlu"
+    if code <= 67:  return "yağmurlu"
+    if code <= 77:  return "karlı"
+    if code <= 82:  return "yağmurlu"
+    return "fırtınalı"
+
 TR_HOLIDAYS = {
     (1, 1), (4, 23), (5, 1), (5, 19),
     (7, 15), (8, 30), (10, 29)
@@ -103,12 +121,21 @@ class ContextEnricher:
         humidity    = context.get("humidity", 50.0)
         solar_kw    = context.get("light", 0.0) / 500.0  # light → solar proxy
 
-        # Hava durumu
+        # Hava durumu (Open-Meteo first, OpenWeatherMap fallback)
         weather_data = self._get_weather()
         outdoor_temp = weather_data["temp"]
         context["weather"]      = weather_data["code"]
         context["weather_str"]  = weather_data["description"]
         context["outdoor_temp"] = outdoor_temp
+        context["rain_mm"]      = weather_data.get("rain", 0.0)
+        context["wind_kmh"]     = weather_data.get("wind", 0.0)
+
+        # Window safety: no rain, wind < 30 km/h, outdoor temp 10–35°C
+        context["is_window_safe"] = (
+            weather_data.get("rain", 0.0) < 0.5
+            and weather_data.get("wind", 0.0) < 30
+            and 10 <= outdoor_temp <= 35
+        )
 
         # İç/dış sıcaklık farkı
         temp_diff = round(indoor_temp - outdoor_temp, 1)
@@ -138,8 +165,45 @@ class ContextEnricher:
         now = time.time()
         if self._weather_cache and (now - self._weather_cache_time) < WEATHER_CACHE_SEC:
             return self._weather_cache
-        if not WEATHER_API_KEY:
-            return {"code": 0, "description": "bilinmiyor", "temp": 20.0}
+
+        result = self._get_weather_openmeteo()
+        if not result and WEATHER_API_KEY:
+            result = self._get_weather_owm()
+        if not result:
+            return self._weather_cache or {
+                "code": 0, "description": "bilinmiyor", "temp": 20.0,
+                "rain": 0.0, "wind": 0.0,
+            }
+
+        self._weather_cache      = result
+        self._weather_cache_time = now
+        print(f"[ContextEnricher] Hava durumu güncellendi: {result['description']}, "
+              f"{result['temp']}°C, rain={result.get('rain', 0)}mm, wind={result.get('wind', 0)}km/h")
+        return result
+
+    def _get_weather_openmeteo(self) -> dict | None:
+        """Open-Meteo: free, no API key, includes rain + wind."""
+        try:
+            url = (
+                f"https://api.open-meteo.com/v1/forecast"
+                f"?latitude={WEATHER_LAT}&longitude={WEATHER_LON}"
+                f"&current=temperature_2m,relative_humidity_2m,rain,wind_speed_10m,weather_code"
+            )
+            data = requests.get(url, timeout=5).json()["current"]
+            wmo  = int(data["weather_code"])
+            return {
+                "code":        _wmo_to_int(wmo),
+                "description": _wmo_to_str(wmo),
+                "temp":        round(data["temperature_2m"], 1),
+                "rain":        round(data.get("rain", 0.0), 1),
+                "wind":        round(data.get("wind_speed_10m", 0.0), 1),
+            }
+        except Exception as e:
+            print(f"[ContextEnricher] Open-Meteo hatası: {e}")
+            return None
+
+    def _get_weather_owm(self) -> dict | None:
+        """OpenWeatherMap fallback (requires API key)."""
         try:
             url = (
                 f"https://api.openweathermap.org/data/2.5/weather"
@@ -149,18 +213,18 @@ class ContextEnricher:
             data       = requests.get(url, timeout=5).json()
             weather_id = data["weather"][0]["id"]
             temp       = data["main"]["temp"]
-            result = {
+            wind       = data.get("wind", {}).get("speed", 0) * 3.6  # m/s → km/h
+            rain       = data.get("rain", {}).get("1h", 0.0)
+            return {
                 "code":        weather_code_to_int(weather_id),
                 "description": weather_code_to_str(weather_id),
                 "temp":        round(temp, 1),
+                "rain":        round(rain, 1),
+                "wind":        round(wind, 1),
             }
-            self._weather_cache      = result
-            self._weather_cache_time = now
-            print(f"[ContextEnricher] Hava durumu güncellendi: {result['description']}, {temp}°C")
-            return result
         except Exception as e:
-            print(f"[ContextEnricher] Hava durumu hatası: {e}")
-            return self._weather_cache or {"code": 0, "description": "bilinmiyor", "temp": 20.0}
+            print(f"[ContextEnricher] OpenWeatherMap hatası: {e}")
+            return None
 
     def update_sentiment(self, sentiment: str):
         mapping = {"nötr": 0, "yorgun": 1, "aktif": 2, "stresli": 3,

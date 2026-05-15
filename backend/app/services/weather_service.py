@@ -57,7 +57,7 @@ def get_weather():
         url = (
             f"https://api.open-meteo.com/v1/forecast"
             f"?latitude={LATITUDE}&longitude={LONGITUDE}"
-            f"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m"
+            f"&current=temperature_2m,relative_humidity_2m,weather_code,wind_speed_10m,rain"
             f"&timezone=auto"
         )
 
@@ -67,13 +67,20 @@ def get_weather():
 
         current = raw.get("current", {})
         code = current.get("weather_code", 0)
+        temp = current.get("temperature_2m")
+        wind = current.get("wind_speed_10m", 0)
+        rain = current.get("rain", 0)
+
+        window_safe = (rain or 0) < 0.5 and (wind or 0) < 30 and 10 <= (temp or 20) <= 35
 
         result = {
-            "temperature": current.get("temperature_2m"),
+            "temperature": temp,
             "humidity": current.get("relative_humidity_2m"),
-            "wind_speed": current.get("wind_speed_10m"),
+            "wind_speed": wind,
+            "rain": rain,
             "condition": WMO_CODES.get(code, "Unknown"),
             "weather_code": code,
+            "window_safe": window_safe,
             "available": True,
         }
 

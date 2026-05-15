@@ -49,6 +49,16 @@ DEMO_AUTOMATIONS = {
         for room_id, devices in ROOM_ACTUATORS.items()
         for device in devices
     ],
+    # Arriving home: everything off except hallway light (someone just walked in)
+    "fair_arriving": [
+        *[
+            (room_id, device, "OFF")
+            for room_id, devices in ROOM_ACTUATORS.items()
+            for device in devices
+            if not (room_id == "hallway" and device == "light")
+        ],
+        ("hallway", "light", "ON"),
+    ],
 }
 
 DEMO_OVERRIDES = {}
@@ -94,6 +104,18 @@ DEMO_SCENARIOS = {
             "bathroom": {"motion": 0, "smoke": 0},
             "hallway": {"motion": 0, "smoke": 0},
             "office": {"motion": 0, "smoke": 0},
+        },
+    },
+    "fair_arriving": {
+        "label": "Arriving Home",
+        "description": "User arrives home — choose your mood on Telegram to personalize the house.",
+        "rooms": {
+            "hallway":      {"temperature": 22.0, "humidity": 48, "motion": 1, "smoke": 0},
+            "living_room":  {"temperature": 22.0, "humidity": 50, "motion": 0, "smoke": 0},
+            "bedroom":      {"temperature": 21.5, "humidity": 47, "motion": 0, "smoke": 0},
+            "kitchen":      {"temperature": 22.0, "humidity": 48, "motion": 0, "smoke": 0},
+            "bathroom":     {"temperature": 22.0, "humidity": 50, "motion": 0, "smoke": 0},
+            "office":       {"temperature": 22.0, "humidity": 48, "motion": 0, "smoke": 0},
         },
     },
 }

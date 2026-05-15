@@ -11,6 +11,7 @@ Kurulum:
 
 import os
 import json
+import time
 
 try:
     import spotipy
@@ -26,10 +27,21 @@ SPOTIFY_CACHE_PATH    = os.path.join(os.path.dirname(__file__), ".spotify_cache"
 
 SCOPE = "user-modify-playback-state user-read-playback-state playlist-read-private"
 
+# Mood-to-playlist mapping (override via env vars for custom playlists)
+MOOD_PLAYLISTS: dict[str, str] = {
+    "notr":    os.getenv("SPOTIFY_PLAYLIST_NOTR",    "spotify:playlist:37i9dQZF1DX4sWSpwq3LiO"),  # Peaceful Piano
+    "yorgun":  os.getenv("SPOTIFY_PLAYLIST_YORGUN",  "spotify:playlist:37i9dQZF1DXd9nC7BoIDEL"),  # Sleep
+    "aktif":   os.getenv("SPOTIFY_PLAYLIST_AKTIF",   "spotify:playlist:37i9dQZF1DX76Wlfdnj7AP"),  # Beast Mode
+    "stresli": os.getenv("SPOTIFY_PLAYLIST_STRESLI", "spotify:playlist:37i9dQZF1DX1s9knjP51Oa"),  # Calm Vibes
+}
+
 
 class SpotifyController:
     def __init__(self):
         self.sp = None
+        self._mood_play_time = 0.0
+        self._last_command = None
+        self._pause_failed = False
         self._init_spotify()
 
     def _init_spotify(self):
@@ -62,8 +74,10 @@ class SpotifyController:
         music_value: spotify:playlist:xxx veya 'kapali'
         """
         if not self.sp:
-            print(f"[Spotify] Devre dışı — müzik çalınamıyor: {music_value}")
             return
+        if music_value == self._last_command:
+            return
+        self._last_command = music_value
 
         if music_value == "kapali":
             self._pause()
@@ -96,6 +110,7 @@ class SpotifyController:
                 device_id=device_id,
                 context_uri=playlist_uri,
             )
+            self._pause_failed = False
             print(f"[Spotify] ▶ Çalıyor: {playlist_uri} → {device_name}")
 
         except spotipy.exceptions.SpotifyException as e:
@@ -107,11 +122,29 @@ class SpotifyController:
             print(f"[Spotify] Hata: {e}")
 
     def _pause(self):
+        if time.time() - self._mood_play_time < 300:
+            return
+        if self._pause_failed:
+            return
         try:
             self.sp.pause_playback()
+            self._pause_failed = False
             print("[Spotify] ⏸ Müzik durduruldu")
         except Exception as e:
-            print(f"[Spotify] Durdurma hatası: {e}")
+            if "403" in str(e) or "Restriction" in str(e):
+                self._pause_failed = True
+            else:
+                print(f"[Spotify] Durdurma hatası: {e}")
+
+    def play_for_mood(self, sentiment: str):
+        """Play a playlist matching the user's mood. Protects from pause for 5 min."""
+        uri = MOOD_PLAYLISTS.get(sentiment)
+        if not uri:
+            print(f"[Spotify] No playlist mapped for mood: {sentiment}")
+            return
+        print(f"[Spotify] 🎵 Mood '{sentiment}' → {uri}")
+        self._play_playlist(uri)
+        self._mood_play_time = time.time()
 
     def set_volume(self, volume: int):
         """volume: 0-100"""

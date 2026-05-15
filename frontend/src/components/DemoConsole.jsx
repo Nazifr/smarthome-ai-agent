@@ -6,6 +6,7 @@ const FALLBACK_SCENARIOS = [
   { id: 'night_routine', label: 'Night Routine', description: 'Evening comfort automation.' },
   { id: 'bathroom_humidity', label: 'Bathroom Humidity', description: 'Ventilation response.' },
   { id: 'empty_home', label: 'Empty Home', description: 'Energy-saving behavior.' },
+  { id: 'fair_arriving', label: 'Arriving Home', description: 'Mood-based personalisation via Telegram.' },
 ]
 
 export default function DemoConsole({ diagnostics, loading, onScenario }) {

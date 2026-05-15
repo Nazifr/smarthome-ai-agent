@@ -4,6 +4,7 @@ const SCENARIOS = [
   { id: 'kitchen_smoke',     name: 'Kitchen smoke',     desc: 'Safety alarm scenario' },
   { id: 'empty_home',        name: 'Empty home',        desc: 'Energy-saving mode' },
   { id: 'bathroom_humidity', name: 'Bathroom shower',   desc: 'High humidity scenario' },
+  { id: 'fair_arriving',     name: 'Arriving home',     desc: 'Mood-based personalisation' },
 ]
 
 export default function Scrubber({ activeScenario, loadingScenario, onScenario }) {
