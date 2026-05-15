@@ -8,6 +8,8 @@ MQTT_HOST     = os.getenv("MQTT_BROKER", "mosquitto")
 MQTT_PORT     = int(os.getenv("MQTT_PORT", 1883))
 MQTT_USER     = os.getenv("MQTT_USER", "")
 MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
+MQTT_TLS      = os.getenv("MQTT_TLS", "false").lower() == "true"
+MQTT_CA_CERT  = os.getenv("MQTT_CA_CERT", "/etc/smarthome/certs/ca.crt")
 
 ACTUATOR_STATES = {}
 MQTT_STATUS = {
@@ -42,6 +44,8 @@ def _make_client() -> mqtt.Client:
     client = mqtt.Client(mqtt.CallbackAPIVersion.VERSION2)
     if MQTT_USER and MQTT_PASSWORD:
         client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+    if MQTT_TLS:
+        client.tls_set(ca_certs=MQTT_CA_CERT)
     return client
 
 

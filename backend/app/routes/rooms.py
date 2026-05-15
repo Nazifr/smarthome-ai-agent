@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Depends, Request
 from typing import List, Literal
 from app.schemas.room import Room
 from app.schemas.history import HistoryPoint
@@ -9,6 +9,7 @@ from app.services.room_service import (
     get_room_history,
     set_actuator
 )
+from app.security import require_api_key, limiter
 
 router = APIRouter()
 
@@ -21,10 +22,8 @@ def get_rooms():
 @router.get("/api/rooms/{room_id}", response_model=Room)
 def get_room(room_id: str):
     room = get_room_by_id(room_id)
-
     if room is None:
         raise HTTPException(status_code=404, detail="Room not found")
-
     return room
 
 
@@ -35,18 +34,19 @@ def get_history(
     minutes: int = Query(60, ge=1, le=1440)
 ):
     history = get_room_history(room_id, sensor_type, minutes)
-
     if history is None:
         raise HTTPException(status_code=404, detail="Room not found")
-
     return history
 
 
 @router.post("/api/rooms/{room_id}/actuators/{device}")
-def control_actuator(
+@limiter.limit("30/minute")
+async def control_actuator(
+    request: Request,
     room_id: str,
     device: str,
-    state: Literal["ON", "OFF"] = Query(...)
+    state: Literal["ON", "OFF"] = Query(...),
+    _: None = Depends(require_api_key),
 ):
     print("API_RECEIVED", room_id, device, state, time.time())
     result = set_actuator(room_id, device, state)

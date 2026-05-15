@@ -13,10 +13,12 @@ from context_analyzer import ContextAnalyzer
 from decision_engine import DecisionEngine
 from policy_manager import PolicyManager
 
-MQTT_BROKER  = os.getenv("MQTT_BROKER", "localhost")
-MQTT_PORT    = int(os.getenv("MQTT_PORT", 1883))
-MQTT_USER    = os.getenv("MQTT_USER", "")
-MQTT_PASSWORD= os.getenv("MQTT_PASSWORD", "")
+MQTT_BROKER   = os.getenv("MQTT_BROKER", "localhost")
+MQTT_PORT     = int(os.getenv("MQTT_PORT", 1883))
+MQTT_USER     = os.getenv("MQTT_USER", "")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
+MQTT_TLS      = os.getenv("MQTT_TLS", "false").lower() == "true"
+MQTT_CA_CERT  = os.getenv("MQTT_CA_CERT", "/etc/smarthome/certs/ca.crt")
 INFLUX_URL   = os.getenv("INFLUX_URL", "http://localhost:8086")
 INFLUX_TOKEN = os.getenv("INFLUX_TOKEN", "smarthome-super-secret-token")
 INFLUX_ORG   = os.getenv("INFLUX_ORG", "smarthome")
@@ -59,6 +61,8 @@ class SmartHomeAgent:
         self.mqtt_client = mqtt.Client(client_id="smarthome-agent")
         if MQTT_USER and MQTT_PASSWORD:
             self.mqtt_client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+        if MQTT_TLS:
+            self.mqtt_client.tls_set(ca_certs=MQTT_CA_CERT)
         self.mqtt_client.on_connect    = self._on_connect
         self.mqtt_client.on_message    = self._on_message
         self.mqtt_client.on_disconnect = self._on_disconnect

@@ -2,3 +2,4 @@ fastapi
 uvicorn
 influxdb-client
 paho-mqtt
+slowapi

@@ -1,11 +1,14 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.routes.rooms import router as rooms_router
 from app.routes.system import router as system_router
 from app.routes.energy import router as energy_router
 from app.routes.weather import router as weather_router
 from app.services.mqtt_service import start_mqtt_listener
+from app.security import limiter
 
 
 @asynccontextmanager
@@ -15,6 +18,9 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 app.add_middleware(
     CORSMiddleware,

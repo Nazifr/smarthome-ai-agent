@@ -6,11 +6,13 @@ import math
 from datetime import datetime
 import paho.mqtt.client as mqtt
 
-MQTT_BROKER  = os.getenv("MQTT_BROKER", "localhost")
-MQTT_PORT    = int(os.getenv("MQTT_PORT", 1883))
-MQTT_USER    = os.getenv("MQTT_USER", "")
-MQTT_PASSWORD= os.getenv("MQTT_PASSWORD", "")
-INTERVAL     = float(os.getenv("PUBLISH_INTERVAL", 30))
+MQTT_BROKER   = os.getenv("MQTT_BROKER", "localhost")
+MQTT_PORT     = int(os.getenv("MQTT_PORT", 1883))
+MQTT_USER     = os.getenv("MQTT_USER", "")
+MQTT_PASSWORD = os.getenv("MQTT_PASSWORD", "")
+MQTT_TLS      = os.getenv("MQTT_TLS", "false").lower() == "true"
+MQTT_CA_CERT  = os.getenv("MQTT_CA_CERT", "/etc/smarthome/certs/ca.crt")
+INTERVAL      = float(os.getenv("PUBLISH_INTERVAL", 15))
 
 ROOMS = ["living_room", "bedroom", "kitchen", "bathroom", "hallway", "office"]
 
@@ -60,8 +62,10 @@ def main():
     client = mqtt.Client(client_id="smarthome-simulator")
     if MQTT_USER and MQTT_PASSWORD:
         client.username_pw_set(MQTT_USER, MQTT_PASSWORD)
+    if MQTT_TLS:
+        client.tls_set(ca_certs=MQTT_CA_CERT)
 
-    print(f"[Simulator] Broker'a bağlanılıyor: {MQTT_BROKER}:{MQTT_PORT}")
+    print(f"[Simulator] Broker'a bağlanılıyor: {MQTT_BROKER}:{MQTT_PORT} (TLS={MQTT_TLS})")
     while True:
         try:
             client.connect(MQTT_BROKER, MQTT_PORT, keepalive=60)

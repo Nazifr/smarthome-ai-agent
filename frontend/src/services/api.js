@@ -24,6 +24,12 @@ function resolveApiBaseUrl() {
 }
 
 const API_BASE_URL = resolveApiBaseUrl()
+const API_KEY      = import.meta.env.VITE_API_KEY ?? ''
+
+/** Headers required on mutating (POST) requests. */
+function writeHeaders() {
+  return API_KEY ? { 'X-API-Key': API_KEY } : {}
+}
 
 export async function getSystemOverview() {
   const response = await fetch(`${API_BASE_URL}/api/system/overview`)
@@ -40,6 +46,7 @@ export async function controlActuator(roomId, device, state) {
     `${API_BASE_URL}/api/rooms/${roomId}/actuators/${device}?state=${state}`,
     {
       method: "POST",
+      headers: writeHeaders(),
     }
   )
 
@@ -53,7 +60,7 @@ export async function controlActuator(roomId, device, state) {
 export async function setSystemMode(mode) {
   const response = await fetch(
     `${API_BASE_URL}/api/system/mode?mode=${mode}`,
-    { method: "POST" }
+    { method: "POST", headers: writeHeaders() }
   )
 
   if (!response.ok) {
@@ -88,6 +95,7 @@ export async function getSystemDiagnostics() {
 export async function triggerDemoScenario(scenario) {
   const response = await fetch(`${API_BASE_URL}/api/system/demo?scenario=${scenario}`, {
     method: "POST",
+    headers: writeHeaders(),
   })
 
   if (!response.ok) {

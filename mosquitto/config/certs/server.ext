@@ -1,0 +1,4 @@
+﻿[req]
+req_extensions = v3_req
+[v3_req]
+subjectAltName = DNS:mosquitto,DNS:localhost,IP:127.0.0.1
