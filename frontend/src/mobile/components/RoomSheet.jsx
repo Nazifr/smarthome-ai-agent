@@ -35,7 +35,7 @@ export default function RoomSheet({ overview, roomId, onClose, onToggleDevice })
   const scrollRef = useRef(null)
 
   useEffect(() => {
-    if (!roomId) { setHistory([]); return }
+    if (!roomId) return
     // scroll to top when room changes
     if (scrollRef.current) scrollRef.current.scrollTop = 0
     let cancelled = false

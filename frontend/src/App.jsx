@@ -71,7 +71,7 @@ export default function App() {
   // Weather polling — Open-Meteo via backend
   useEffect(() => {
     async function load() {
-      try { setWeather(await getWeather()) } catch {}
+      try { setWeather(await getWeather()) } catch { setWeather(null) }
     }
     load()
     const t = setInterval(load, 5 * 60 * 1000)
