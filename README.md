@@ -1,185 +1,231 @@
-# Akıllı Ev AI Agent Sistemi
+# NeuroNest: Personalized AI Smart Home System
 
-Bu proje; sensör simülasyonu, MQTT haberleşmesi, yapay zekâ karar mekanizması, zaman serisi veritabanı, REST API, web arayüzü, Telegram bildirimleri ve Spotify entegrasyonunu birleştiren uçtan uca bir **AI destekli akıllı ev kontrol sistemi**dir.
+NeuroNest is an end-to-end AI-assisted smart home control system. It combines simulated live sensor data, MQTT messaging, a Python AI agent, InfluxDB time-series storage, a FastAPI backend, a React dashboard, Telegram mood input, and optional Spotify integration.
 
-Sistem temel olarak şu akışla çalışır:
+The project is designed for a jury/demo setting: it can run live from simulated room data, it can launch controlled demo scenarios, and it can explain what the AI decided and why.
+
+## System Overview
 
 ```text
-Simulator / Node-RED
-        ↓
+Room Sensor Simulator
+        |
+        v
       MQTT
-        ↓
-AI Agent → InfluxDB
-        ↓
+        |
+        v
+AI Agent ---> InfluxDB
+        |
+        v
 FastAPI Backend
-        ↓
-React Mission Control Frontend
-        ↓
-Telegram / Spotify / Demo Dashboard
+        |
+        v
+React Dashboard
+        |
+        v
+Telegram / Spotify / Demo Controls
 ```
 
-## Klasör Yapısı
+## What Makes It AI And Personalized
+
+NeuroNest uses a layered decision system:
+
+1. Safety rules
+   - Smoke and very high humidity take priority.
+   - Example: kitchen smoke turns on the exhaust fan and lights.
+
+2. Learned user preferences
+   - When the user manually toggles a device, the dashboard sends feedback to the backend.
+   - The backend publishes that feedback to MQTT.
+   - The AI agent stores it in `agent/user_learning.json`.
+   - Future decisions check these learned preferences before the generic model.
+
+3. Pretrained ML model
+   - The existing model trained from the larger dataset provides baseline smart-home behavior.
+
+4. Gemini / LLM reasoning
+   - Used for complex context when configured and available.
+
+5. Heuristic fallback rules
+   - Used when ML/LLM cannot decide or when simple rules are safer.
+
+6. Policy and safety guards
+   - Empty rooms should not randomly turn lights on.
+   - Bright daytime conditions should keep lights off unless the user has explicitly taught otherwise.
+
+This means user feedback is not just added as a few weak rows to a large CSV. Instead, user behavior becomes a high-priority personalization layer over the generic model. You do not need to retrain the large model for learned preferences to affect the demo.
+
+## Live Data Source
+
+Indoor live room data comes from:
+
+```text
+simulator/simulator.py
+```
+
+The simulator publishes room readings to MQTT topics such as:
+
+```text
+home/living_room/sensor/all
+home/kitchen/sensor/all
+home/bathroom/sensor/all
+```
+
+Each payload includes:
+
+```text
+temperature, humidity, motion, smoke, light, timestamp, room
+```
+
+Open-Meteo is not the indoor room data source. It is used only as outdoor weather context by the AI agent.
+
+## Real-Time Clock And Lighting Logic
+
+The system uses the real current time from the sensor timestamp / system clock.
+
+Lighting logic now works like this:
+
+- Daytime: if the room is bright, lights stay off even if motion is detected.
+- Evening/night: lights may turn on when motion is detected, depending on context.
+- Empty rooms: lights are forced off.
+- Learned preference: if the user repeatedly chooses a different behavior, that preference can override the generic daylight rule for matching conditions.
+
+This is why lights may not turn on during the day even when there is motion: the system knows it is daytime and sees enough light.
+
+## Main Services
+
+| Service | Purpose | URL |
+|---|---|---|
+| React Frontend | Main dashboard | `http://localhost:5173` |
+| FastAPI Backend | REST API and dashboard data | `http://localhost:8000` |
+| FastAPI Docs | API documentation | `http://localhost:8000/docs` |
+| MQTT Broker | Message bus for sensors/actions | `localhost:1883`, TLS `8883` |
+| Node-RED | Optional flow/dashboard tooling | `http://localhost:1880` |
+| InfluxDB | Sensor/action history | internal Docker network |
+| Telegram Bot | Mood input and alerts | Telegram |
+| Spotify | Optional music integration | Spotify account/device |
+
+## Repository Structure
 
 ```text
 smarthome/
-├── docker-compose.yml              ← Tüm servisleri başlatır
-├── README.md                       ← Proje dokümantasyonu
-├── mosquitto/
-│   ├── config/mosquitto.conf       ← MQTT broker ayarları
-│   ├── data/                       ← MQTT kalıcı veri
-│   └── log/                        ← MQTT logları
-├── nodered/                        ← Node-RED akışları ve dashboard altyapısı
-├── influxdb/                       ← InfluxDB kalıcı verileri
+├── docker-compose.yml
+├── README.md
+├── AI_WORKFLOW_AND_LEARNING.md
 ├── backend/
-│   ├── app/main.py                 ← FastAPI uygulaması
-│   ├── app/routes/                 ← REST API endpointleri
-│   ├── app/services/               ← MQTT, InfluxDB, oda ve entegrasyon servisleri
-│   └── app/schemas/                ← Pydantic veri modelleri
+│   ├── app/main.py
+│   ├── app/routes/
+│   ├── app/services/
+│   ├── app/schemas/
+│   └── tests/
 ├── frontend/
-│   ├── src/App.jsx                 ← Ana React dashboard uygulaması
-│   ├── src/services/api.js         ← Backend API bağlantıları
-│   ├── src/components/             ← Dashboard bileşenleri
-│   │   ├── Header.jsx              ← Mission Control hero + logo
-│   │   ├── StatsBar.jsx            ← Mod, oda, alarm ve sağlık metrikleri
-│   │   ├── DemoConsole.jsx         ← Demo senaryosu başlatıcı
-│   │   ├── RoomGrid.jsx            ← Kart / floor plan oda görünümü
-│   │   ├── FloorPlan.jsx           ← Görsel oda yerleşim planı
-│   │   ├── RoomCard.jsx            ← Canlı oda kartları
-│   │   ├── RoomPanel.jsx           ← Oda detay paneli ve actuator kontrolleri
-│   │   ├── ActuatorToggle.jsx      ← ON/OFF cihaz kontrol bileşeni
-│   │   ├── ActivityFeed.jsx        ← Son aksiyonlar ve canlı olaylar
-│   │   ├── AiExplanation.jsx       ← AI karar açıklaması
-│   │   ├── AiTimeline.jsx          ← Sensör → bağlam → karar → komut zaman çizelgesi
-│   │   ├── EnergySavings.jsx       ← Tahmini enerji tasarrufu paneli
-│   │   └── IntegrationDock.jsx     ← AI, Spotify ve Telegram entegrasyon durumu
-│   └── src/index.css               ← Mission Control görsel tasarım sistemi
+│   ├── src/App.jsx
+│   ├── src/components/
+│   ├── src/hooks/
+│   ├── src/services/
+│   └── src/mobile/
 ├── agent/
-│   ├── main.py                     ← Ana agent (bağlam → karar → komut)
-│   ├── context_analyzer.py         ← Sensör verisinden bağlam çıkarır
-│   ├── context_enricher.py         ← Hava durumu / duygu durumu gibi ek bağlam ekler
-│   ├── decision_engine.py          ← ML modeli ile karar verir
-│   ├── policy_manager.py           ← Kullanıcı kuralları ve güvenlik politikaları uygular
-│   ├── spotify_controller.py       ← Spotify çalma/durdurma ve playlist entegrasyonu
-│   ├── spotify_auth.py             ← Spotify OAuth token üretimi
-│   ├── models/                     ← Eğitilmiş karar modeli ve encoder dosyaları
-│   └── requirements.txt
+│   ├── main.py
+│   ├── context_analyzer.py
+│   ├── context_enricher.py
+│   ├── decision_engine.py
+│   ├── policy_manager.py
+│   ├── user_learning.py
+│   ├── spotify_controller.py
+│   └── models/
 ├── simulator/
-│   └── simulator.py                ← Sahte sensör verisi üretir
-└── telegram_bot/
-    ├── bot.py                      ← Telefona bildirim gönderir, mood input alır
-    └── requirements.txt
+│   └── simulator.py
+├── telegram_bot/
+│   └── bot.py
+├── mosquitto/
+├── nodered/
+└── influxdb/
 ```
 
-## Ana Özellikler
+## Key Frontend Features
 
-### 1. Mission Control Web Dashboard
+- Live room dashboard
+- Floor plan view
+- Room detail panel
+- Device toggles
+- Auto / Manual / Away modes
+- Demo scenario launcher
+- AI Explanation panel
+- AI Timeline panel
+- Personal learning status
+- Energy savings estimate
+- Service health cards
+- Spotify and Telegram integration cards
+- Desktop and mobile UI
 
-React tabanlı frontend artık klasik bir dashboard yerine **Mission Control** tarzı bir kontrol paneli olarak tasarlandı.
+## System Modes
 
-Öne çıkanlar:
+| UI Mode | Backend Mode | Meaning |
+|---|---|---|
+| Auto | `AI` | AI agent can make autonomous decisions |
+| Manual | `Manual` | User controls devices; AI autonomy pauses |
+| Away | `Static` | Reduced/autonomous-safe behavior |
 
-- Koyu tema, canlı grid arka planı ve animasyonlu kontrol yüzeyi
-- Proje logosu / marka alanı: **NeuroNest - Adaptive Smart Home**
-- Sistem sağlığı göstergesi
-- Manual / Static / AI mod seçimi
-- Canlı oda kartları
-- Kart görünümü ve floor plan görünümü
-- Oda detay paneli
-- Actuator ON/OFF kontrolleri
-- Son aksiyonlar geçmişi
-- AI karar açıklaması
-- AI karar zaman çizelgesi
-- Enerji tasarrufu tahmini
-- Spotify, Telegram ve AI entegrasyon durumu
-
-Frontend adresi:
-
-```text
-http://localhost:5173
-```
-
-Telefon üzerinden aynı Wi-Fi ağında erişmek için:
-
-```text
-http://<bilgisayar-ip-adresi>:5173
-```
-
-Örnek:
-
-```text
-http://192.168.139.238:5173
-```
-
-Not: Telefon erişimi için backend CORS ayarları LAN demo kullanımına uygun hale getirildi. Frontend de API adresini otomatik olarak açıldığı host üzerinden çözer.
-
-### 2. AI Agent
-
-`agent/main.py`, MQTT üzerinden sensör verilerini dinler, gelen veriyi bağlama dönüştürür, ML karar motoruna gönderir ve uygun actuator komutlarını yayınlar.
-
-Agent akışı:
-
-```text
-MQTT sensor payload
-  → ContextAnalyzer
-  → ContextEnricher
-  → DecisionEngine
-  → PolicyManager
-  → MQTT command
-  → InfluxDB action_log
-```
-
-AI modu seçildiğinde backend şu topic'e mod bilgisini yayınlar:
+Mode is published over MQTT:
 
 ```text
 home/system/mode
 ```
 
-Önemli: AI moduna geçmek her zaman anında yeni aksiyon üretmez. Agent, anlamlı bir sensör veya bağlam değişikliği geldiğinde karar verir.
-
-### 3. AI Explanation Panel
-
-Frontend'de AI kararlarının daha anlaşılır olması için **Decision Trace** paneli eklendi.
-
-Bu panel:
-
-- AI açık mı kapalı mı gösterir
-- Son AI kararını listeler
-- Kararın nedenini gösterir
-- O karar sırasında kullanılan sinyalleri özetler
-
-Örnek:
+## AI Decision Flow
 
 ```text
-Latest decision:
-Bathroom Fan -> OFF
-
-Reason:
-ML kararı: ev_bos
-
-Signals used:
-- Temperature 23.1 C
-- Motion Clear
-- Humidity 48%
+MQTT sensor payload
+  -> ContextAnalyzer
+  -> ContextEnricher
+  -> User learned preference check
+  -> ML model / Gemini / heuristics
+  -> PolicyManager
+  -> MQTT command
+  -> InfluxDB action_log
+  -> Backend diagnostics
+  -> Dashboard AI Timeline
 ```
 
-Bu özellik, jüriye sistemin sadece veri göstermediğini, kararlarını açıklayabildiğini göstermek için eklendi.
+AI decisions can be seen in:
 
-### 4. AI Timeline
+- Frontend: `Integrations -> AI Explanation`
+- Frontend: `Integrations -> AI Timeline`
+- Frontend: `Integrations -> Personal learning`
+- API: `GET /api/system/diagnostics`
+- InfluxDB measurement: `action_log`
 
-**Signal To Action** paneli, akıllı karar zincirini görsel olarak açıklar:
+## Manual Feedback Learning
+
+When a user toggles a device in the dashboard:
 
 ```text
-Sensor input
-  → Context layer
-  → AI decision
-  → Actuator output
+Frontend toggle
+  -> POST /api/rooms/{room}/actuators/{device}
+  -> POST /api/rooms/{room}/feedback
+  -> MQTT home/{room}/feedback
+  -> AI agent records preference
+  -> Future matching contexts use learned preference first
 ```
 
-Bu panel, sistem mimarisini sunum sırasında anlatmayı kolaylaştırır.
+The learned rule includes:
 
-### 5. Demo Mode / Scenario Launcher
+```text
+room, device, command, time period, occupancy, light level
+```
 
-Sergi sırasında gerçek sensör verisi her zaman dramatik veya açıklayıcı olmayabilir. Bu yüzden backend'e demo senaryoları eklendi.
+Example:
+
+If the user turns the living room light off during bright daytime while someone is in the room, the AI learns:
+
+```text
+living_room + lights + afternoon + occupied + bright -> OFF
+```
+
+Next time the same context appears, the agent prefers that learned behavior over the generic model.
+
+## Demo Scenarios
+
+Demo scenarios are controlled injections for presentation reliability. They are intentionally deterministic.
 
 Endpoint:
 
@@ -187,130 +233,116 @@ Endpoint:
 POST /api/system/demo?scenario=<scenario_id>
 ```
 
-Mevcut senaryolar:
+Available scenarios:
 
-| Senaryo | Açıklama |
+| Scenario | Purpose |
 |---|---|
-| `live` | Simülatör / gerçek veriye geri döner |
-| `kitchen_smoke` | Mutfakta duman / güvenlik alarmı senaryosu |
-| `night_routine` | Akşam / uyku hazırlığı bağlamı |
-| `bathroom_humidity` | Banyoda yüksek nem ve havalandırma ihtiyacı |
-| `empty_home` | Ev boş, enerji tasarrufu davranışı |
+| `live` | Return to live simulator data |
+| `kitchen_smoke` | Smoke safety scenario |
+| `bathroom_humidity` | High humidity / ventilation scenario |
+| `night_routine` | Evening wind-down behavior |
+| `empty_home` | Energy-saving empty home behavior |
+| `fair_arriving` | Mood-based personalized arrival scenario |
 
-Frontend'deki **Scenario Launcher** panelinden bu senaryolar tek tıkla başlatılabilir.
+While a demo scenario is active, the agent ignores normal simulator ticks unless the payload is marked as demo data. This keeps jury demonstrations stable.
 
-### 6. Floor Plan View
+## Suggested Jury Demo Flow
 
-Oda kartlarına ek olarak **floor plan** görünümü eklendi.
+1. Start in `Auto` mode with `Live Data`.
+2. Show service health: Backend, MQTT, InfluxDB, Simulator, AI Agent, Telegram.
+3. Open the `Integrations` tab.
+4. Show `AI Explanation`, `AI Timeline`, and `Personal learning`.
+5. Run `Kitchen Smoke`.
+   - Expected: kitchen smoke alert, exhaust fan ON, lights ON.
+6. Run `Bathroom Humidity`.
+   - Expected: bathroom humidity high, ventilation fan ON.
+7. Run `Empty Home`.
+   - Expected: motion clear, devices OFF.
+8. Demonstrate learning:
+   - During daytime/bright light, manually toggle a light.
+   - Explain that this feedback is stored as a learned user preference.
+9. Run `Arriving Home`.
+   - Use Telegram `/mood`.
+   - Explain mood-based personalization.
+10. Return to `Live Data`.
 
-Bu görünümde:
+## Spotify Integration
 
-- Odalar mekânsal bir yerleşim gibi gösterilir
-- Hareket olan odalar vurgulanır
-- Alarm durumundaki odalar kırmızı / kritik görünür
-- Odaya tıklanınca detay paneli açılır
+Spotify integration has two parts:
 
-Bu özellik, hangi odanın hangi durumda olduğunu daha sezgisel göstermeyi amaçlar.
+1. Dashboard status
+   - Backend checks current Spotify playback and shows status in the UI.
 
-### 7. Energy Savings Panel
-
-**AI Savings Estimate** paneli, AI aksiyonlarına ve aktif cihaz sayısına göre yaklaşık enerji etkisi gösterir.
-
-Gösterilen metrikler:
-
-- Tahmini kWh tasarrufu
-- AI tarafından yapılan OFF kararları
-- Konfor skoru
-- Aktif cihaz sayısı
-
-Bu panel, projenin sadece konfor değil, enerji verimliliği yönünü de anlatmak için eklendi.
-
-### 8. Spotify Entegrasyonu
-
-Agent tarafında Spotify kontrolü için:
+2. Agent playback control
+   - Controlled by:
 
 ```text
-agent/spotify_controller.py
-agent/spotify_auth.py
+ENABLE_SPOTIFY_ACTIONS=true|false
 ```
 
-Backend tarafında Spotify durum bilgisi frontend'e taşınır.
+If `ENABLE_SPOTIFY_ACTIONS=false`, the AI can decide music internally but will not actually press play/pause on Spotify. This avoids demo errors when there is no active Spotify device.
 
-Dashboard Spotify kartı:
+If `ENABLE_SPOTIFY_ACTIONS=true`, Spotify must be open and active on a laptop/phone. Otherwise Spotify may return "no active device" errors.
 
-- Spotify token cache var mı kontrol eder
-- Şu anda çalan müzik varsa gösterir
-- Sanatçı / albüm bilgisi gösterebilir
-- Spotify linki varsa açma bağlantısı sunar
+## Telegram Integration
 
-Spotify için `.spotify_cache` dosyasının oluşmuş olması gerekir.
+The Telegram bot supports:
 
-### 9. Telegram Bot Entegrasyonu
+- `/start`
+- `/mood`
+- `/status`
+- `/stop`
 
-Telegram bot:
-
-```text
-telegram_bot/bot.py
-```
-
-Özellikler:
-
-- `/start` ile bildirimlere kayıt olur
-- `/mood` ile kullanıcı duygu durumu alır
-- `/status` ile bot durumunu gösterir
-- `/stop` ile bildirimleri durdurur
-
-Telegram bot MQTT üzerinden:
+It publishes mood input through MQTT:
 
 ```text
-home/alerts
 home/user/sentiment
 ```
 
-topic'leriyle sistemle haberleşir.
+The `fair_arriving` scenario uses this mood input to personalize the home.
 
-### 10. Backend REST API
+## REST API
 
-Backend FastAPI ile çalışır.
-
-Ana endpointler:
-
-| Endpoint | Açıklama |
+| Endpoint | Purpose |
 |---|---|
-| `GET /health` | Backend sağlık kontrolü |
-| `GET /api/system/overview` | Sistem modu, odalar, sensörler, actuator durumları |
-| `GET /api/system/mode` | Mevcut sistem modu |
-| `POST /api/system/mode?mode=AI` | Manual / Static / AI mod seçimi |
-| `GET /api/system/diagnostics` | AI, Spotify ve demo durumu |
-| `POST /api/system/demo?scenario=...` | Demo senaryosu başlatır |
-| `POST /api/rooms/{room}/actuators/{device}?state=ON` | Actuator kontrolü |
-| `GET /api/rooms/{room}/history` | Sensör geçmişi |
+| `GET /health` | Backend health check |
+| `GET /api/system/overview` | Rooms, sensors, actuators, active mode |
+| `GET /api/system/mode` | Current mode |
+| `POST /api/system/mode?mode=AI` | Set mode |
+| `GET /api/system/diagnostics` | AI, learning, Spotify, demo, service health |
+| `POST /api/system/demo?scenario=...` | Launch demo scenario |
+| `GET /api/rooms` | List all rooms |
+| `GET /api/rooms/{room_id}` | Room details |
+| `POST /api/rooms/{room_id}/actuators/{device}?state=ON` | Control actuator |
+| `POST /api/rooms/{room_id}/feedback` | Record manual user preference |
+| `GET /api/rooms/{room_id}/history` | Sensor history |
+| `GET /api/energy/summary` | Energy estimate |
+| `GET /api/weather` | Outdoor weather context |
 
-Backend adresi:
+Mutating endpoints require `X-API-Key` when `API_KEY` is configured.
 
-```text
-http://localhost:8000
-```
+## MQTT Topics
 
-API dokümantasyonu:
+| Topic | Purpose |
+|---|---|
+| `home/{room}/sensor/all` | Full room sensor payload |
+| `home/{room}/actuator/{device}/set` | Backend actuator command |
+| `home/{room}/actuator/{device}/state` | Actuator state echo |
+| `home/{room}/{device}/command` | AI agent actuator command |
+| `home/{room}/feedback` | Manual user feedback for learning |
+| `home/system/mode` | AI / Manual / Static mode |
+| `home/system/demo` | Active demo scenario |
+| `home/alerts` | Safety and notification messages |
+| `home/preferences` | User preference updates |
+| `home/user/sentiment` | Telegram mood input |
 
-```text
-http://localhost:8000/docs
-```
+## Setup
 
-## Kurulum
+1. Install Docker Desktop.
 
-### 1. Docker Desktop kur
+2. Configure `.env`.
 
-```text
-https://www.docker.com/products/docker-desktop
-```
-
-### 2. Ortam değişkenlerini ayarla
-
-`.env` dosyasında gerekli değerler bulunur.
-
-Önemli değişkenler:
+Important variables:
 
 ```text
 MQTT_USER
@@ -321,149 +353,72 @@ WEATHER_API_KEY
 SPOTIFY_CLIENT_ID
 SPOTIFY_CLIENT_SECRET
 TELEGRAM_TOKEN
+API_KEY
 ```
 
-Telegram ve Spotify isteğe bağlıdır. Token yoksa sistemin çekirdek dashboard / AI / MQTT akışı çalışmaya devam eder.
-
-### 3. Sistemi başlat
-
-```bash
-cd smarthome
-docker compose up --build
-```
-
-Arka planda çalıştırmak için:
+3. Start the system:
 
 ```bash
 docker compose up --build -d
 ```
 
-### 4. Arayüzlere eriş
-
-| Servis | Adres |
-|---|---|
-| Mission Control Frontend | http://localhost:5173 |
-| FastAPI Backend | http://localhost:8000 |
-| FastAPI Docs | http://localhost:8000/docs |
-| Node-RED | http://localhost:1880 |
-| InfluxDB | http://localhost:8086 |
-| MQTT Broker | localhost:1883 |
-
-InfluxDB giriş bilgileri:
+4. Open:
 
 ```text
-Kullanıcı: admin
-Şifre: smarthome123
+http://localhost:5173
 ```
 
-### 5. Telefon üzerinden açma
+## Testing
 
-Bilgisayarın IP adresini öğren:
+Frontend:
+
+```bash
+cd frontend
+npm run lint
+npm run build
+```
+
+Backend tests:
+
+```bash
+set PYTHONPATH=backend
+python -B -m unittest discover backend/tests
+```
+
+Agent learning tests:
+
+```bash
+python -B -m unittest discover agent -p "test_*.py"
+```
+
+Docker backend tests:
+
+```bash
+docker compose exec -T backend sh -lc "PYTHONPATH=/app python -m unittest discover /app/tests"
+```
+
+Quick live checks:
 
 ```powershell
-ipconfig
+Invoke-RestMethod http://localhost:8000/health
+Invoke-RestMethod http://localhost:8000/api/system/diagnostics
+Invoke-RestMethod http://localhost:8000/api/system/overview
 ```
 
-Telefon ve bilgisayar aynı Wi-Fi ağındaysa telefonda şu formatta aç:
-
-```text
-http://<bilgisayar-ip-adresi>:5173
-```
-
-Örnek:
-
-```text
-http://192.168.139.238:5173
-```
-
-Eğer açılmazsa:
-
-- Telefon ve bilgisayar aynı ağda mı kontrol et
-- Windows Firewall Docker / 5173 / 8000 portlarını engelliyor mu kontrol et
-- Telefonda eski cache varsa gizli sekmede dene
-
-## Demo Senaryosu Test Rehberi
-
-### Kitchen Smoke
-
-Dashboard'da `Kitchen Smoke` butonuna bas.
-
-Kontrol et:
-
-- Kitchen kartı kritik / alert görünmeli
-- Smoke değeri `Alert` olmalı
-- Alerts sayısı artmalı
-- Floor plan'da Kitchen kırmızı/kritik görünmeli
-- Action History'de demo aktivasyonu görünmeli
-
-### Bathroom Humidity
-
-`Bathroom Humidity` butonuna bas.
-
-Kontrol et:
-
-- Bathroom nem değeri yükselmeli
-- Bathroom kartında humidity dikkat çekmeli
-- AI Explanation sinyal listesinde humidity görülebilmeli
-- Bu senaryo havalandırma fanı davranışını anlatmak için kullanılabilir
-
-### Night Routine
-
-`Night Routine` butonuna bas.
-
-Kontrol et:
-
-- Bedroom ve Hallway hareket bağlamı göstermeli
-- Akşam / uyku rutini AI kararları için iyi bir sunum senaryosudur
-- AI Timeline üzerinden sensör → bağlam → karar akışı anlatılabilir
-
-### Empty Home
-
-`Empty Home` butonuna bas.
-
-Kontrol et:
-
-- Odalarda motion clear olmalı
-- Energy Savings paneli üzerinden enerji tasarrufu anlatılmalı
-- AI'nin ev boşken cihazları kapatma yaklaşımı açıklanabilir
-
-### Live Data
-
-`Live Data` butonuna bas.
-
-Kontrol et:
-
-- Demo override kapanır
-- Sistem tekrar simülatör / canlı sensör verisine döner
-
-## MQTT Topic Yapısı
-
-| Topic | Açıklama |
-|---|---|
-| `home/{oda}/sensor/+` | Sensör verileri |
-| `home/{oda}/actuator/{cihaz}/set` | Frontend/backend actuator komutu |
-| `home/{oda}/actuator/{cihaz}/state` | Actuator state bilgisi |
-| `home/{oda}/{cihaz}/command` | Agent tarafından verilen komut |
-| `home/system/mode` | Manual / Static / AI mod bilgisi |
-| `home/alerts` | Kritik uyarılar |
-| `home/preferences` | Kullanıcı tercihleri |
-| `home/user/sentiment` | Telegram mood girdisi |
-| `home/{oda}/feedback` | Manuel override / feedback bildirimi |
-
-## Sistemi Durdur
+## Stop The System
 
 ```bash
 docker compose down
 ```
 
-Volume/veri temizlemek için dikkatli kullanılmalıdır:
+To remove volumes and stored runtime data:
 
 ```bash
 docker compose down -v
 ```
 
-## Sunum İçin Kısa Açıklama
+Use `down -v` carefully because it deletes persisted database state.
 
-Bu proje, sensörlerden gelen veriyi MQTT üzerinden toplayan, bu veriyi bağlama dönüştüren, ML tabanlı bir karar motoruyla uygun akıllı ev aksiyonları üreten ve sonuçları hem web dashboard hem de Telegram/Spotify gibi yan sistemlerle görünür hale getiren uçtan uca bir akıllı ev otomasyon platformudur.
+## Short Presentation Description
 
-Dashboard sadece verileri göstermekle kalmaz; AI kararlarını açıklar, karar zaman çizelgesini gösterir, demo senaryoları ile güvenilir sunum yapılmasını sağlar ve enerji tasarrufu tahmini sunar.
+NeuroNest is a personalized AI smart-home platform. It collects live room data through MQTT, enriches it with time, weather, occupancy, and mood context, then uses a layered AI decision engine to control home devices. The system combines safety rules, learned user preferences, a pretrained ML model, optional Gemini reasoning, and policy guards. The dashboard shows real-time state, AI explanations, decision timelines, service health, demo scenarios, energy estimates, and personalized learning progress.
