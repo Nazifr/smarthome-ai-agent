@@ -468,6 +468,10 @@ button { font-family: inherit; color: inherit; background: none; border: 0; curs
 
 .service-chip.is-ok svg { color: var(--accent); }
 .service-chip.is-bad svg { color: var(--alert); }
+.integration-icon--learned {
+  color: #09110d;
+  background: #9bf6ff;
+}
 .service-chip span {
   color: var(--text);
   font-size: 12px;

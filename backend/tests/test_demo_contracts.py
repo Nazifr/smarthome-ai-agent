@@ -44,6 +44,20 @@ class DemoContractTests(unittest.TestCase):
         self.assertTrue(all(room["motion"] == 0 for room in room_service.DEMO_OVERRIDES.values()))
         self.assertEqual(get_actuator_state("office", "ac"), "OFF")
 
+    @patch("app.services.room_service.publish")
+    def test_user_feedback_is_published_for_learning(self, publish):
+        payload = room_service.send_user_feedback(
+            "living_room",
+            "light",
+            "OFF",
+            {"temperature": 22, "humidity": 50, "motion": 1, "smoke": 0, "light": 420},
+        )
+
+        self.assertEqual(payload["device"], "light")
+        self.assertEqual(payload["command"], "OFF")
+        publish.assert_called_once()
+        self.assertEqual(publish.call_args.args[0], "home/living_room/feedback")
+
     @patch("app.services.system_service.publish")
     def test_system_modes_are_published(self, publish):
         result = set_system_mode("AI")

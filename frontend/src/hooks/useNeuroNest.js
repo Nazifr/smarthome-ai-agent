@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react'
 import {
   getSystemOverview,
   controlActuator,
+  sendUserFeedback,
   setSystemMode,
   triggerDemoScenario,
 } from '../services/api'
@@ -45,6 +46,16 @@ export function useNeuroNest() {
 
     const currentDevice = uiData?.devices?.[uiRoomId]?.find(d => d.deviceKey === deviceKey)
     const newState = currentDevice?.on ? 'OFF' : 'ON'
+    const sensorData = uiData?.sensors?.[uiRoomId]
+    const feedbackSensorData = sensorData ? {
+      temperature: sensorData.temp ?? 22,
+      humidity: sensorData.humidity ?? 50,
+      motion: sensorData.motion ? 1 : 0,
+      smoke: sensorData.smoke ? 1 : 0,
+      light: sensorData.lux ?? 0,
+      timestamp: new Date().toISOString(),
+      room: backendRoomId,
+    } : undefined
 
     // Optimistic update
     setUiData(prev => {
@@ -62,6 +73,7 @@ export function useNeuroNest() {
 
     try {
       await controlActuator(backendRoomId, deviceKey, newState)
+      await sendUserFeedback(backendRoomId, deviceKey, newState, feedbackSensorData)
     } catch {
       // revert on error
       fetchOverview()

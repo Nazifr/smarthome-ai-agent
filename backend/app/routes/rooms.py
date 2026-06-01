@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, Query, Depends, Request
+from fastapi import APIRouter, Body, HTTPException, Query, Depends, Request
 from typing import List, Literal
 from app.schemas.room import Room
 from app.schemas.history import HistoryPoint
@@ -7,7 +7,8 @@ from app.services.room_service import (
     get_all_rooms,
     get_room_by_id,
     get_room_history,
-    set_actuator
+    set_actuator,
+    send_user_feedback,
 )
 from app.security import require_api_key, limiter
 
@@ -52,4 +53,23 @@ async def control_actuator(
     result = set_actuator(room_id, device, state)
     if result is None:
         raise HTTPException(status_code=404, detail="Room not found")
+    return result
+
+
+@router.post("/api/rooms/{room_id}/feedback")
+@limiter.limit("60/minute")
+async def record_feedback(
+    request: Request,
+    room_id: str,
+    payload: dict = Body(default_factory=dict),
+    _: None = Depends(require_api_key),
+):
+    device = payload.get("device")
+    command = payload.get("command")
+    if not device or not command:
+        raise HTTPException(status_code=400, detail="device and command are required")
+
+    result = send_user_feedback(room_id, device, command, payload.get("sensor_data"))
+    if result is None:
+        raise HTTPException(status_code=404, detail="Room or device not found")
     return result

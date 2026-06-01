@@ -313,11 +313,15 @@ class SmartHomeAgent:
         command = payload.get("command")
         sensor  = payload.get("sensor_data", {})
         if device and command and sensor:
+            room = payload.get("room", topic.split("/")[1] if "/" in topic else "general")
+            sensor["room"] = room
+            sensor["timestamp"] = sensor.get("timestamp", datetime.now().isoformat())
             context  = self.analyzer.analyze(sensor)
+            context = self.enricher.enrich(context)
             features = self.analyzer.to_feature_vector(context)
-            self.engine.record_feedback(features, device, command)
-            room = payload.get("room", "general")
+            self.engine.record_feedback(features, device, command, room=room, context=context)
             self.policy.set_manual_override(f"{room}_{device}", command)
+            self._log_feedback(device, room, command, context)
             print(f"[Agent] Feedback alındı: {device} → {command} (öğrenme kaydedildi)")
 
     def _check_alerts(self, context: dict, room: str):
@@ -361,6 +365,19 @@ class SmartHomeAgent:
             self.write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
         except Exception as e:
             print(f"[Agent] Action log hatası: {e}")
+
+    def _log_feedback(self, device, room, command, context):
+        try:
+            point = (Point("user_feedback")
+                .tag("device", device).tag("room", room)
+                .tag("command", command).tag("time_period", context.get("time_period", "unknown"))
+                .tag("occupancy", context.get("occupancy", "unknown"))
+                .field("temperature", float(context.get("temperature", 0)))
+                .field("humidity", float(context.get("humidity", 0)))
+                .field("light", float(context.get("light", 0))))
+            self.write_api.write(bucket=INFLUX_BUCKET, org=INFLUX_ORG, record=point)
+        except Exception as e:
+            print(f"[Agent] Feedback log hatası: {e}")
 
     def run(self):
         print("[Agent] Akıllı ev agent'ı başlatılıyor...")

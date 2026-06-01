@@ -57,6 +57,27 @@ export async function controlActuator(roomId, device, state) {
   return response.json()
 }
 
+export async function sendUserFeedback(roomId, device, command, sensorData) {
+  const response = await fetch(`${API_BASE_URL}/api/rooms/${roomId}/feedback`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      ...writeHeaders(),
+    },
+    body: JSON.stringify({
+      device,
+      command,
+      sensor_data: sensorData,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`Failed to record feedback for ${device}`)
+  }
+
+  return response.json()
+}
+
 export async function setSystemMode(mode) {
   const response = await fetch(
     `${API_BASE_URL}/api/system/mode?mode=${mode}`,

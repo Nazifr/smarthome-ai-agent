@@ -13,6 +13,7 @@ from app.services.mqtt_service import get_mqtt_status
 SPOTIFY_CLIENT_ID = os.getenv("SPOTIFY_CLIENT_ID", "")
 SPOTIFY_CLIENT_SECRET = os.getenv("SPOTIFY_CLIENT_SECRET", "")
 SPOTIFY_CACHE_PATH = os.getenv("SPOTIFY_CACHE_PATH", "/agent/.spotify_cache")
+USER_LEARNING_PATH = os.getenv("USER_LEARNING_PATH", "/agent/user_learning.json")
 
 
 def _read_spotify_cache():
@@ -123,12 +124,51 @@ def get_ai_status(current_mode: str):
         "mode": current_mode,
         "armed": current_mode == "AI",
         "recent_actions": actions,
+        "learning": get_learning_status(),
         "message": (
             "AI is armed and will act on the next meaningful sensor/context change"
             if current_mode == "AI"
             else "AI autonomy is paused because the system is not in AI mode"
         ),
     }
+
+
+def get_learning_status():
+    if not os.path.exists(USER_LEARNING_PATH):
+        return {
+            "feedback_count": 0,
+            "rule_count": 0,
+            "last_feedback": None,
+            "top_rules": [],
+            "message": "No manual preferences learned yet",
+        }
+    try:
+        with open(USER_LEARNING_PATH, "r", encoding="utf-8") as learning_file:
+            data = json.load(learning_file)
+        rules = sorted(
+            data.get("rules", {}).values(),
+            key=lambda rule: (rule.get("count", 0), rule.get("last_seen", 0)),
+            reverse=True,
+        )
+        return {
+            "feedback_count": int(data.get("feedback_count", 0)),
+            "rule_count": len(rules),
+            "last_feedback": data.get("last_feedback"),
+            "top_rules": rules[:5],
+            "message": (
+                f"{data.get('feedback_count', 0)} manual preference(s) captured"
+                if data.get("feedback_count", 0)
+                else "No manual preferences learned yet"
+            ),
+        }
+    except Exception as exc:
+        return {
+            "feedback_count": 0,
+            "rule_count": 0,
+            "last_feedback": None,
+            "top_rules": [],
+            "message": f"Learning status unavailable: {exc}",
+        }
 
 
 def get_service_health(current_mode: str):

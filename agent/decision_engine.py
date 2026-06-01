@@ -11,6 +11,7 @@ import json
 import joblib
 import numpy as np
 import warnings
+from user_learning import UserLearningStore
 try:
     from spotify_controller import SpotifyController
     _spotify = SpotifyController()
@@ -57,6 +58,7 @@ class DecisionEngine:
         self.encoder = None
         self.samples = []       # feedback örnekleri
         self.gemini  = None
+        self.learning = UserLearningStore()
         self._llm_cache: dict[str, tuple[float, list]] = {}
         self._llm_backoff_until = 0.0
         self._load_model()
@@ -86,32 +88,63 @@ class DecisionEngine:
     def decide(self, context: dict, features: list) -> list:
         if context.get("smoke", 0) or context.get("humidity", 0) > 75:
             print("[DecisionEngine] Safety/ventilation heuristic takes priority")
-            return self._filter_supported_actions(context, self._heuristic_decide(context))
+            return self._apply_occupancy_and_daylight_guard(
+                context,
+                self._filter_supported_actions(context, self._heuristic_decide(context)),
+                protect_learned=True,
+            )
+
+        learned_actions = self.learning.suggest(context)
+        if learned_actions:
+            print(f"[DecisionEngine] Learned user preference matched ({len(learned_actions)} action(s))")
+            return self._apply_occupancy_and_daylight_guard(
+                context,
+                self._filter_supported_actions(context, learned_actions),
+                protect_learned=True,
+            )
 
         if self.model and len(self.samples) >= MIN_SAMPLES_FOR_ML:
             ml_actions, confidence = self._ml_decide(context, features)
             is_complex = self.gemini and self._is_complex(context)
             if confidence >= CONFIDENCE_THRESHOLD:
                 if is_complex:
-                    print(f"[DecisionEngine] ML güven {confidence:.0%} ama bağlam karmaşık — Gemini devreye giriyor...")
+                    print(f"[DecisionEngine] ML confidence {confidence:.0%}, complex context - Gemini considered")
                     llm_actions = self._llm_decide(context, confidence)
                     if llm_actions:
-                        return self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions))
+                        return self._apply_occupancy_and_daylight_guard(
+                            context,
+                            self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions)),
+                        )
                 print(f"[DecisionEngine] ML karari (guven: {confidence:.0%})")
-                return self._apply_lighting_override(context, self._filter_supported_actions(context, ml_actions))
+                return self._apply_occupancy_and_daylight_guard(
+                    context,
+                    self._apply_lighting_override(context, self._filter_supported_actions(context, ml_actions)),
+                )
             if is_complex:
                 print("[DecisionEngine] Karmasik baglam, Gemini devreye giriyor...")
                 llm_actions = self._llm_decide(context, confidence)
                 if llm_actions:
-                    return self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions))
-            return self._apply_lighting_override(context, self._filter_supported_actions(context, ml_actions))
+                    return self._apply_occupancy_and_daylight_guard(
+                        context,
+                        self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions)),
+                    )
+            return self._apply_occupancy_and_daylight_guard(
+                context,
+                self._apply_lighting_override(context, self._filter_supported_actions(context, ml_actions)),
+            )
         if self.gemini:
             print("[DecisionEngine] ML yok, Gemini kullaniliyor...")
             llm_actions = self._llm_decide(context, confidence=None)
             if llm_actions:
-                return self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions))
+                return self._apply_occupancy_and_daylight_guard(
+                    context,
+                    self._apply_lighting_override(context, self._filter_supported_actions(context, llm_actions)),
+                )
         print("[DecisionEngine] Heuristic karar veriliyor...")
-        return self._filter_supported_actions(context, self._heuristic_decide(context))
+        return self._apply_occupancy_and_daylight_guard(
+            context,
+            self._filter_supported_actions(context, self._heuristic_decide(context)),
+        )
 
     def _ml_decide(self, context: dict, features: list):
         try:
@@ -261,7 +294,7 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
         """Post-ML correction: ensure lights match time-of-day when occupied."""
         hour      = context.get("hour", 12)
         occupancy = context.get("occupancy", "unknown")
-        if occupancy == "bos_ev":
+        if occupancy == "bos":
             return actions
 
         is_evening = 17 <= hour < 23
@@ -274,6 +307,48 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
                     print(f"[DecisionEngine] Lighting override: OFF → ON (evening, occupied)")
 
         return actions
+
+    def _apply_occupancy_and_daylight_guard(
+        self,
+        context: dict,
+        actions: list,
+        protect_learned: bool = False,
+    ) -> list:
+        guarded = []
+        occupancy = context.get("occupancy", "unknown")
+        light_level = context.get("light_level", "unknown")
+        light_value = float(context.get("light", 0))
+        is_daytime = 7 <= int(context.get("hour", 12)) < 19
+
+        for action in actions:
+            device = action.get("device")
+            command = str(action.get("command", "")).upper()
+            is_light = device in ("lights", "light")
+            is_learned = action.get("learned") or action.get("method") == "learned"
+
+            if is_light and occupancy == "bos" and command in ("ON", "DIM"):
+                action = {
+                    **action,
+                    "command": "OFF",
+                    "reason": action.get("reason", "") + " (empty-room guard)",
+                }
+            elif (
+                is_light
+                and command in ("ON", "DIM")
+                and is_daytime
+                and light_level == "aydinlik"
+                and light_value >= 300
+                and not (protect_learned and is_learned)
+            ):
+                action = {
+                    **action,
+                    "command": "OFF",
+                    "reason": action.get("reason", "") + " (daylight guard)",
+                }
+
+            guarded.append(action)
+
+        return guarded
 
     def _heuristic_decide(self, context: dict) -> list:
         hour      = context.get("hour", 12)
@@ -300,7 +375,7 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
                 actions.append({"device": "fan", "command": "ON", "reason": f"High humidity ({humidity}%) - indoor fan only (rain={rain}mm, wind={wind}km/h)", "confidence": None, "method": "heuristic"})
 
         # ── Empty home: all off ────────────────────────────────────────
-        if occupancy == "bos_ev":
+        if occupancy == "bos":
             actions.append({"device": "ac",     "command": "OFF", "reason": "Ev boş — klima kapatılıyor",   "confidence": None, "method": "heuristic"})
             actions.append({"device": "lights",  "command": "OFF", "reason": "Ev boş — ışıklar kapatılıyor", "confidence": None, "method": "heuristic"})
             actions.append({"device": "fan",     "command": "OFF", "reason": "Ev boş — fan kapatılıyor",     "confidence": None, "method": "heuristic"})
@@ -323,12 +398,9 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
 
         if is_night:
             actions.append({"device": "lights", "command": "OFF", "reason": "Gece modu",                "confidence": None, "method": "heuristic"})
-        elif is_evening:
+        elif is_evening and context.get("light_level") != "aydinlik":
             actions.append({"device": "lights", "command": "ON",  "reason": "Akşam modu — ışıklar açık", "confidence": None, "method": "heuristic"})
         # Daytime: skip — natural light is sufficient
-
-        if not actions:
-            actions.append({"device": "lights", "command": "ON", "reason": "Normal mod", "confidence": None, "method": "heuristic"})
 
         return actions
 
@@ -365,18 +437,25 @@ Geçerli komutlar: ON, OFF, COOL_LOW, COOL_HIGH, HEAT, DIM"""
 
     # ── Feedback Öğrenme ──────────────────────────────────────────────
 
-    def record_feedback(self, features: list, device: str, command: str):
+    def record_feedback(self, features: list, device: str, command: str, room: str = "general", context: dict | None = None):
         """
         Kullanıcı manuel override yaptığında çağrılır.
         Cihaz + komut kombinasyonundan senaryo etiketi türetilir.
         """
-        label = self._infer_label_from_feedback(device, command)
+        device_for_label = "lights" if device == "light" else device
+        label = self._infer_label_from_feedback(device_for_label, command)
         if label:
             self.samples.append((features, label))
             print(f"[DecisionEngine] Feedback kaydedildi: {device}→{command} = {label} ({len(self.samples)}/{RETRAIN_THRESHOLD})")
 
             if len(self.samples) >= RETRAIN_THRESHOLD:
                 self._retrain()
+        if context:
+            rule = self.learning.record(room, device, command, context)
+            print(f"[DecisionEngine] Learned preference updated: {room}/{device} -> {command} ({rule['count']} sample(s))")
+
+    def learning_summary(self) -> dict:
+        return self.learning.summary()
 
     def _infer_label_from_feedback(self, device: str, command: str) -> str:
         """

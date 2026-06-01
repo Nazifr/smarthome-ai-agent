@@ -190,6 +190,38 @@ def set_actuator(room_id: str, device: str, state: str):
     }
 
 
+def send_user_feedback(room_id: str, device: str, command: str, sensor_data: dict | None = None):
+    if room_id not in ROOM_IDS:
+        return None
+
+    normalized_device = normalize_device(room_id, device)
+    if normalized_device not in ROOM_ACTUATORS.get(room_id, []):
+        return None
+
+    if not sensor_data:
+        room = build_room(room_id)
+        sensor_data = {
+            "temperature": room.temperature,
+            "humidity": room.humidity,
+            "motion": room.motion,
+            "smoke": room.smoke,
+            "light": room.light,
+            "timestamp": datetime.now().isoformat(),
+            "room": room_id,
+        }
+
+    feedback_payload = {
+        "room": room_id,
+        "device": normalized_device,
+        "command": command,
+        "sensor_data": sensor_data,
+        "timestamp": datetime.now().isoformat(),
+        "source": "dashboard_manual_toggle",
+    }
+    publish(f"home/{room_id}/feedback", feedback_payload)
+    return feedback_payload
+
+
 def get_demo_status():
     return {
         "active": CURRENT_DEMO,

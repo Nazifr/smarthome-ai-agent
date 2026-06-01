@@ -1,4 +1,4 @@
-import { BrainCircuit, CheckCircle2, CircleAlert, ExternalLink, MessageCircle, Music2, Send, Server } from 'lucide-react'
+import { BrainCircuit, CheckCircle2, CircleAlert, ExternalLink, MessageCircle, Music2, Send, Server, SlidersHorizontal } from 'lucide-react'
 
 function actionText(action) {
   if (!action) return 'No AI actions logged yet'
@@ -12,6 +12,7 @@ export default function IntegrationDock({ diagnostics, mode }) {
   const ai = diagnostics?.ai
   const services = diagnostics?.services ?? []
   const recentAiAction = ai?.recent_actions?.[0]
+  const learning = ai?.learning
   const aiArmed = ai?.armed ?? (mode === 'Auto' || mode === 'AI')
   const spotifyReady = spotify?.available
   const spotifyTitle = spotify?.track || 'Spotify ambience'
@@ -39,6 +40,22 @@ export default function IntegrationDock({ diagnostics, mode }) {
           <small>{actionText(recentAiAction)}</small>
         </div>
         <span>{aiArmed ? 'Armed' : 'Paused'}</span>
+      </div>
+
+      <div className="integration-card integration-card--wide">
+        <div className="integration-icon integration-icon--learned">
+          <SlidersHorizontal size={18} />
+        </div>
+        <div>
+          <strong>Personal learning</strong>
+          <p>{learning?.message || 'Manual choices become high-priority learned preferences.'}</p>
+          <small>
+            {learning
+              ? `${learning.feedback_count} feedback events, ${learning.rule_count} learned rule(s)`
+              : 'Waiting for learning status'}
+          </small>
+        </div>
+        <span>{learning?.rule_count ? 'Learning' : 'Ready'}</span>
       </div>
 
       <div className="service-health">
